@@ -1,0 +1,386 @@
+{
+  "avisos/erro": {
+    "h": 95,
+    "w": 290
+  },
+  "avisos/info": {
+    "h": 92,
+    "w": 295
+  },
+  "avisos/ok": {
+    "h": 92,
+    "w": 298
+  },
+  "buffs/cura": {
+    "h": 76,
+    "w": 80
+  },
+  "buffs/dano": {
+    "h": 76,
+    "w": 80
+  },
+  "buffs/defesa": {
+    "h": 76,
+    "w": 80
+  },
+  "buffs/fogo": {
+    "h": 77,
+    "w": 80
+  },
+  "buffs/gelo": {
+    "h": 77,
+    "w": 80
+  },
+  "buffs/raio": {
+    "h": 77,
+    "w": 80
+  },
+  "buffs/sangue": {
+    "h": 77,
+    "w": 80
+  },
+  "buffs/velocidade": {
+    "h": 75,
+    "w": 80
+  },
+  "buffs/veneno": {
+    "h": 93,
+    "w": 77
+  },
+  "buffs/vortice": {
+    "h": 85,
+    "w": 80
+  },
+  "controlos/atacar": {
+    "h": 198,
+    "w": 180
+  },
+  "controlos/atacar-activo": {
+    "h": 193,
+    "w": 180
+  },
+  "controlos/atacar-premido": {
+    "h": 185,
+    "w": 181
+  },
+  "controlos/botao": {
+    "h": 194,
+    "w": 192
+  },
+  "controlos/botao-cristal": {
+    "h": 186,
+    "w": 192
+  },
+  "controlos/botao-perigo": {
+    "h": 205,
+    "w": 190
+  },
+  "controlos/botao-premido": {
+    "h": 215,
+    "w": 192
+  },
+  "controlos/botao-simples": {
+    "h": 195,
+    "w": 192
+  },
+  "controlos/caixa": {
+    "h": 75,
+    "w": 74
+  },
+  "controlos/caixa-marcada": {
+    "h": 76,
+    "w": 77
+  },
+  "controlos/interruptor-off": {
+    "h": 91,
+    "w": 160
+  },
+  "controlos/interruptor-on": {
+    "h": 89,
+    "w": 160
+  },
+  "controlos/joystick-aceso": {
+    "h": 258,
+    "w": 256
+  },
+  "controlos/joystick-base": {
+    "h": 258,
+    "w": 256
+  },
+  "controlos/joystick-punho": {
+    "h": 129,
+    "w": 128
+  },
+  "controlos/joystick-punho-aceso": {
+    "h": 143,
+    "w": 144
+  },
+  "controlos/mais": {
+    "h": 84,
+    "w": 84
+  },
+  "controlos/menos": {
+    "h": 84,
+    "w": 83
+  },
+  "controlos/principal": {
+    "h": 112,
+    "w": 456
+  },
+  "controlos/principal-activo": {
+    "h": 147,
+    "w": 470
+  },
+  "estacoes/aba": {
+    "h": 88,
+    "w": 84
+  },
+  "estacoes/aba-activa": {
+    "h": 90,
+    "w": 84
+  },
+  "estacoes/bancada-quadro": {
+    "h": 302,
+    "w": 212
+  },
+  "estacoes/bancada-quadro-raro": {
+    "h": 294,
+    "w": 198
+  },
+  "estacoes/barra-calor": {
+    "h": 90,
+    "w": 512
+  },
+  "estacoes/barra-fole": {
+    "h": 77,
+    "w": 512
+  },
+  "estacoes/barra-progresso": {
+    "h": 75,
+    "w": 400
+  },
+  "estacoes/botao-nao": {
+    "h": 62,
+    "w": 202
+  },
+  "estacoes/botao-sim": {
+    "h": 66,
+    "w": 206
+  },
+  "estacoes/cadinho": {
+    "h": 154,
+    "w": 127
+  },
+  "estacoes/caldeirao": {
+    "h": 320,
+    "w": 320
+  },
+  "estacoes/emblema-alquimia": {
+    "h": 104,
+    "w": 86
+  },
+  "estacoes/emblema-bancada": {
+    "h": 104,
+    "w": 85
+  },
+  "estacoes/emblema-cristal": {
+    "h": 104,
+    "w": 84
+  },
+  "estacoes/emblema-maquina": {
+    "h": 104,
+    "w": 84
+  },
+  "estacoes/emblema-nucleo": {
+    "h": 104,
+    "w": 90
+  },
+  "estacoes/forno-aceso": {
+    "h": 322,
+    "w": 253
+  },
+  "estacoes/forno-frio": {
+    "h": 322,
+    "w": 245
+  },
+  "estacoes/forno-maximo": {
+    "h": 322,
+    "w": 260
+  },
+  "estacoes/linha-material": {
+    "h": 86,
+    "w": 355
+  },
+  "estacoes/painel-mistura": {
+    "h": 287,
+    "w": 440
+  },
+  "hud/aviso": {
+    "h": 159,
+    "w": 522
+  },
+  "hud/barra-energia": {
+    "h": 121,
+    "w": 511
+  },
+  "hud/barra-recurso": {
+    "h": 97,
+    "w": 508
+  },
+  "hud/barra-vida": {
+    "h": 120,
+    "w": 511
+  },
+  "hud/barra-xp": {
+    "h": 121,
+    "w": 511
+  },
+  "hud/botao-menu": {
+    "h": 283,
+    "w": 76
+  },
+  "hud/canto-direito": {
+    "h": 129,
+    "w": 120
+  },
+  "hud/canto-esquerdo": {
+    "h": 130,
+    "w": 120
+  },
+  "hud/estrela": {
+    "h": 111,
+    "w": 96
+  },
+  "hud/etiqueta": {
+    "h": 138,
+    "w": 433
+  },
+  "hud/hotbar": {
+    "h": 168,
+    "w": 790
+  },
+  "hud/painel-leitura": {
+    "h": 271,
+    "w": 683
+  },
+  "hud/separador": {
+    "h": 99,
+    "w": 512
+  },
+  "icones/bau": {
+    "h": 110,
+    "w": 160
+  },
+  "icones/combate": {
+    "h": 114,
+    "w": 96
+  },
+  "icones/comida": {
+    "h": 115,
+    "w": 96
+  },
+  "icones/correio": {
+    "h": 114,
+    "w": 96
+  },
+  "icones/cristais": {
+    "h": 115,
+    "w": 96
+  },
+  "icones/definicoes": {
+    "h": 113,
+    "w": 96
+  },
+  "icones/mapa": {
+    "h": 113,
+    "w": 96
+  },
+  "icones/mochila": {
+    "h": 114,
+    "w": 96
+  },
+  "icones/picareta": {
+    "h": 114,
+    "w": 96
+  },
+  "icones/pocao": {
+    "h": 113,
+    "w": 96
+  },
+  "icones/saco": {
+    "h": 113,
+    "w": 96
+  },
+  "paineis/barra": {
+    "h": 66,
+    "w": 444
+  },
+  "paineis/barra-titulo": {
+    "h": 90,
+    "w": 660
+  },
+  "paineis/cabecalho": {
+    "h": 124,
+    "w": 433
+  },
+  "paineis/confirmar": {
+    "h": 292,
+    "w": 395
+  },
+  "paineis/criar": {
+    "h": 493,
+    "w": 356
+  },
+  "paineis/dialogo": {
+    "h": 296,
+    "w": 311
+  },
+  "paineis/inventario": {
+    "h": 496,
+    "w": 459
+  },
+  "paineis/linha": {
+    "h": 73,
+    "w": 384
+  },
+  "paineis/linha-aviso": {
+    "h": 71,
+    "w": 384
+  },
+  "paineis/linha-ok": {
+    "h": 73,
+    "w": 384
+  },
+  "paineis/pesquisa": {
+    "h": 78,
+    "w": 624
+  },
+  "paineis/separadores": {
+    "h": 80,
+    "w": 566
+  },
+  "sistemas/faixa-chefe": {
+    "h": 160,
+    "w": 355
+  },
+  "sistemas/placa-selada": {
+    "h": 208,
+    "w": 327
+  },
+  "slots/activo": {
+    "h": 151,
+    "w": 144
+  },
+  "slots/bloqueado": {
+    "h": 145,
+    "w": 128
+  },
+  "slots/normal": {
+    "h": 147,
+    "w": 128
+  },
+  "slots/raro": {
+    "h": 141,
+    "w": 128
+  }
+}

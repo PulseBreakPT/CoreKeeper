@@ -94,6 +94,8 @@ export class PainelInventario {
     this.aberto = true;
     this.abaAtual = estacao ? 'criar' : 'mochila';
     this.raiz.classList.remove('oculto');
+    // O emblema da estação é escolhido pelo CSS a partir daqui.
+    this.raiz.dataset.estacao = estacao ?? '';
     this.titulo.textContent = estacao ? nomeEstacao(estacao) : 'Mochila';
     this.construirReceitas();
     this.mudarAba(this.abaAtual);

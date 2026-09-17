@@ -1,0 +1,525 @@
+/**
+ * Pele da interface: as peças cortadas das folhas de UI.
+ *
+ * A divisão é a mesma que se usa num motor a sério — a imagem é só a pele,
+ * o resto (texto, números, estados, toques) continua no HTML e no código.
+ * Por isso aqui só se troca fundo, moldura e brilho; posição e tamanho
+ * continuam em style.css, e nenhuma regra desenha valores.
+ *
+ * As percentagens de recorte vêm da cavidade escura de cada peça: como são
+ * relativas, a moldura serve em qualquer tamanho de ecrã.
+ */
+
+/* ---------- Barras vitais ---------- */
+
+/* O sigilo do Portador estava ali para dar peso ao módulo; agora cada barra
+   traz a sua gema e ele só fazia barulho. */
+.modulo-vitais .sigilo { display: none; }
+
+.modulo-vitais {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  gap: 4px;
+}
+
+.modulo-vitais::after { display: none; }
+.modulo-vitais .modulo-placa { display: none; }
+
+.barras { gap: 0; }
+
+.barra {
+  position: relative;
+  display: block;
+  width: 172px;
+  max-width: 34vw;
+  aspect-ratio: 511 / 120;
+  background: url('./assets/ui/hud/barra-vida.png') center / 100% 100% no-repeat;
+}
+
+.barra-fome { background-image: url('./assets/ui/hud/barra-energia.png'); }
+
+/* O rótulo estava lá para dizer qual era a barra; agora a gema di-lo. */
+.barra-rotulo { display: none; }
+
+.barra-corpo,
+.barra-vida .barra-corpo,
+.barra-fome .barra-corpo {
+  position: absolute;
+  left: 28.5%;
+  top: 38%;
+  width: 62%;
+  height: 29%;
+  border: 0;
+  border-radius: 2px;
+  background: #06050b;
+  box-shadow: none;
+}
+
+/* O vidro, o bisel e as marcas já vêm desenhados na moldura. */
+.barra-brilho,
+.barra-marcas,
+.barra-vidro { display: none; }
+
+.barra-valor {
+  position: absolute;
+  right: 11%;
+  top: 46%;
+  transform: translateY(-50%);
+  z-index: 3;
+  font-size: 11px;
+  min-width: 0;
+  text-shadow: 0 1px 2px #000, 0 0 6px rgba(0, 0, 0, 0.9);
+}
+
+.critico .barra-vida { animation: pulsar-vida 0.9s ease-in-out infinite; }
+
+@keyframes pulsar-vida {
+  0%, 100% { filter: none; }
+  50% { filter: drop-shadow(0 0 10px rgba(216, 72, 76, 0.9)); }
+}
+
+/* ---------- Leitura de zona e profundidade ---------- */
+
+.modulo-leitura {
+  background: url('./assets/ui/hud/painel-leitura.png') center / 100% 100% no-repeat;
+  border: 0;
+  box-shadow: none;
+  aspect-ratio: 683 / 271;
+  width: 244px;
+  max-width: 38vw;
+  /* A cavidade da peça começa a 30% (o medalhão ocupa a esquerda) e acaba
+     antes da ponta de cristal: é aí que o texto tem de caber. */
+  /* Em px e não em %: a percentagem vertical conta a partir da largura, o que
+     deixava a linha do nome da zona esmagada a zero. */
+  padding: 8px 20px 12px 78px;
+  gap: 0;
+  justify-content: center;
+}
+
+.modulo-leitura::after { display: none; }
+.modulo-leitura .modulo-placa { display: none; }
+
+/* ---------- Medidor e botão de menu ---------- */
+
+.medidor {
+  background: url('./assets/ui/paineis/barra.png') center / 100% 100% no-repeat;
+  border: 0;
+  box-shadow: none;
+  padding: 10px 26px;
+  min-width: 88px;
+}
+
+.medidor-fps { font-size: 10px; }
+.medidor-ms { font-size: 6px; }
+
+/* Nenhuma linha pode encolher: o nome da zona tem de sobreviver. */
+.modulo-leitura > * { flex: none; }
+.modulo-leitura .leitura-camada { font-size: 7.5px; letter-spacing: 0.1em; }
+.modulo-leitura .leitura-linha { align-items: baseline; }
+.modulo-leitura .leitura-un { white-space: nowrap; }
+.modulo-leitura .leitura-num { font-size: 16px; }
+.modulo-leitura .leitura-un { font-size: 7px; }
+.modulo-leitura .fragmentos { margin-top: 1px; }
+.modulo-leitura .varrimento { display: none; }
+
+.botao-chapa {
+  background: url('./assets/ui/controlos/botao-simples.png') center / 100% 100% no-repeat;
+  border: 0;
+  box-shadow: none;
+  width: 46px;
+  height: 46px;
+}
+
+.botao-chapa:active { background-image: url('./assets/ui/controlos/botao-premido.png'); }
+
+/* ---------- Joystick ---------- */
+
+.joystick {
+  background: url('./assets/ui/controlos/joystick-base.png') center / 100% 100% no-repeat;
+}
+
+.joystick-anel { display: none; }
+
+.joystick-ponta {
+  background: url('./assets/ui/controlos/joystick-punho.png') center / 100% 100% no-repeat;
+  border: 0;
+  box-shadow: none;
+  width: 50px;
+  height: 50px;
+  margin: -25px 0 0 -25px;
+}
+
+/* ---------- Hotbar ---------- */
+
+.nome-mao {
+  min-width: 158px;
+  padding: 7px 26px 9px;
+  background: url('./assets/ui/hud/etiqueta.png') center / 100% 100% no-repeat;
+  color: var(--texto);
+  font-size: 10px;
+}
+
+.nome-mao:empty { background: none; }
+
+.hotbar {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  gap: 2px;
+  padding: 0;
+}
+
+.socket {
+  background: url('./assets/ui/slots/normal.png') center / 100% 100% no-repeat;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  width: 46px;
+  height: 51px;
+  padding: 0;
+  display: block;
+}
+
+.socket-bisel { display: none; }
+
+.socket .icone {
+  position: absolute;
+  left: 14%;
+  top: 26%;
+  width: 72%;
+  height: 62%;
+  object-fit: contain;
+}
+
+.socket .contagem { bottom: 8%; right: 12%; }
+.socket-num { top: 24%; left: 14%; }
+
+.socket.ativo,
+.socket.escolhido {
+  background-image: url('./assets/ui/slots/activo.png');
+}
+
+.socket.ativo::after,
+.socket.escolhido::after { display: none; }
+
+.socket:active { filter: brightness(1.25); }
+
+/* ---------- Botões de acção ---------- */
+
+/* Num telemóvel o polegar precisa de alvo: o botão principal é o maior. */
+.botao-redondo {
+  width: 64px;
+  height: 64px;
+  background: url('./assets/ui/controlos/botao.png') center / 100% 100% no-repeat;
+  border: 0;
+  box-shadow: none;
+}
+
+.botao-redondo::before { display: none; }
+
+.botao-redondo:active,
+.botao-redondo.is-down {
+  background-image: url('./assets/ui/controlos/botao-premido.png');
+  transform: scale(0.96);
+}
+
+/* O botão de minar é o principal: leva a moldura de cristal, maior. */
+.botao-atacar {
+  background-image: url('./assets/ui/controlos/botao-cristal.png');
+  width: 88px;
+  height: 88px;
+}
+
+.botao-atacar:active,
+.botao-atacar.is-down { background-image: url('./assets/ui/controlos/atacar-premido.png'); }
+
+.anel-atacar { display: none; }
+
+.botao-redondo .glifo {
+  bottom: 15%;
+  font-size: 6px;
+  text-shadow: 0 1px 3px #000;
+}
+
+/* ---------- Painéis e menus ---------- */
+
+/* A moldura vem da peça do inventário, que tem cantos iguais nos quatro lados.
+   Sem `fill`: o interior é fundo liso nosso, senão a grelha desenhada na peça
+   esticava-se por dentro do painel. */
+.painel-caixa,
+.menu-caixa {
+  border: 32px solid transparent;
+  border-image: url('./assets/ui/paineis/inventario.png') 74 / 32px stretch;
+  background: linear-gradient(180deg, rgba(14, 12, 22, 0.97), rgba(8, 7, 13, 0.97));
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.75);
+  border-radius: 0;
+}
+
+.painel-caixa::before,
+.menu-caixa::before { display: none; }
+
+.painel-caixa header {
+  border-bottom: 0;
+  background: url('./assets/ui/paineis/barra-titulo.png') center / 100% 100% no-repeat;
+  padding: 14px 26px;
+  margin-bottom: 8px;
+}
+
+.painel-fechar {
+  background: url('./assets/ui/controlos/botao-simples.png') center / 100% 100% no-repeat;
+  border: 0;
+  box-shadow: none;
+}
+
+.painel-fechar:active { background-image: url('./assets/ui/controlos/botao-premido.png'); }
+
+/* Os slots do inventário usam a mesma peça, num tamanho maior. */
+.socket.slot-grande {
+  width: 60px;
+  height: 66px;
+}
+
+.slot-equip {
+  background: url('./assets/ui/slots/normal.png') center / 100% 100% no-repeat;
+  border: 0;
+  box-shadow: none;
+}
+
+/* ---------- Mensagens ---------- */
+
+.mensagem {
+  background: url('./assets/ui/avisos/info.png') center / 100% 100% no-repeat;
+  border: 0;
+  box-shadow: none;
+  padding: 11px 30px 13px 62px;
+  min-width: 240px;
+}
+
+.mensagem-marca { display: none; }
+.mensagem.bom { background-image: url('./assets/ui/avisos/ok.png'); }
+.mensagem.aviso { background-image: url('./assets/ui/avisos/erro.png'); }
+.mensagem.lore {
+  background-image: url('./assets/ui/hud/aviso.png');
+  padding: 13px 44px 15px;
+}
+
+/* ---------- Estados temporários ---------- */
+
+.buff {
+  background: center / contain no-repeat;
+  border: 0;
+  box-shadow: none;
+  width: 26px;
+  height: 26px;
+  font-size: 0;
+}
+
+.buff-velocidade { background-image: url('./assets/ui/buffs/velocidade.png'); }
+.buff-defesa { background-image: url('./assets/ui/buffs/defesa.png'); }
+.buff-dano { background-image: url('./assets/ui/buffs/dano.png'); }
+.buff-folego { background-image: url('./assets/ui/buffs/gelo.png'); }
+
+/* ---------- Estações de criação ---------- */
+
+/* Cada estação entra com o seu emblema por cima da moldura: ao abrir o painel
+   vê-se logo se é a bancada, a forja ou o fogão, sem ter de ler o título. */
+.painel[data-estacao]:not([data-estacao='']) .painel-caixa { margin-top: 46px; }
+
+.painel[data-estacao]:not([data-estacao='']) .painel-caixa::before {
+  display: block;
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -64px;
+  transform: translateX(-50%);
+  width: 86px;
+  height: 94px;
+  background: center / contain no-repeat;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.8));
+  pointer-events: none;
+}
+
+.painel[data-estacao='bancada'] .painel-caixa::before {
+  background-image: url('./assets/ui/estacoes/emblema-bancada.png');
+}
+
+.painel[data-estacao='fabricador'] .painel-caixa::before {
+  background-image: url('./assets/ui/estacoes/emblema-maquina.png');
+}
+
+.painel[data-estacao='capsula'] .painel-caixa::before {
+  background-image: url('./assets/ui/estacoes/emblema-cristal.png');
+}
+
+.painel[data-estacao='rele'] .painel-caixa::before {
+  background-image: url('./assets/ui/estacoes/emblema-nucleo.png');
+}
+
+/* A forja e a fundição levam o forno a sério — aceso e ao rubro. */
+.painel[data-estacao='forja'] .painel-caixa::before {
+  background-image: url('./assets/ui/estacoes/forno-aceso.png');
+  width: 112px;
+  height: 132px;
+  top: -92px;
+}
+
+.painel[data-estacao='fundicao'] .painel-caixa::before {
+  background-image: url('./assets/ui/estacoes/forno-maximo.png');
+  width: 112px;
+  height: 132px;
+  top: -92px;
+}
+
+.painel[data-estacao='fogao'] .painel-caixa::before {
+  background-image: url('./assets/ui/estacoes/caldeirao.png');
+  width: 116px;
+  height: 118px;
+  top: -84px;
+}
+
+/* ---------- Barra do guardião ---------- */
+
+.chefe-caixa {
+  background: url('./assets/ui/sistemas/faixa-chefe.png') center / 100% 100% no-repeat;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  width: 340px;
+  max-width: 54vw;
+  aspect-ratio: 512 / 229;
+  position: relative;
+}
+
+.chefe-topo {
+  position: absolute;
+  left: 9%;
+  right: 9%;
+  top: 40%;
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* A caveira fica ao centro da peça: o nome tem de acabar antes dela. */
+.chefe-nome {
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chefe-barra {
+  position: absolute;
+  left: 13%;
+  right: 13%;
+  top: 72%;
+  height: 8%;
+  border: 0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+/* ---------- Cabeçalho, abas e linhas de receita ---------- */
+
+/* Estas peças têm pontas desenhadas: esticadas a 100% a ponta cresce com a
+   caixa e fica ridícula. Com border-image só o meio estica — as pontas ficam
+   do tamanho que o desenho pede. */
+/* A peça tem um medalhão à esquerda e uma ponta à direita: entram como bordas,
+   e só a parte do meio é que estica. */
+.painel-caixa header {
+  background: none;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 9px 24px 9px 58px;
+  border-image: url('./assets/ui/paineis/linha.png') 16 50 16 90 fill / 9px 24px 9px 58px stretch;
+  padding: 0;
+  margin-bottom: 10px;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+}
+
+.abas button {
+  background: none;
+  border: 0;
+  border-width: 14px 30px;
+  border-style: solid;
+  border-color: transparent;
+  border-image: url('./assets/ui/controlos/principal.png') 30 62 fill / 14px 30px stretch;
+  color: var(--texto-suave);
+}
+
+.abas button.ativa {
+  border-image-source: url('./assets/ui/controlos/principal-activo.png');
+  color: var(--texto);
+  box-shadow: none;
+}
+
+.receita {
+  background: none;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 8px 22px 8px 56px;
+  border-image: url('./assets/ui/paineis/linha.png') 16 50 16 90 fill / 8px 22px 8px 56px stretch;
+  border-radius: 0;
+  padding: 2px 4px;
+}
+
+/* O ícone do item encaixa no medalhão que a peça já tem à esquerda. */
+.receita .icone {
+  margin-left: -46px;
+  margin-right: 8px;
+  width: 30px;
+  height: 30px;
+}
+
+.receita:not(.bloqueada):hover,
+.receita.escolhida {
+  border-image-source: url('./assets/ui/paineis/linha-ok.png');
+  filter: brightness(1.12);
+}
+
+.receita.bloqueada { filter: grayscale(0.4) brightness(0.8); }
+
+.painel-rodape {
+  border-top: 0;
+  background: url('./assets/ui/hud/separador.png') top center / 90% auto no-repeat;
+  padding-top: 14px;
+}
+
+/* ---------- Botões de menu ---------- */
+
+.botao {
+  background: none;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 14px 30px;
+  border-image: url('./assets/ui/controlos/principal.png') 30 62 fill / 14px 30px stretch;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--texto);
+}
+
+.botao.primario {
+  background: none;
+  box-shadow: none;
+  border-image-source: url('./assets/ui/controlos/principal-activo.png');
+  color: #eaf6ff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.botao.perigo {
+  background: none;
+  box-shadow: none;
+  border-image-source: url('./assets/ui/estacoes/botao-nao.png');
+  border-image-slice: 26 52 fill;
+}
+
+.botao:active { filter: brightness(1.15); transform: translateY(1px); }
+
+/* O glifo do botão sobe um pouco: em baixo ficava por cima da moldura. */
+.botao-redondo .glifo-img { margin-bottom: 11px; }
+.botao-atacar .glifo-img { margin-bottom: 14px; }
