@@ -9,6 +9,7 @@ export class Perf {
   fps = 60;
   msLogica = 0;
   msDesenho = 0;
+  msLuz = 0;
   /** Pior quadro dos últimos dois segundos. */
   msPior = 0;
 
@@ -16,6 +17,8 @@ export class Perf {
   private acumulado = 0;
   private logicaAcum = 0;
   private desenhoAcum = 0;
+  private luzAcum = 0;
+  private t1 = 0;
   private piorJanela = 0;
   private t0 = 0;
 
@@ -25,6 +28,14 @@ export class Perf {
 
   fimLogica(): void {
     this.logicaAcum += performance.now() - this.t0;
+  }
+
+  comecarLuz(): void {
+    this.t1 = performance.now();
+  }
+
+  fimLuz(): void {
+    this.luzAcum += performance.now() - this.t1;
   }
 
   comecarDesenho(): void {
@@ -44,11 +55,13 @@ export class Perf {
       this.fps = Math.round((this.quadros * 1000) / this.acumulado);
       this.msLogica = +(this.logicaAcum / this.quadros).toFixed(2);
       this.msDesenho = +(this.desenhoAcum / this.quadros).toFixed(2);
+      this.msLuz = +(this.luzAcum / this.quadros).toFixed(2);
       this.msPior = +this.piorJanela.toFixed(1);
       this.quadros = 0;
       this.acumulado = 0;
       this.logicaAcum = 0;
       this.desenhoAcum = 0;
+      this.luzAcum = 0;
       this.piorJanela = 0;
     }
   }

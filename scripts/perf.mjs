@@ -54,7 +54,7 @@ async function medir(modo) {
   await pagina.keyboard.up('KeyD');
   return pagina.evaluate((m) => {
     const p = window.nucleoPerdido.perf;
-    return { modo: m, msDesenho: p.msDesenho, msLogica: p.msLogica, fps: p.fps };
+    return { modo: m, msDesenho: p.msDesenho, msLuz: p.msLuz, msLogica: p.msLogica, fps: p.fps };
   }, modo);
 }
 
@@ -83,6 +83,7 @@ const r = await pagina.evaluate(() => {
     intervaloP95: +pct(0.95).toFixed(2),
     // Isto é o que realmente conta: quanto tempo o jogo gasta por quadro.
     msLogica: perf.msLogica,
+    msLuz: perf.msLuz,
     msDesenho: perf.msDesenho,
     msTrabalho: +(perf.msLogica + perf.msDesenho).toFixed(2),
     qualidade: j ? j.renderer?.qualidade : null,

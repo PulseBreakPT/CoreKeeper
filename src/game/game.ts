@@ -4,6 +4,7 @@
  */
 
 import { audio } from '../core/audio';
+import { perf } from '../core/perf';
 import type { Input } from '../core/input';
 import { randomSeed } from '../core/rng';
 import { loadRaw, saveRaw } from '../core/storage';
@@ -230,7 +231,10 @@ export class Game {
   }
 
   private calcularLuz(): void {
-    const area = this.renderer.camera.areaVisivel(2);
+    perf.comecarLuz();
+    // Margem generosa: uma tocha fora do ecrã continua a iluminar a beira dele.
+    // Com margem curta, as luzes "nasciam" à medida que entravam na vista.
+    const area = this.renderer.camera.areaVisivel(7);
     const extras: FonteLuz[] = [];
     if (!this.player.morto) {
       extras.push({ x: this.player.x, y: this.player.y, intensidade: 0.85, cor: [1, 0.88, 0.74] });
@@ -241,6 +245,7 @@ export class Game {
     }
     this.lighting.ambiente = BIOMAS[this.biomaAtual]?.ambiente ?? 0.1;
     this.lighting.calcular(this.world, area.x0, area.y0, area.x1 - area.x0 + 1, area.y1 - area.y0 + 1, extras);
+    perf.fimLuz();
   }
 
   desenhar(dtMs: number): void {

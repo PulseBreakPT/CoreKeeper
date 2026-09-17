@@ -47,6 +47,11 @@ export interface BlockDef {
   estacao?: StationKind;
   /** Blocos altos: recebem auto-tiling e projectam sombra. */
   parede?: boolean;
+  /**
+   * Tem animação própria (chama, arco eléctrico, núcleo a pulsar). Só estes
+   * trocam de sprite ao longo do tempo — um veio de minério fica quieto.
+   */
+  anima?: boolean;
   invulneravel?: boolean;
   /** Descrição que aparece ao mineirar pela primeira vez. */
   lore?: string;
@@ -308,19 +313,19 @@ export const BLOCKS: BlockDef[] = [
   // --- Construções ---
   {
     id: 43, nome: 'Tocha', sprite: 'b_torch', paleta: ORGANICO.emberroot, solido: false, minavel: true,
-    nivel: 1, dureza: 3, drops: [{ item: 'torch', min: 1, max: 1 }], luz: 1, corLuz: AMBAR,
+    nivel: 1, dureza: 3, drops: [{ item: 'torch', min: 1, max: 1 }], anima: true, luz: 1, corLuz: AMBAR,
   },
   {
     id: 44, nome: 'Lâmpada de Glowmoss', sprite: 'b_glowlamp', paleta: ROCHA.lumibark, solido: false, minavel: true,
-    nivel: 1, dureza: 8, drops: [{ item: 'glowlamp', min: 1, max: 1 }], luz: 1.15, corLuz: VERDE,
+    nivel: 1, dureza: 8, drops: [{ item: 'glowlamp', min: 1, max: 1 }], anima: true, luz: 1.15, corLuz: VERDE,
   },
   {
     id: 45, nome: 'Lâmpada de Stormglass', sprite: 'b_stormlamp', paleta: MINERAL.stormglass, solido: false, minavel: true,
-    nivel: 1, dureza: 10, drops: [{ item: 'stormlamp', min: 1, max: 1 }], luz: 1.3, corLuz: VIOLETA,
+    nivel: 1, dureza: 10, drops: [{ item: 'stormlamp', min: 1, max: 1 }], anima: true, luz: 1.3, corLuz: VIOLETA,
   },
   {
     id: 46, nome: 'Farol Estelar', sprite: 'b_starbeacon', paleta: MINERAL.starshard, solido: false, minavel: true,
-    nivel: 1, dureza: 14, drops: [{ item: 'starbeacon', min: 1, max: 1 }], luz: 1.6, corLuz: OURO,
+    nivel: 1, dureza: 14, drops: [{ item: 'starbeacon', min: 1, max: 1 }], anima: true, luz: 1.6, corLuz: OURO,
   },
   {
     id: 47, nome: 'Bancada', sprite: 'b_workbench', paleta: ROCHA.raiz, solido: true, minavel: true,
@@ -328,19 +333,19 @@ export const BLOCKS: BlockDef[] = [
   },
   {
     id: 48, nome: 'Forja', sprite: 'b_forge', paleta: ROCHA.forgebrick, solido: true, minavel: true,
-    nivel: 1, dureza: 28, drops: [{ item: 'forge', min: 1, max: 1 }], estacao: 'forja', luz: 0.8, corLuz: AMBAR,
+    nivel: 1, dureza: 28, drops: [{ item: 'forge', min: 1, max: 1 }], estacao: 'forja', anima: true, luz: 0.8, corLuz: AMBAR,
   },
   {
     id: 49, nome: 'Fundição de Arco', sprite: 'b_foundry', paleta: ROCHA.maquina, solido: true, minavel: true,
-    nivel: 1, dureza: 30, drops: [{ item: 'foundry', min: 1, max: 1 }], estacao: 'fundicao', luz: 0.45, corLuz: VIOLETA,
+    nivel: 1, dureza: 30, drops: [{ item: 'foundry', min: 1, max: 1 }], estacao: 'fundicao', anima: true, luz: 0.45, corLuz: VIOLETA,
   },
   {
     id: 50, nome: 'Lareira de cozinha', sprite: 'b_hearth', paleta: ROCHA.slate, solido: true, minavel: true,
-    nivel: 1, dureza: 22, drops: [{ item: 'hearth', min: 1, max: 1 }], estacao: 'fogao', luz: 0.6, corLuz: AMBAR,
+    nivel: 1, dureza: 22, drops: [{ item: 'hearth', min: 1, max: 1 }], estacao: 'fogao', anima: true, luz: 0.6, corLuz: AMBAR,
   },
   {
     id: 51, nome: 'Fabricador Kael', sprite: 'b_fabricator', paleta: ROCHA.kael, solido: true, minavel: true,
-    nivel: 1, dureza: 38, drops: [{ item: 'fabricator', min: 1, max: 1 }], estacao: 'fabricador', luz: 0.7, corLuz: CIANO,
+    nivel: 1, dureza: 38, drops: [{ item: 'fabricator', min: 1, max: 1 }], estacao: 'fabricador', anima: true, luz: 0.7, corLuz: CIANO,
   },
   {
     id: 52, nome: 'Cápsula de Portador', sprite: 'b_cot', paleta: ROCHA.maquina, solido: false, minavel: true,
@@ -348,12 +353,12 @@ export const BLOCKS: BlockDef[] = [
   },
   {
     id: 53, nome: 'Relé dos Architects', sprite: 'b_relay', paleta: MINERAL.starshard, solido: true, minavel: false,
-    nivel: 9, dureza: 99999, drops: [], estacao: 'rele', luz: 1.2, corLuz: OURO, invulneravel: true,
+    nivel: 9, dureza: 99999, drops: [], estacao: 'rele', anima: true, luz: 1.2, corLuz: OURO, invulneravel: true,
     lore: 'Portador identificado.',
   },
   {
     id: 54, nome: 'Pilar do Relé', sprite: 'b_relaypillar', paleta: ROCHA.nulo, solido: true, minavel: false,
-    nivel: 9, dureza: 99999, drops: [], parede: true, luz: 0.35, corLuz: OURO, invulneravel: true,
+    nivel: 9, dureza: 99999, drops: [], parede: true, anima: true, luz: 0.35, corLuz: OURO, invulneravel: true,
   },
   parede(55, 'Parede de Lumibark', 'b_plankwall', ROCHA.lumibark, 1, 22, [{ item: 'plankwall', min: 1, max: 1 }], {
     luz: 0.1, corLuz: VERDE,

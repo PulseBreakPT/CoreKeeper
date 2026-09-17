@@ -13,7 +13,7 @@ import type { Player } from '../entities/player';
 import { itemDef } from '../game/items';
 import type { Particula, Projetil, Queda, TextoFlutuante } from '../game/tipos';
 import type { Lighting } from '../world/lighting';
-import { blockDef, groundDef } from '../world/tiles';
+import { blockDef, groundDef, type BlockDef } from '../world/tiles';
 import type { InfoBioma } from '../world/worldgen';
 import type { World } from '../world/world';
 import { arestaParede, oclusaoChao, E, N, NE, NO, O, S, SE, SO } from './autotile';
@@ -83,9 +83,19 @@ export class Renderer {
   private mundoVersao = -1;
   private mundoAnim = -1;
   private mundoZoom = -1;
+  /** Blocos com animação própria: ficam fora do buffer e desenham-se a cada quadro. */
+  private animados: { x: number; y: number; def: BlockDef }[] = [];
+  /**
+   * Fontes de luz visíveis, recolhidas quando o terreno é repintado. Percorrer
+   * o mundo todo a cada quadro só para encontrar tochas era desperdício.
+   */
+  private fontes: { x: number; y: number; luz: number; cor: string; tremula: boolean }[] = [];
   private emissivoBorrado = document.createElement('canvas');
   private grao = document.createElement('canvas');
   private padraoGrao: CanvasPattern | null = null;
+  /** Deslocamento fixo do grão: animá-lo a cada quadro fazia o ecrã cintilar. */
+  private graoX = 0;
+  private graoY = 0;
   private vinheta = document.createElement('canvas');
   private sombraParede = document.createElement('canvas');
   private pontoLuz = document.createElement('canvas');
@@ -100,6 +110,8 @@ export class Renderer {
   modoQualidade: 'auto' | 'alta' | 'media' | 'baixa' = 'auto';
   private mediaMs = 8;
   private trocaQualidade = 0;
+  /** Cada subida falhada torna a próxima tentativa mais lenta a chegar. */
+  private tentativasSubida = 0;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -134,6 +146,8 @@ export class Renderer {
     }
     c.putImageData(img, 0, 0);
     this.padraoGrao = c.createPattern(this.grao, 'repeat');
+    this.graoX = -Math.floor(Math.random() * 128);
+    this.graoY = -Math.floor(Math.random() * 128);
   }
 
   /** Faixa de sombra projectada pelas paredes, desenhada uma única vez. */
@@ -235,12 +249,28 @@ export class Renderer {
       return;
     }
     const agora = performance.now();
-    if (agora - this.trocaQualidade < 1200) return;
+    const desde = agora - this.trocaQualidade;
     const antes = this.qualidade;
-    if (this.mediaMs > 11 && this.qualidade === 'alta') this.qualidade = 'media';
-    else if (this.mediaMs > 13 && this.qualidade === 'media') this.qualidade = 'baixa';
-    else if (this.mediaMs < 6 && this.qualidade === 'media') this.qualidade = 'alta';
-    else if (this.mediaMs < 8 && this.qualidade === 'baixa') this.qualidade = 'media';
+
+    // Descer é imediato: mais vale perder nitidez do que engasgar.
+    if (desde > 1200) {
+      if (this.mediaMs > 11 && this.qualidade === 'alta') {
+        this.qualidade = 'media';
+        this.tentativasSubida++;
+      } else if (this.mediaMs > 13 && this.qualidade === 'media') {
+        this.qualidade = 'baixa';
+        this.tentativasSubida++;
+      }
+    }
+
+    // Subir exige folga confortável e espera cada vez maior, para a imagem
+    // não ficar a pulsar entre duas resoluções.
+    const esperaSubida = 5000 * Math.min(8, this.tentativasSubida + 1);
+    if (antes === this.qualidade && desde > esperaSubida) {
+      if (this.mediaMs < 5 && this.qualidade === 'media') this.qualidade = 'alta';
+      else if (this.mediaMs < 6 && this.qualidade === 'baixa') this.qualidade = 'media';
+    }
+
     if (antes !== this.qualidade) {
       this.trocaQualidade = agora;
       this.redimensionar();
@@ -269,6 +299,28 @@ export class Renderer {
       this.mundoCols * z,
       this.mundoLinhas * z,
     );
+
+    // Blocos com animação própria, por cima do terreno memorizado.
+    if (this.animados.length > 0) {
+      const quadro = Math.floor(cena.tempo * 6) & 3;
+      const altura = Math.round(z * 0.17);
+      for (const a of this.animados) {
+        const img = spriteDe(a.def, a.def.sprite, quadro, a.def.paleta);
+        const sx = Math.floor(cam.paraEcraX(a.x));
+        const sy = Math.floor(cam.paraEcraY(a.y));
+        const sobe = a.def.parede ? altura : 0;
+        if (a.def.parede && !cena.world.solido(a.x, a.y + 1)) {
+          c.drawImage(img, 0, 22, 32, 10, sx, sy + z - altura, z + 1, altura + 1);
+          c.fillStyle = 'rgba(0,0,0,0.42)';
+          c.fillRect(sx, sy + z - altura, z + 1, altura + 1);
+        }
+        c.drawImage(img, sx, sy - sobe, z + 1, z + 1);
+        if (a.def.parede) {
+          const m = this.mascaraParede(cena.world, a.x, a.y);
+          if (m) c.drawImage(arestaParede(m, a.def.paleta), sx, sy - sobe, z + 1, z + 1);
+        }
+      }
+    }
 
     // Fendas de mineração ficam de fora do buffer: mudam a cada golpe.
     if (cena.alvo) {
@@ -381,15 +433,14 @@ export class Renderer {
     const z = cam.zoom;
     const origemX = Math.floor(cam.x - cam.larguraPx / 2 / z) - 1;
     const origemY = Math.floor(cam.y - cam.alturaPx / 2 / z) - 1;
-    const anim = Math.floor(cena.tempo * 5) & 3;
-    const animLuz = Math.floor(cena.tempo * 6) & 3;
-    const chaveAnim = anim * 4 + animLuz;
+    // Só a animação dos líquidos obriga a repintar o terreno, e a 3 Hz.
+    const anim = Math.floor(cena.tempo * 3) & 3;
 
     if (
       origemX === this.mundoOrigemX &&
       origemY === this.mundoOrigemY &&
       this.mundoVersao === cena.world.versao &&
-      this.mundoAnim === chaveAnim &&
+      this.mundoAnim === anim &&
       this.mundoZoom === z
     ) {
       return;
@@ -398,12 +449,13 @@ export class Renderer {
     this.mundoOrigemX = origemX;
     this.mundoOrigemY = origemY;
     this.mundoVersao = cena.world.versao;
-    this.mundoAnim = chaveAnim;
+    this.mundoAnim = anim;
     this.mundoZoom = z;
 
     const c = this.mundoCtx;
     const world = cena.world;
     const seed = world.seed;
+    this.fontes.length = 0;
     c.setTransform(this.escalaPixel, 0, 0, this.escalaPixel, 0, 0);
     c.imageSmoothingEnabled = false;
     c.clearRect(0, 0, this.mundoCols * z, this.mundoLinhas * z);
@@ -418,6 +470,10 @@ export class Renderer {
         const sx = lx * z;
         const sy = ly * z;
         c.drawImage(spriteDe(g, g.sprite, g.anima ? (v + anim) & 3 : v, g.paleta), sx, sy, z + 1, z + 1);
+        if (g.luz && g.luz > 0.2) {
+          const [r, gg, b] = g.corLuz ?? [1, 0.85, 0.6];
+          this.fontes.push({ x, y, luz: g.luz, cor: corLuz(r, gg, b), tremula: true });
+        }
         if (world.solido(x, y)) continue;
         const ao = oclusaoChao(this.mascara(world, x, y));
         if (ao) c.drawImage(ao, sx, sy, z + 1, z + 1);
@@ -437,6 +493,7 @@ export class Renderer {
 
     // Rocha e objectos, erguidos para mostrarem a face frontal.
     const altura = Math.round(z * 0.17);
+    this.animados.length = 0;
     for (let ly = 0; ly < this.mundoLinhas; ly++) {
       for (let lx = 0; lx < this.mundoCols; lx++) {
         const x = origemX + lx;
@@ -444,10 +501,20 @@ export class Renderer {
         const id = world.bloco(x, y);
         if (id === 0) continue;
         const def = blockDef(id);
+        if (def.luz && def.luz > 0.2) {
+          const [r, gg, b] = def.corLuz ?? [1, 0.85, 0.6];
+          // Só as chamas tremem; um veio de minério brilha parado.
+          this.fontes.push({ x, y, luz: def.luz, cor: corLuz(r, gg, b), tremula: def.anima === true });
+        }
+        if (def.anima) {
+          // Tochas, forjas e o Relé desenham-se por cima, a cada quadro.
+          this.animados.push({ x, y, def });
+          continue;
+        }
         const v = hash2d(x, y, seed + 9) & 3;
         const sx = lx * z;
         const sy = ly * z;
-        const img = spriteDe(def, def.sprite, def.luz ? (v + animLuz) & 3 : v, def.paleta);
+        const img = spriteDe(def, def.sprite, v, def.paleta);
         const sobe = def.parede ? altura : 0;
 
         if (def.parede && !world.solido(x, y + 1)) {
@@ -604,25 +671,10 @@ export class Renderer {
       c.drawImage(brilhoRedondo(cor), x - raio, y - raio, raio * 2, raio * 2);
     };
 
-    const area = cam.areaVisivel(1);
     const z = cam.zoom;
-    for (let y = area.y0; y <= area.y1; y++) {
-      for (let x = area.x0; x <= area.x1; x++) {
-        const def = blockDef(cena.world.bloco(x, y));
-        const g = groundDef(cena.world.chao(x, y));
-        const luz = Math.max(def.luz ?? 0, g.luz ?? 0);
-        if (luz < 0.2) continue;
-        const cor = def.luz ? def.corLuz : g.corLuz;
-        const [r, gg, b] = cor ?? [1, 0.85, 0.6];
-        const tremor = 0.85 + Math.sin(cena.tempo * 7 + x * 3.7 + y * 2.3) * 0.15;
-        halo(
-          cam.paraEcraX(x + 0.5),
-          cam.paraEcraY(y + 0.5),
-          z * (1 + luz * 2.4),
-          corLuz(r, gg, b),
-          luz * 0.5 * tremor,
-        );
-      }
+    for (const f of this.fontes) {
+      const tremor = f.tremula ? 0.82 + Math.sin(cena.tempo * 7 + f.x * 3.7 + f.y * 2.3) * 0.18 : 1;
+      halo(cam.paraEcraX(f.x + 0.5), cam.paraEcraY(f.y + 0.5), z * (1 + f.luz * 2.4), f.cor, f.luz * 0.5 * tremor);
     }
     for (const pr of cena.projeteis) {
       halo(cam.paraEcraX(pr.x), cam.paraEcraY(pr.y), z * 1.1, pr.cor, 0.7);
@@ -670,11 +722,12 @@ export class Renderer {
     // Vinheta (imagem pronta).
     c.drawImage(this.vinheta, 0, 0);
 
-    // Grão de filme: o padrão é criado uma vez e só se desloca.
+    // Grão de filme, parado. É textura de lente, não ruído de televisão:
+    // re-sortear o deslocamento a cada quadro punha o ecrã inteiro a cintilar.
     if (this.qualidade === 'alta' && this.padraoGrao) {
       c.save();
-      c.globalAlpha = 0.45;
-      c.translate(-Math.floor(Math.random() * 128), -Math.floor(Math.random() * 128));
+      c.globalAlpha = 0.3;
+      c.translate(this.graoX, this.graoY);
       c.fillStyle = this.padraoGrao;
       c.fillRect(0, 0, pw + 128, ph + 128);
       c.restore();
