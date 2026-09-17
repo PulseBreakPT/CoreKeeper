@@ -1,0 +1,28 @@
+{
+  "name": "the-hollow-star",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "The Hollow Star — exploração e sobrevivência subterrânea, para telemóvel.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "fumo": "node scripts/fumo.mjs",
+    "perf": "node scripts/perf.mjs",
+    "sprites": "node scripts/folha-sprites.mjs",
+    "icones": "node scripts/gerar-icones.mjs",
+    "apk": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^6.2.2",
+    "@capacitor/cli": "^6.2.2",
+    "@capacitor/core": "^6.2.2",
+    "playwright": "^1.63.0",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "vitest": "^2.1.4"
+  }
+}

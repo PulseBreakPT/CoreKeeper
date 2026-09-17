@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">The Hollow Star</string>
+    <string name="title_activity_main">The Hollow Star</string>
+    <string name="package_name">pt.pulsebreak.hollowstar</string>
+    <string name="custom_url_scheme">pt.pulsebreak.hollowstar</string>
+</resources>

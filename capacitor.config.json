@@ -1,0 +1,12 @@
+{
+  "appId": "pt.pulsebreak.hollowstar",
+  "appName": "The Hollow Star",
+  "webDir": "dist",
+  "android": {
+    "backgroundColor": "#06050A",
+    "allowMixedContent": false
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

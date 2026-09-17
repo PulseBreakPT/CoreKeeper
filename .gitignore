@@ -1,0 +1,23 @@
+node_modules/
+dist/
+dist-ssr/
+.DS_Store
+*.local
+.vite/
+coverage/
+
+# Saídas de testes visuais e de desempenho
+.fumo/
+
+# Artefactos de compilação Android
+android/.gradle/
+android/build/
+android/app/build/
+android/capacitor-cordova-android-plugins/build/
+android/local.properties
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+*.apk
+*.aab
+*.keystore
