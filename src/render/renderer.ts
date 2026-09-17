@@ -67,8 +67,10 @@ export class Renderer {
   readonly camera = new Camera();
   private ctx: CanvasRenderingContext2D;
 
-  private cena = document.createElement('canvas');
-  private cenaCtx: CanvasRenderingContext2D;
+  /**
+   * Não há canvas intermédio: copiar a cena para o ecrã custava uma passagem
+   * por todos os píxeis sem nada em troca.
+   */
   private emissivo = document.createElement('canvas');
   private emissivoCtx: CanvasRenderingContext2D;
   private luzCanvas = document.createElement('canvas');
@@ -96,7 +98,8 @@ export class Renderer {
   /** Deslocamento fixo do grão: animá-lo a cada quadro fazia o ecrã cintilar. */
   private graoX = 0;
   private graoY = 0;
-  private vinheta = document.createElement('canvas');
+  /** Força da vinheta. É aplicada dentro do mapa de luz, não por cima do ecrã. */
+  private forcaVinheta = 0.6;
   private sombraParede = document.createElement('canvas');
   private pontoLuz = document.createElement('canvas');
   private luzImg: ImageData | null = null;
@@ -105,10 +108,12 @@ export class Renderer {
   private escalaPixel = 1;
   private motes: Mote[] = [];
   /** Qualidade dos efeitos: desce sozinha se o telemóvel não aguentar. */
-  qualidade: 'alta' | 'media' | 'baixa' = 'alta';
+  // Começa em média: num telemóvel, os primeiros segundos em alta davam uma
+  // péssima primeira impressão antes de o ajuste automático reagir.
+  qualidade: 'alta' | 'media' | 'baixa' = 'media';
   /** 'auto' deixa o jogo decidir; os outros valores fixam a qualidade. */
   modoQualidade: 'auto' | 'alta' | 'media' | 'baixa' = 'auto';
-  private mediaMs = 8;
+  private mediaMs = 16.7;
   private trocaQualidade = 0;
   /** Cada subida falhada torna a próxima tentativa mais lenta a chegar. */
   private tentativasSubida = 0;
@@ -118,7 +123,6 @@ export class Renderer {
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw new Error('Canvas 2D indisponível neste dispositivo.');
     this.ctx = ctx;
-    this.cenaCtx = this.cena.getContext('2d', { alpha: false })!;
     this.mundoCtx = this.mundo.getContext('2d')!;
     this.emissivoCtx = this.emissivo.getContext('2d')!;
     this.luzCtx = this.luzCanvas.getContext('2d', { willReadFrequently: true })!;
@@ -176,43 +180,28 @@ export class Renderer {
     c.fillRect(0, 0, t, t);
   }
 
-  /** Vinheta pré-desenhada: pintá-la por gradiente a cada quadro era desperdício. */
-  private gerarVinheta(pw: number, ph: number): void {
-    this.vinheta.width = pw;
-    this.vinheta.height = ph;
-    const c = this.vinheta.getContext('2d')!;
-    const g = c.createRadialGradient(
-      pw / 2, ph / 2, Math.min(pw, ph) * 0.35,
-      pw / 2, ph / 2, Math.max(pw, ph) * 0.72,
-    );
-    g.addColorStop(0, 'rgba(0,0,0,0)');
-    g.addColorStop(1, 'rgba(0,0,0,0.62)');
-    c.fillStyle = g;
-    c.fillRect(0, 0, pw, ph);
-  }
-
-  /** Resolução de desenho por nível de qualidade. */
+  /**
+   * Píxeis de desenho por píxel de CSS. Isto não segue o DPR do aparelho de
+   * propósito: num telemóvel 1080p, desenhar a 2x é quatro vezes mais trabalho
+   * para arte feita de quadrados. O que manda aqui é a taxa de preenchimento.
+   */
   private escalaQualidade(): number {
-    return this.qualidade === 'alta' ? 1 : this.qualidade === 'media' ? 0.82 : 0.66;
+    return this.qualidade === 'alta' ? 1.3 : this.qualidade === 'media' ? 1 : 0.72;
   }
 
   redimensionar(): void {
-    // 1.75x chega e sobra para pixel art; 2x só queima taxa de preenchimento.
-    this.dpr = Math.min(1.75, window.devicePixelRatio || 1);
-    this.escalaPixel = this.dpr * this.escalaQualidade();
+    this.dpr = Math.min(2, window.devicePixelRatio || 1);
+    this.escalaPixel = Math.min(this.dpr, this.escalaQualidade());
     const w = this.canvas.clientWidth || window.innerWidth;
     const h = this.canvas.clientHeight || window.innerHeight;
     const pw = Math.max(1, Math.round(w * this.escalaPixel));
     const ph = Math.max(1, Math.round(h * this.escalaPixel));
     this.canvas.width = pw;
     this.canvas.height = ph;
-    this.cena.width = pw;
-    this.cena.height = ph;
-    this.emissivo.width = Math.max(1, Math.round(pw / 3));
-    this.emissivo.height = Math.max(1, Math.round(ph / 3));
+    this.emissivo.width = Math.max(1, Math.round(pw / 4));
+    this.emissivo.height = Math.max(1, Math.round(ph / 4));
     this.emissivoBorrado.width = this.emissivo.width;
     this.emissivoBorrado.height = this.emissivo.height;
-    this.gerarVinheta(pw, ph);
     this.camera.redimensionar(w, h);
 
     const z = this.camera.zoom;
@@ -223,24 +212,24 @@ export class Renderer {
     this.mundoOrigemX = Number.NaN;
   }
 
-  desenhar(cena: Cena, _dtMs = 16): void {
-    const inicio = performance.now();
+  desenhar(cena: Cena, dtMs = 16): void {
     this.desenharCena(cena);
     this.aplicarLuz(cena.lighting, cena.bioma.grading);
     if (this.qualidade !== 'baixa') this.desenharEmissivo(cena);
     this.composicaoFinal(cena);
-    // A decisão de qualidade usa o tempo de desenho, não o intervalo entre
-    // quadros: com v-sync, o intervalo é sempre 16.7 ms e não diz nada.
-    this.ajustarQualidade(performance.now() - inicio);
+    this.ajustarQualidade(dtMs);
   }
 
   /**
-   * Baixa a qualidade (e a resolução) quando o desenho passa a demorar demasiado
-   * do orçamento de 16.7 ms, e volta a subir quando houver folga. Nunca troca
-   * mais de uma vez por segundo, para não ficar a oscilar.
+   * Ajusta resolução e efeitos pelo intervalo real entre quadros.
+   *
+   * Cronometrar o meu próprio código não chega: grande parte do custo está na
+   * composição do canvas pelo browser, que acontece depois de eu largar o
+   * controlo e não aparece em nenhum `performance.now()` meu. O que o jogador
+   * sente são os quadros por segundo, e é isso que se mede aqui.
    */
-  private ajustarQualidade(msDesenho: number): void {
-    this.mediaMs = this.mediaMs * 0.9 + Math.min(100, msDesenho) * 0.1;
+  private ajustarQualidade(dtMs: number): void {
+    this.mediaMs = this.mediaMs * 0.92 + Math.min(200, dtMs) * 0.08;
     if (this.modoQualidade !== 'auto') {
       if (this.qualidade !== this.modoQualidade) {
         this.qualidade = this.modoQualidade;
@@ -252,23 +241,24 @@ export class Renderer {
     const desde = agora - this.trocaQualidade;
     const antes = this.qualidade;
 
-    // Descer é imediato: mais vale perder nitidez do que engasgar.
-    if (desde > 1200) {
-      if (this.mediaMs > 11 && this.qualidade === 'alta') {
+    // Abaixo de ~38 quadros por segundo desce já: mais vale perder nitidez do
+    // que jogar aos solavancos.
+    if (desde > 1500) {
+      if (this.mediaMs > 26 && this.qualidade === 'alta') {
         this.qualidade = 'media';
         this.tentativasSubida++;
-      } else if (this.mediaMs > 13 && this.qualidade === 'media') {
+      } else if (this.mediaMs > 30 && this.qualidade === 'media') {
         this.qualidade = 'baixa';
         this.tentativasSubida++;
       }
     }
 
-    // Subir exige folga confortável e espera cada vez maior, para a imagem
-    // não ficar a pulsar entre duas resoluções.
-    const esperaSubida = 5000 * Math.min(8, this.tentativasSubida + 1);
-    if (antes === this.qualidade && desde > esperaSubida) {
-      if (this.mediaMs < 5 && this.qualidade === 'media') this.qualidade = 'alta';
-      else if (this.mediaMs < 6 && this.qualidade === 'baixa') this.qualidade = 'media';
+    // Subir só com o ecrã praticamente cheio de quadros e depois de uma espera
+    // que cresce a cada tentativa falhada, para a imagem não pulsar.
+    const esperaSubida = 6000 * Math.min(8, this.tentativasSubida + 1);
+    if (antes === this.qualidade && desde > esperaSubida && this.mediaMs < 17.6) {
+      if (this.qualidade === 'baixa') this.qualidade = 'media';
+      else if (this.qualidade === 'media') this.qualidade = 'alta';
     }
 
     if (antes !== this.qualidade) {
@@ -280,9 +270,11 @@ export class Renderer {
   // --- 1. Cena ---------------------------------------------------------------
 
   private desenharCena(cena: Cena): void {
-    const c = this.cenaCtx;
+    const c = this.ctx;
     const cam = this.camera;
     c.setTransform(this.escalaPixel, 0, 0, this.escalaPixel, 0, 0);
+    c.globalCompositeOperation = 'source-over';
+    c.globalAlpha = 1;
     c.imageSmoothingEnabled = false;
     c.fillStyle = '#05040a';
     c.fillRect(0, 0, cam.larguraPx, cam.alturaPx);
@@ -633,6 +625,7 @@ export class Renderer {
   // --- 2. Luz ----------------------------------------------------------------
 
   private aplicarLuz(luz: Lighting, grading: [number, number, number]): void {
+    const cam = this.camera;
     const w = luz.w;
     const h = luz.h;
     if (w === 0 || h === 0) return;
@@ -642,11 +635,17 @@ export class Renderer {
       this.luzImg = this.luzCtx.createImageData(w, h);
     }
     if (!this.luzImg) return;
-    luz.escreverImagem(this.luzImg, grading);
+    // A vinheta entra aqui, numa imagem de umas centenas de píxeis, em vez de
+    // ser mais uma passagem por cima do ecrã inteiro.
+    luz.escreverImagem(this.luzImg, grading, {
+      centroX: cam.x - luz.x + 0.5,
+      centroY: cam.y - luz.y + 0.5,
+      raio: (Math.max(cam.larguraPx, cam.alturaPx) / cam.zoom) * 0.62,
+      forca: this.forcaVinheta,
+    });
     this.luzCtx.putImageData(this.luzImg, 0, 0);
 
-    const c = this.cenaCtx;
-    const cam = this.camera;
+    const c = this.ctx;
     c.save();
     c.globalCompositeOperation = 'multiply';
     c.imageSmoothingEnabled = true;
@@ -688,72 +687,52 @@ export class Renderer {
 
   // --- 4. Composição final ---------------------------------------------------
 
+  /**
+   * O que sobra depois da luz: brilho somado, grão opcional e os avisos de dano.
+   * Cada uma destas linhas passa por todos os píxeis do ecrã, por isso são
+   * poucas e quase todas condicionais.
+   */
   private composicaoFinal(cena: Cena): void {
     const c = this.ctx;
-    const cam = this.camera;
     c.setTransform(1, 0, 0, 1, 0, 0);
     c.globalCompositeOperation = 'source-over';
     c.globalAlpha = 1;
-    c.imageSmoothingEnabled = false;
-
-    c.drawImage(this.cena, 0, 0);
-
-    // Bloom: o desfoque é feito no buffer pequeno (1/3) e só depois ampliado.
-    // Aplicar o filtro já em tamanho de ecrã custava vários milissegundos.
-    if (this.qualidade !== 'baixa') {
-      const bc = this.emissivoBorrado.getContext('2d')!;
-      bc.setTransform(1, 0, 0, 1, 0, 0);
-      bc.clearRect(0, 0, this.emissivoBorrado.width, this.emissivoBorrado.height);
-      bc.filter = this.qualidade === 'alta' ? 'blur(3px)' : 'blur(2px)';
-      bc.drawImage(this.emissivo, 0, 0);
-      bc.filter = 'none';
-
-      c.save();
-      c.globalCompositeOperation = 'lighter';
-      c.imageSmoothingEnabled = true;
-      c.globalAlpha = 0.85;
-      c.drawImage(this.emissivoBorrado, 0, 0, this.canvas.width, this.canvas.height);
-      c.restore();
-    }
 
     const pw = this.canvas.width;
     const ph = this.canvas.height;
 
-    // Vinheta (imagem pronta).
-    c.drawImage(this.vinheta, 0, 0);
+    // Brilho: já vem desfocado pela própria ampliação do buffer pequeno.
+    if (this.qualidade !== 'baixa') {
+      c.save();
+      c.globalCompositeOperation = 'lighter';
+      c.imageSmoothingEnabled = true;
+      c.globalAlpha = 0.9;
+      c.drawImage(this.emissivo, 0, 0, pw, ph);
+      c.restore();
+    }
 
-    // Grão de filme, parado. É textura de lente, não ruído de televisão:
-    // re-sortear o deslocamento a cada quadro punha o ecrã inteiro a cintilar.
+    // Grão de filme: textura fixa, só no nível alto.
     if (this.qualidade === 'alta' && this.padraoGrao) {
       c.save();
-      c.globalAlpha = 0.3;
+      c.globalAlpha = 0.26;
       c.translate(this.graoX, this.graoY);
       c.fillStyle = this.padraoGrao;
       c.fillRect(0, 0, pw + 128, ph + 128);
       c.restore();
     }
 
-    // Flash de dor.
-    if (cena.dor > 0) {
-      const dg = c.createRadialGradient(pw / 2, ph / 2, Math.min(pw, ph) * 0.2, pw / 2, ph / 2, Math.max(pw, ph) * 0.7);
-      dg.addColorStop(0, 'rgba(180,20,20,0)');
-      dg.addColorStop(1, `rgba(190,25,25,${0.75 * cena.dor})`);
-      c.fillStyle = dg;
+    // Avisos de dano: só custam quando estás mesmo a levar porrada.
+    if (cena.dor > 0.01) {
+      c.fillStyle = `rgba(150,20,20,${(0.4 * cena.dor).toFixed(3)})`;
       c.fillRect(0, 0, pw, ph);
     }
-
-    // Vida baixa: pulsar vermelho nas bordas.
     const p = cena.player;
     const fraco = 1 - Math.min(1, p.vida / (p.vidaMax * 0.3));
-    if (fraco > 0 && !p.morto) {
-      const pulso = 0.35 + Math.sin(cena.tempo * 5) * 0.2;
-      const lg = c.createRadialGradient(pw / 2, ph / 2, Math.min(pw, ph) * 0.3, pw / 2, ph / 2, Math.max(pw, ph) * 0.7);
-      lg.addColorStop(0, 'rgba(120,0,0,0)');
-      lg.addColorStop(1, `rgba(150,10,10,${fraco * pulso})`);
-      c.fillStyle = lg;
+    if (fraco > 0.01 && !p.morto) {
+      const pulso = 0.22 + Math.sin(cena.tempo * 5) * 0.12;
+      c.fillStyle = `rgba(140,10,10,${(fraco * pulso).toFixed(3)})`;
       c.fillRect(0, 0, pw, ph);
     }
-
-    void cam;
   }
+
 }

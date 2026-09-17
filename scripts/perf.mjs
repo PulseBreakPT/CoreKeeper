@@ -24,7 +24,14 @@ const navegador = await chromium.launch({
   executablePath,
   args: ['--disable-gpu', '--disable-software-rasterizer'],
 });
-const pagina = await navegador.newPage({ viewport: { width: 414, height: 896 }, deviceScaleFactor: 2 });
+// Horizontal, como o jogo se joga, e com a densidade típica de um telemóvel.
+const pagina = await navegador.newPage({ viewport: { width: 873, height: 393 }, deviceScaleFactor: 2.75 });
+
+// Trava o CPU para imitar um telemóvel médio: sem isto, medir num portátil
+// dá números que não têm nada a ver com o aparelho de quem joga.
+const travao = Number(process.env.TRAVAO_CPU ?? 4);
+const cdp = await pagina.context().newCDPSession(pagina);
+await cdp.send('Emulation.setCPUThrottlingRate', { rate: travao });
 
 await pagina.goto('http://localhost:5196/', { waitUntil: 'networkidle' });
 await pagina.fill('#seed', 'tiago');
@@ -54,7 +61,7 @@ async function medir(modo) {
   await pagina.keyboard.up('KeyD');
   return pagina.evaluate((m) => {
     const p = window.nucleoPerdido.perf;
-    return { modo: m, msDesenho: p.msDesenho, msLuz: p.msLuz, msLogica: p.msLogica, fps: p.fps };
+    return { modo: m, msDesenho: p.msDesenho, msLuz: p.msLuz, fps: p.fps };
   }, modo);
 }
 
@@ -92,6 +99,6 @@ const r = await pagina.evaluate(() => {
   };
 });
 
-console.log(JSON.stringify({ ...r, porNivel }, null, 2));
+console.log(JSON.stringify({ travaoCPU: travao, ...r, porNivel }, null, 2));
 await navegador.close();
 await servidor.close();

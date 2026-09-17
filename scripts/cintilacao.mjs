@@ -18,7 +18,7 @@ const exe = [
   '/opt/pw-browsers/chromium/chrome-linux/chrome',
 ].filter(Boolean).find(existsSync);
 const navegador = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });
-const pagina = await navegador.newPage({ viewport: { width: 414, height: 896 }, deviceScaleFactor: 2 });
+const pagina = await navegador.newPage({ viewport: { width: 873, height: 393 }, deviceScaleFactor: 2 });
 
 await pagina.goto('http://localhost:5195/', { waitUntil: 'networkidle' });
 await pagina.fill('#seed', 'tiago');

@@ -32,8 +32,11 @@ export class Menus {
     this.raiz.addEventListener('pointerdown', (e) => e.stopPropagation());
   }
 
-  private abrir(html: string, comFundo: boolean): void {
+  private abrir(html: string, comFundo: boolean, simples = false): void {
     this.caixa.innerHTML = html;
+    // `simples` marca os menus de uma coluna só (pausa), em vez de depender de
+    // selectores que WebViews mais antigos podem não suportar.
+    this.caixa.classList.toggle('menu-simples', simples);
     this.raiz.classList.remove('oculto');
     this.raiz.classList.toggle('com-fundo', comFundo);
     this.fundo.canvas.classList.toggle('oculto', !comFundo);
@@ -49,28 +52,38 @@ export class Menus {
   }
 
   mostrarInicial(temSave: boolean): void {
-    this.abrir(`
-      <h1 class="logo">Bearer 73<strong>The <em>Hollow</em> Star</strong></h1>
-      <p class="subtitulo">Acordaste numa câmara selada, sem memória, ao lado de uma estrutura negra que te reconheceu.
-      Não há saída para a superfície. Só há para baixo.</p>
-      ${temSave ? '<button class="botao primario" id="continuar">Continuar</button>' : ''}
-      <button class="botao ${temSave ? '' : 'primario'}" id="novo">Jogo novo</button>
-      <label class="campo">Semente (opcional)
-        <input id="seed" type="text" inputmode="text" placeholder="deixa vazio para aleatório" maxlength="24" />
-      </label>
-      <details class="ajuda">
-        <summary>Como se joga</summary>
-        <ul>
-          <li>Arrasta na metade esquerda do ecrã para andares.</li>
-          <li>MINAR ataca o bicho à tua frente, ou pica a rocha que estiveres a encarar.</li>
-          <li>POR coloca o que tens na mão. USAR abre estações e o Relé.</li>
-          <li>MOCH abre a mochila: toca num item para o escolher, toca outra vez para o usar.</li>
-          <li>Arranca Ironroot, faz uma Bancada com 8, e sobe de nível de ferramenta.</li>
-          <li>O Relé aponta-te o guardião mais próximo. Cada um guarda um fragmento.</li>
-        </ul>
-      </details>
-      <p class="rodape-menu">Teclado: WASD mover · Espaço atacar · F colocar · E usar · I mochila</p>
-      <p class="rodape-menu">"Everything buried was buried for a reason."</p>`, true);
+    // Duas colunas: a história à esquerda, o que se toca à direita. Num ecrã
+    // deitado é o que evita uma coluna comprida que não cabe em altura.
+    this.abrir(
+      `
+      <div class="menu-col menu-col-esq">
+        <h1 class="logo">Bearer 73<strong>The <em>Hollow</em> Star</strong></h1>
+        <p class="subtitulo">Acordaste numa câmara selada, sem memória, ao lado de uma estrutura negra
+        que te reconheceu. Não há saída para a superfície. Só há para baixo.</p>
+        <p class="rodape-menu">"Everything buried was buried for a reason."</p>
+      </div>
+
+      <div class="menu-col menu-col-dir">
+        ${temSave ? '<button class="botao primario" id="continuar">Continuar</button>' : ''}
+        <button class="botao ${temSave ? '' : 'primario'}" id="novo">Jogo novo</button>
+        <label class="campo">Semente (opcional)
+          <input id="seed" type="text" inputmode="text" placeholder="deixa vazio para aleatório" maxlength="24" />
+        </label>
+        <details class="ajuda">
+          <summary>Como se joga</summary>
+          <ul>
+            <li>Arrasta na metade esquerda do ecrã para andares.</li>
+            <li>MINAR ataca o bicho à tua frente, ou pica a rocha que estiveres a encarar.</li>
+            <li>POR coloca o que tens na mão. USAR abre estações e o Relé.</li>
+            <li>MOCH abre a mochila: toca num item para o escolher, toca outra vez para o usar.</li>
+            <li>Arranca Ironroot, faz uma Bancada com 8, e sobe de nível de ferramenta.</li>
+            <li>O Relé aponta-te o guardião mais próximo. Cada um guarda um fragmento.</li>
+          </ul>
+        </details>
+        <p class="rodape-menu">Teclado: WASD · Espaço atacar · F colocar · E usar · I mochila</p>
+      </div>`,
+      true,
+    );
 
     this.caixa.querySelector('#novo')?.addEventListener('click', () => {
       audio.garantir();
@@ -104,7 +117,7 @@ export class Menus {
       <button class="botao" id="guardar">Guardar agora</button>
       <button class="botao" id="som">${audio.ligado ? 'Som: ligado' : 'Som: desligado'}</button>
       <button class="botao" id="ecra">Ecrã inteiro</button>
-      <button class="botao perigo" id="abandonar">Voltar ao início</button>`, false);
+      <button class="botao perigo" id="abandonar">Voltar ao início</button>`, false, true);
 
     for (const b of this.caixa.querySelectorAll<HTMLButtonElement>('#qualidade button')) {
       b.addEventListener('click', () => {

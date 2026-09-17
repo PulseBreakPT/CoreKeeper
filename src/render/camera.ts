@@ -15,9 +15,10 @@ export class Camera {
   redimensionar(larguraPx: number, alturaPx: number): void {
     this.larguraPx = larguraPx;
     this.alturaPx = alturaPx;
-    // Num telemóvel queremos ver ~13 tiles na menor dimensão.
+    // Deitado, a altura é a dimensão curta e é ela que manda: cerca de dez
+    // tiles na vertical deixa as criaturas legíveis sem fechar o campo de visão.
     const menor = Math.min(larguraPx, alturaPx);
-    this.zoom = Math.max(28, Math.round(menor / 13));
+    this.zoom = Math.max(28, Math.min(64, Math.round(menor / 10.5 / 2) * 2));
   }
 
   seguir(alvoX: number, alvoY: number, dt: number, imediato = false): void {

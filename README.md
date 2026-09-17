@@ -75,6 +75,10 @@ e **Bearer Zero**. Cada fragmento que recuperas torna Veyra mais desperta.
 
 ## Como jogar
 
+O jogo é feito para **ecrã deitado**: é assim que vês a caverna à tua frente e
+alcanças os dois controlos com os polegares. No telemóvel de pé aparece um aviso
+para rodar; a versão Android arranca já deitada.
+
 | Acção | Telemóvel | Teclado |
 |-------|-----------|---------|
 | Andar | Arrastar na metade esquerda | WASD / setas |
@@ -143,9 +147,25 @@ O jogo mede-se a si próprio. O canto superior direito mostra sempre os FPS e o 
 gasto por quadro (lógica + desenho). A qualidade gráfica ajusta-se sozinha quando o
 desenho passa do orçamento, e pode ser fixada à mão no menu de pausa.
 
+Medido com o CPU travado (Chromium a 4x, 6x e 8x mais lento, em 873×393), que é
+o que se parece com um telemóvel a sério:
+
+| CPU travado | qualidade escolhida | FPS |
+|---|---|---|
+| 4x | média | 53 |
+| 6x | baixa | 50 |
+| 8x | baixa | 47 |
+
 Decisões que valeram a maior parte do ganho:
 - terreno pintado num buffer e reutilizado enquanto a vista não muda de tile;
 - chaves numéricas no acesso a chunks (as strings geravam lixo a cada tile);
 - halos, sombras, vinheta e grão pré-desenhados em vez de gradientes por quadro;
 - bloom desfocado no buffer pequeno antes de ser ampliado;
-- tonalidade do bioma aplicada dentro do mapa de luz, não numa passagem de ecrã inteiro.
+- tonalidade do bioma e vinheta aplicadas dentro do mapa de luz, não em passagens
+  por cima do ecrã inteiro;
+- sem canvas intermédio: a cena é desenhada directamente no canvas visível;
+- resolução de desenho medida em píxeis de CSS, não no DPR do aparelho — arte
+  feita de quadrados não ganha nada em ser desenhada a 2x, e perde metade dos FPS;
+- a qualidade automática decide pelos quadros por segundo reais, porque boa parte
+  do custo está na composição do canvas pelo browser e não aparece em nenhum
+  cronómetro dentro do jogo.

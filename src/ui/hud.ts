@@ -40,18 +40,21 @@ const SIGILO = `
   <circle cx="24" cy="24" r="3.4" fill="#fff6c2" class="sigilo-nucleo"/>
 </svg>`;
 
-function tubo(classe: string, rotulo: string): string {
+/**
+ * Barra de vidro. O nível é passado em `--nivel`, e é o CSS que decide se
+ * cresce ao alto (ecrã de pé) ou ao comprido (ecrã deitado).
+ */
+function barra(classe: string, rotulo: string): string {
   return `
-  <div class="tubo ${classe}">
-    <span class="tubo-rotulo">${rotulo}</span>
-    <div class="tubo-corpo">
-      <span class="tubo-fundo"></span>
-      <span class="tubo-liquido"></span>
-      <span class="tubo-brilho"></span>
-      <span class="tubo-marcas"></span>
-      <span class="tubo-vidro"></span>
+  <div class="barra ${classe}">
+    <span class="barra-rotulo">${rotulo}</span>
+    <div class="barra-corpo">
+      <span class="barra-liquido"></span>
+      <span class="barra-brilho"></span>
+      <span class="barra-marcas"></span>
+      <span class="barra-vidro"></span>
     </div>
-    <span class="tubo-valor"></span>
+    <span class="barra-valor"></span>
   </div>`;
 }
 
@@ -93,63 +96,72 @@ export class Hud {
     this.raiz = document.createElement('div');
     this.raiz.id = 'hud';
     this.raiz.innerHTML = `
-      <div class="hud-topo">
+      <div class="zona-topo">
         <div class="modulo modulo-vitais">
           <div class="modulo-placa"></div>
           ${SIGILO}
-          <div class="tubos">
-            ${tubo('tubo-vida', 'VITAL')}
-            ${tubo('tubo-fome', 'RESERVA')}
+          <div class="barras">
+            ${barra('barra-vida', 'VITAL')}
+            ${barra('barra-fome', 'RESERVA')}
+            <div class="buffs"></div>
           </div>
-          <div class="buffs"></div>
         </div>
 
-        <div class="modulo modulo-leitura">
-          <div class="modulo-placa"></div>
-          <div class="leitura-camada"></div>
-          <div class="leitura-linha">
-            <span class="leitura-num"></span>
-            <span class="leitura-un">un. do Relé</span>
+        <div class="zona-centro-topo">
+          <div class="chefe-caixa oculto">
+            <div class="chefe-topo">
+              <span class="chefe-nome"></span>
+              <span class="chefe-valor"></span>
+            </div>
+            <div class="chefe-barra">
+              <span class="chefe-fundo"></span>
+              <span class="chefe-fill"></span>
+              <span class="chefe-marcas"></span>
+            </div>
           </div>
-          <div class="fragmentos"></div>
-          <div class="varrimento"></div>
         </div>
 
-        <div class="medidor" title="Quadros por segundo · tempo de lógica e de desenho">
-          <span class="medidor-fps"></span>
-          <span class="medidor-ms"></span>
+        <div class="grupo-direita">
+          <div class="modulo modulo-leitura">
+            <div class="modulo-placa"></div>
+            <div class="leitura-camada"></div>
+            <div class="leitura-linha">
+              <span class="leitura-num"></span>
+              <span class="leitura-un">un. do Relé</span>
+            </div>
+            <div class="fragmentos"></div>
+            <div class="varrimento"></div>
+          </div>
+          <div class="medidor" title="Quadros por segundo e tempo por quadro">
+            <span class="medidor-fps"></span>
+            <span class="medidor-ms"></span>
+          </div>
+          <button class="botao-chapa" id="btn-menu" aria-label="Menu">
+            <span class="chapa-linhas"></span>
+          </button>
         </div>
-
-        <button class="botao-chapa" id="btn-menu" aria-label="Menu">
-          <span class="chapa-linhas"></span>
-        </button>
       </div>
 
-      <div class="chefe-caixa oculto">
-        <div class="chefe-topo">
-          <span class="chefe-nome"></span>
-          <span class="chefe-valor"></span>
-        </div>
-        <div class="chefe-barra">
-          <span class="chefe-fundo"></span>
-          <span class="chefe-fill"></span>
-          <span class="chefe-marcas"></span>
-        </div>
+      <div class="zona-meio">
+        <div class="cartao-bioma"><span class="cartao-nome"></span><span class="cartao-sub"></span></div>
+        <div class="mensagens"></div>
       </div>
-
-      <div class="cartao-bioma"><span class="cartao-nome"></span><span class="cartao-sub"></span></div>
-      <div class="mensagens"></div>
 
       <div class="joystick oculto">
         <span class="joystick-anel"></span>
         <span class="joystick-ponta"></span>
       </div>
 
-      <div class="hud-fundo">
+      <div class="zona-fundo">
+        <div class="canto-esquerdo">
+          <div class="rotulo-estacao oculto"></div>
+        </div>
+
         <div class="bloco-hotbar">
           <div class="nome-mao"></div>
           <div class="hotbar"></div>
         </div>
+
         <div class="botoes">
           <div class="botoes-secundarios">
             <button class="botao-redondo botao-estacao oculto" data-acao="interact" aria-label="Usar">
@@ -162,18 +174,17 @@ export class Hud {
             <span class="anel-atacar"></span><span class="glifo">MINAR</span>
           </button>
         </div>
-      </div>
-      <div class="rotulo-estacao oculto"></div>`;
+      </div>`;
 
     this.ligar();
   }
 
   private ligar(): void {
     const q = <T extends HTMLElement>(sel: string): T => this.raiz.querySelector(sel) as T;
-    this.vidaLiquido = q('.tubo-vida .tubo-liquido');
-    this.vidaValor = q('.tubo-vida .tubo-valor');
-    this.fomeLiquido = q('.tubo-fome .tubo-liquido');
-    this.fomeValor = q('.tubo-fome .tubo-valor');
+    this.vidaLiquido = q('.barra-vida .barra-liquido');
+    this.vidaValor = q('.barra-vida .barra-valor');
+    this.fomeLiquido = q('.barra-fome .barra-liquido');
+    this.fomeValor = q('.barra-fome .barra-valor');
     this.sigilo = q('.sigilo');
     this.camada = q('.leitura-camada');
     this.profundidade = q('.leitura-num');
@@ -211,7 +222,7 @@ export class Hud {
       el.className = 'socket';
       el.innerHTML = `
         <span class="socket-bisel"></span>
-        <img class="icone" alt="" />
+        <img class="icone" alt="" style="visibility:hidden" />
         <span class="contagem"></span>
         <span class="socket-num">${i + 1}</span>`;
       el.addEventListener('pointerdown', (e) => e.stopPropagation());
@@ -291,13 +302,13 @@ export class Hud {
     const p = jogo.player;
     this.atualizarMedidor();
     const vida = Math.max(0, p.vida / p.vidaMax);
-    this.vidaLiquido.style.height = `${vida * 100}%`;
+    this.vidaLiquido.style.setProperty('--nivel', `${(vida * 100).toFixed(1)}%`);
     this.vidaValor.textContent = `${Math.ceil(p.vida)}`;
     this.raiz.classList.toggle('critico', vida < 0.3);
     this.sigilo.style.setProperty('--pulso', String(0.6 + vida * 0.4));
 
     const fome = Math.max(0, p.fome / p.fomeMax);
-    this.fomeLiquido.style.height = `${fome * 100}%`;
+    this.fomeLiquido.style.setProperty('--nivel', `${(fome * 100).toFixed(1)}%`);
     this.fomeValor.textContent = `${Math.ceil(p.fome)}`;
 
     this.camada.textContent = jogo.nomeBioma();
@@ -361,7 +372,7 @@ export class Hud {
     else if (comida) glifo.textContent = 'COMER';
     if (estacao) {
       this.rotuloEstacaoEl.classList.remove('oculto');
-      this.rotuloEstacaoEl.textContent = `▸ ${nomeEstacaoCurto(estacao.kind)}`;
+      this.rotuloEstacaoEl.textContent = nomeEstacaoCurto(estacao.kind);
     } else {
       this.rotuloEstacaoEl.classList.add('oculto');
     }

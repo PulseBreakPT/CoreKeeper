@@ -24,7 +24,7 @@ const alternativas = [
 ].filter(Boolean);
 const executablePath = alternativas.find((p) => existsSync(p));
 const navegador = await chromium.launch(executablePath ? { executablePath } : {});
-const pagina = await navegador.newPage({ viewport: { width: 414, height: 896 }, deviceScaleFactor: 2 });
+const pagina = await navegador.newPage({ viewport: { width: 873, height: 393 }, deviceScaleFactor: 2 });
 
 const erros = [];
 pagina.on('console', (m) => {

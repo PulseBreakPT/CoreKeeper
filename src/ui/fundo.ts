@@ -90,7 +90,9 @@ export class FundoMenu {
     const w = window.innerWidth;
     const h = window.innerHeight;
     const cx = w / 2;
-    const cy = h * 0.17;
+    // Deitado, Veyra fica atrás do painel e o halo transborda pelos lados;
+    // de pé, sobe para não ficar escondida.
+    const cy = w > h ? h * 0.5 : h * 0.17;
 
     c.fillStyle = '#040308';
     c.fillRect(0, 0, w, h);

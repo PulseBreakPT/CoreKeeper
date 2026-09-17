@@ -69,7 +69,8 @@ export class PainelInventario {
       const el = document.createElement('button');
       el.className = 'socket slot-grande';
       el.dataset.indice = String(i);
-      el.innerHTML = '<span class="socket-bisel"></span><img class="icone" alt="" /><span class="contagem"></span>';
+      el.innerHTML =
+        '<span class="socket-bisel"></span><img class="icone" alt="" style="visibility:hidden" /><span class="contagem"></span>';
       el.addEventListener('click', () => this.tocarSlot(i));
       this.grelha.appendChild(el);
     }
@@ -78,7 +79,9 @@ export class PainelInventario {
       const el = document.createElement('button');
       el.className = 'socket slot-equip';
       el.dataset.equip = eq.slot;
-      el.innerHTML = `<span class="socket-bisel"></span><img class="icone" alt="" /><span class="rotulo-equip">${eq.rotulo}</span>`;
+      el.innerHTML =
+        `<span class="socket-bisel"></span><img class="icone" alt="" style="visibility:hidden" />` +
+        `<span class="rotulo-equip">${eq.rotulo}</span>`;
       el.addEventListener('click', () => this.tocarEquipamento(eq.slot));
       this.equipamento.appendChild(el);
     }

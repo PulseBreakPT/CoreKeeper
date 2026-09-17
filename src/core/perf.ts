@@ -10,6 +10,8 @@ export class Perf {
   msLogica = 0;
   msDesenho = 0;
   msLuz = 0;
+  /** Detalhe do desenho, para saber o que cortar. */
+  fases: Record<string, number> = {};
   /** Pior quadro dos últimos dois segundos. */
   msPior = 0;
 
@@ -19,6 +21,8 @@ export class Perf {
   private desenhoAcum = 0;
   private luzAcum = 0;
   private t1 = 0;
+  private fasesAcum: Record<string, number> = {};
+  private t2 = 0;
   private piorJanela = 0;
   private t0 = 0;
 
@@ -36,6 +40,15 @@ export class Perf {
 
   fimLuz(): void {
     this.luzAcum += performance.now() - this.t1;
+  }
+
+  /** Mede uma fase do desenho. Chamar em par com `fimFase`. */
+  comecarFase(): void {
+    this.t2 = performance.now();
+  }
+
+  fimFase(nome: string): void {
+    this.fasesAcum[nome] = (this.fasesAcum[nome] ?? 0) + (performance.now() - this.t2);
   }
 
   comecarDesenho(): void {
@@ -56,6 +69,10 @@ export class Perf {
       this.msLogica = +(this.logicaAcum / this.quadros).toFixed(2);
       this.msDesenho = +(this.desenhoAcum / this.quadros).toFixed(2);
       this.msLuz = +(this.luzAcum / this.quadros).toFixed(2);
+      for (const nome of Object.keys(this.fasesAcum)) {
+        this.fases[nome] = +(this.fasesAcum[nome] / this.quadros).toFixed(2);
+        this.fasesAcum[nome] = 0;
+      }
       this.msPior = +this.piorJanela.toFixed(1);
       this.quadros = 0;
       this.acumulado = 0;

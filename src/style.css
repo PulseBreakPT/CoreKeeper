@@ -76,15 +76,24 @@ body {
   display: none !important;
 }
 
-/* ---------- Estrutura do HUD ---------- */
+/* ----------------------------------------------------------------------------
+   HUD — desenhado primeiro para ecrã deitado.
+
+   Regras que guiam o posicionamento:
+   · os cantos de baixo são dos polegares (esquerda anda, direita age) e não
+     levam informação nenhuma;
+   · o centro do ecrã é do jogo — nada fixo por cima do Portador;
+   · o que se lê de relance (vida, profundidade) fica em cima, longe das mãos;
+   · tudo o que se toca tem pelo menos 44 px.
+   ------------------------------------------------------------------------- */
 
 #hud {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 6px;
   padding: calc(8px + var(--seguro-topo)) calc(10px + var(--seguro-dir)) calc(8px + var(--seguro-fundo))
     calc(10px + var(--seguro-esq));
   font-size: 12px;
@@ -94,10 +103,42 @@ body {
   pointer-events: auto;
 }
 
-.hud-topo {
+.zona-topo {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 8px;
+}
+
+.zona-meio {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 0;
+}
+
+.zona-fundo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: end;
+  gap: 8px;
+}
+
+.canto-esquerdo {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.grupo-direita {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 6px;
 }
 
 /* ---------- Módulos de metal ---------- */
@@ -112,7 +153,6 @@ body {
 }
 
 .modulo::after {
-  /* Riscas de maquinação + brilho no topo. */
   content: '';
   position: absolute;
   inset: 0;
@@ -121,7 +161,6 @@ body {
 }
 
 .modulo-placa {
-  /* Rebites nos quatro cantos. */
   position: absolute;
   inset: 4px;
   border-radius: 7px;
@@ -137,18 +176,16 @@ body {
 /* ---------- Vitais ---------- */
 
 .modulo-vitais {
-  display: grid;
-  grid-template-columns: auto auto;
-  grid-template-rows: auto auto;
-  gap: 6px 8px;
-  padding: 8px 10px 7px;
+  display: flex;
   align-items: center;
+  gap: 9px;
+  padding: 7px 11px 7px 9px;
 }
 
 .sigilo {
-  width: 42px;
-  height: 42px;
-  grid-row: span 2;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
   filter: drop-shadow(0 0 calc(6px * var(--pulso, 1)) rgba(242, 195, 51, 0.55));
 }
 
@@ -171,125 +208,123 @@ body {
   to { transform: rotate(360deg); }
 }
 
-.tubos {
-  display: flex;
-  gap: 7px;
-  align-items: flex-end;
-}
-
-.tubo {
+.barras {
   display: flex;
   flex-direction: column;
+  gap: 4px;
+}
+
+.barra {
+  display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 6px;
 }
 
-.tubo-rotulo {
+.barra-rotulo {
   font-size: 6px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
   color: var(--texto-suave);
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  height: 34px;
-  opacity: 0.7;
+  width: 30px;
+  text-align: right;
+  opacity: 0.8;
 }
 
-.tubo-corpo {
+.barra-corpo {
   position: relative;
-  width: 17px;
-  height: 54px;
-  border-radius: 9px;
+  width: 104px;
+  height: 13px;
+  border-radius: 7px;
   overflow: hidden;
+  background: linear-gradient(180deg, #100e18, #070610);
   border: 1px solid #0a0910;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07), 0 2px 5px rgba(0, 0, 0, 0.7);
 }
 
-.tubo-fundo {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, #100e18, #070610);
-}
-
-.tubo-liquido {
+.barra-liquido {
   position: absolute;
   left: 0;
-  right: 0;
+  top: 0;
   bottom: 0;
-  height: 100%;
-  transition: height 140ms ease-out;
+  width: var(--nivel, 100%);
+  transition: width 140ms ease-out;
 }
 
-.tubo-vida .tubo-liquido {
-  background: linear-gradient(180deg, #ff8f7a 0%, var(--sangue) 45%, #7d1a20 100%);
-  box-shadow: 0 0 10px rgba(216, 72, 76, 0.75), inset 0 2px 0 rgba(255, 255, 255, 0.4);
+.barra-vida .barra-corpo {
+  height: 15px;
 }
 
-.tubo-fome .tubo-liquido {
-  background: linear-gradient(180deg, #ffd980 0%, #c29417 50%, #6b4a10 100%);
-  box-shadow: 0 0 8px rgba(194, 148, 23, 0.6), inset 0 2px 0 rgba(255, 255, 255, 0.35);
+.barra-vida .barra-liquido {
+  background: linear-gradient(180deg, #ff8f7a 0%, var(--sangue) 48%, #7d1a20 100%);
+  box-shadow: 0 0 10px rgba(216, 72, 76, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
-.tubo-brilho {
-  /* Reflexo do vidro à esquerda. */
+.barra-fome .barra-corpo {
+  height: 9px;
+}
+
+.barra-fome .barra-liquido {
+  background: linear-gradient(180deg, #ffd980 0%, #c29417 55%, #6b4a10 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.barra-brilho {
   position: absolute;
-  top: 4px;
-  bottom: 4px;
-  left: 3px;
-  width: 3px;
+  left: 4px;
+  right: 4px;
+  top: 2px;
+  height: 3px;
   border-radius: 3px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.05));
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.05));
 }
 
-.tubo-marcas {
+.barra-marcas {
   position: absolute;
   inset: 0;
   background: repeating-linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0.55) 0px,
-    rgba(0, 0, 0, 0.55) 1px,
+    90deg,
+    rgba(0, 0, 0, 0.5) 0px,
+    rgba(0, 0, 0, 0.5) 1px,
     transparent 1px,
-    transparent 7px
+    transparent 13px
   );
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
-.tubo-vidro {
+.barra-vidro {
   position: absolute;
   inset: 0;
-  border-radius: 9px;
-  background: linear-gradient(105deg, rgba(255, 255, 255, 0.16) 0%, transparent 40%, rgba(0, 0, 0, 0.35) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 45%, rgba(0, 0, 0, 0.3));
 }
 
-.tubo-valor {
+.barra-valor {
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.04em;
   color: var(--texto);
   text-shadow: 0 1px 2px #000;
+  font-variant-numeric: tabular-nums;
+  min-width: 22px;
 }
 
-.critico .tubo-vida .tubo-corpo {
+.critico .barra-vida .barra-corpo {
   animation: alarme 0.9s ease-in-out infinite;
 }
 
 @keyframes alarme {
-  0%, 100% { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07), 0 0 0 rgba(216, 72, 76, 0); }
+  0%, 100% { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07); }
   50% { box-shadow: inset 0 0 0 1px rgba(255, 120, 120, 0.5), 0 0 12px rgba(216, 72, 76, 0.85); }
 }
 
 .buffs {
-  grid-column: 2;
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
-  min-height: 0;
 }
 
 .buff {
   font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.08em;
-  padding: 2px 5px;
+  padding: 1px 5px;
   border-radius: 4px;
   border: 1px solid var(--borda);
   background: rgba(10, 9, 16, 0.8);
@@ -304,19 +339,18 @@ body {
 /* ---------- Leitura de profundidade ---------- */
 
 .modulo-leitura {
-  flex: 1;
-  min-width: 0;
-  padding: 8px 12px 7px;
+  padding: 6px 11px 6px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   align-items: flex-end;
   text-align: right;
+  max-width: 42vw;
 }
 
 .leitura-camada {
   font-size: 9px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ciano);
   text-shadow: 0 0 8px rgba(109, 224, 255, 0.55);
@@ -333,10 +367,9 @@ body {
 }
 
 .leitura-num {
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 800;
   line-height: 1;
-  letter-spacing: 0.02em;
   color: var(--texto);
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
   font-variant-numeric: tabular-nums;
@@ -356,8 +389,8 @@ body {
 }
 
 .fragmento {
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   transform: rotate(45deg);
   border: 1px solid var(--borda);
   background: #0c0a14;
@@ -370,7 +403,6 @@ body {
 }
 
 .varrimento {
-  /* Linha que varre o painel, como um ecrã antigo. */
   position: absolute;
   left: 0;
   right: 0;
@@ -385,10 +417,42 @@ body {
   100% { top: 100%; }
 }
 
+/* ---------- Medidor e menu ---------- */
+
+.medidor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 4px 7px;
+  border-radius: 8px;
+  border: 1px solid var(--borda);
+  background: rgba(8, 7, 14, 0.85);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  flex-shrink: 0;
+}
+
+.medidor-fps {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.medidor-fps.bom { color: #6fe0a0; text-shadow: 0 0 8px rgba(111, 224, 160, 0.5); }
+.medidor-fps.medio { color: var(--ouro); text-shadow: 0 0 8px rgba(242, 195, 51, 0.45); }
+.medidor-fps.mau { color: #ff8f8f; text-shadow: 0 0 8px rgba(255, 143, 143, 0.5); }
+
+.medidor-ms {
+  font-size: 7px;
+  color: var(--texto-suave);
+}
+
 .botao-chapa {
-  width: 40px;
-  height: 40px;
-  border-radius: 9px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
   border: 1px solid var(--borda);
   background: var(--chapa);
   box-shadow: var(--sombra-modulo);
@@ -423,52 +487,22 @@ body {
 .chapa-linhas::before { top: -6px; }
 .chapa-linhas::after { top: 6px; }
 
-/* ---------- Medidor de desempenho ---------- */
-
-.medidor {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1px;
-  padding: 4px 6px;
-  border-radius: 7px;
-  border: 1px solid var(--borda);
-  background: rgba(8, 7, 14, 0.82);
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-  flex-shrink: 0;
-  align-self: flex-start;
-}
-
-.medidor-fps {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-}
-
-.medidor-fps.bom { color: #6fe0a0; text-shadow: 0 0 8px rgba(111, 224, 160, 0.5); }
-.medidor-fps.medio { color: var(--ouro); text-shadow: 0 0 8px rgba(242, 195, 51, 0.45); }
-.medidor-fps.mau { color: #ff8f8f; text-shadow: 0 0 8px rgba(255, 143, 143, 0.5); }
-
-.medidor-ms {
-  font-size: 8px;
-  color: var(--texto-suave);
-  letter-spacing: 0.04em;
-}
-
 /* ---------- Barra de guardião ---------- */
 
+.zona-centro-topo {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
 .chefe-caixa {
-  position: absolute;
-  top: calc(122px + var(--seguro-topo));
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(84vw, 440px);
-  padding: 7px 9px 8px;
+  width: min(52vw, 440px);
+  padding: 6px 9px 7px;
   background: linear-gradient(180deg, rgba(22, 16, 22, 0.9), rgba(9, 6, 12, 0.92));
   border: 1px solid #4a2c30;
   border-radius: 8px;
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  position: relative;
 }
 
 .chefe-topo {
@@ -476,16 +510,19 @@ body {
   justify-content: space-between;
   align-items: baseline;
   margin-bottom: 3px;
-  padding: 0 2px;
+  gap: 8px;
 }
 
 .chefe-nome {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #ffd9a8;
-  text-shadow: 0 2px 6px #000, 0 0 12px rgba(255, 140, 80, 0.5);
+  text-shadow: 0 2px 6px #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .chefe-valor {
@@ -496,22 +533,18 @@ body {
 
 .chefe-barra {
   position: relative;
-  height: 15px;
+  height: 13px;
   border-radius: 3px;
   border: 1px solid #5a2f32;
   background: #0b0710;
   overflow: hidden;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.75), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .chefe-fundo {
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(
-    -45deg,
-    rgba(255, 255, 255, 0.03) 0 6px,
-    transparent 6px 12px
-  );
+  background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.03) 0 6px, transparent 6px 12px);
 }
 
 .chefe-fill {
@@ -521,55 +554,27 @@ body {
   bottom: 0;
   width: 100%;
   background: linear-gradient(180deg, #ffb27a 0%, #d8484c 45%, #6b1a1e 100%);
-  box-shadow: 0 0 14px rgba(216, 72, 76, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  box-shadow: 0 0 14px rgba(216, 72, 76, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.4);
   transition: width 180ms ease-out;
 }
 
 .chefe-marcas {
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0.55) 0 1px,
-    transparent 1px 36px
-  );
+  background: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.55) 0 1px, transparent 1px 36px);
 }
 
-.chefe-caixa::before,
-.chefe-caixa::after {
-  /* Cantos gravados, como uma placa aparafusada. */
-  content: '';
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border: 1px solid rgba(255, 170, 120, 0.35);
-}
-
-.chefe-caixa::before {
-  top: 3px;
-  left: 3px;
-  border-right: none;
-  border-bottom: none;
-}
-
-.chefe-caixa::after {
-  bottom: 3px;
-  right: 3px;
-  border-left: none;
-  border-top: none;
-}
-
-/* ---------- Cartão de bioma ---------- */
+/* ---------- Avisos e cartões ---------- */
 
 .cartao-bioma {
   position: absolute;
   left: 50%;
-  top: 34%;
+  top: 16%;
   transform: translate(-50%, -6px);
   text-align: center;
   opacity: 0;
   pointer-events: none;
-  width: min(92vw, 560px);
+  width: min(92vw, 620px);
 }
 
 .cartao-bioma.mostrar {
@@ -585,7 +590,7 @@ body {
 
 .cartao-nome {
   display: block;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -595,8 +600,8 @@ body {
 
 .cartao-sub {
   display: block;
-  margin-top: 6px;
-  font-size: 10px;
+  margin-top: 5px;
+  font-size: 9px;
   letter-spacing: 0.3em;
   text-transform: uppercase;
   color: var(--texto-suave);
@@ -607,22 +612,20 @@ body {
   content: '';
   display: block;
   height: 1px;
-  margin: 10px auto;
-  width: 46%;
+  margin: 8px auto;
+  width: 40%;
   background: linear-gradient(90deg, transparent, var(--borda-luz), transparent);
 }
-
-/* ---------- Mensagens ---------- */
 
 .mensagens {
   position: absolute;
   left: 50%;
-  top: 26%;
+  top: 4px;
   transform: translateX(-50%);
-  width: min(90vw, 480px);
+  width: min(58vw, 500px);
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   align-items: center;
   pointer-events: none;
 }
@@ -631,11 +634,11 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(180deg, rgba(20, 18, 30, 0.93), rgba(10, 9, 16, 0.93));
+  background: linear-gradient(180deg, rgba(20, 18, 30, 0.92), rgba(10, 9, 16, 0.92));
   border: 1px solid var(--borda);
   border-radius: 5px;
-  padding: 6px 11px 6px 8px;
-  font-size: 12px;
+  padding: 5px 10px 5px 7px;
+  font-size: 11px;
   line-height: 1.35;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
   transition: opacity 500ms ease, transform 500ms ease;
@@ -667,17 +670,15 @@ body {
 }
 
 .rotulo-estacao {
-  position: absolute;
-  right: calc(14px + var(--seguro-dir));
-  bottom: calc(206px + var(--seguro-fundo));
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ciano);
   background: rgba(8, 7, 14, 0.85);
   border: 1px solid var(--borda);
+  border-left: 3px solid var(--ciano);
   border-radius: 4px;
-  padding: 4px 8px;
+  padding: 4px 9px;
   text-shadow: 0 0 8px rgba(109, 224, 255, 0.5);
 }
 
@@ -685,10 +686,11 @@ body {
 
 .joystick {
   position: absolute;
-  width: 124px;
-  height: 124px;
-  margin: -62px 0 0 -62px;
+  width: 116px;
+  height: 116px;
+  margin: -58px 0 0 -58px;
   pointer-events: none;
+  z-index: 2;
 }
 
 .joystick-anel {
@@ -703,7 +705,7 @@ body {
 .joystick-anel::after {
   content: '';
   position: absolute;
-  inset: 16px;
+  inset: 15px;
   border-radius: 50%;
   border: 1px dashed rgba(109, 224, 255, 0.2);
 }
@@ -712,29 +714,22 @@ body {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 50px;
-  height: 50px;
-  margin: -25px 0 0 -25px;
+  width: 48px;
+  height: 48px;
+  margin: -24px 0 0 -24px;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #4a4866, #1b1a28 70%);
   border: 1px solid var(--borda-luz);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7), inset 0 2px 4px rgba(255, 255, 255, 0.18);
 }
 
-/* ---------- Fundo: hotbar e botões ---------- */
-
-.hud-fundo {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 6px;
-  flex-wrap: nowrap;
-}
+/* ---------- Hotbar ---------- */
 
 .bloco-hotbar {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 3px;
   min-width: 0;
 }
 
@@ -743,21 +738,19 @@ body {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--texto-suave);
-  text-shadow: 0 1px 3px #000;
-  padding-left: 3px;
+  text-shadow: 0 1px 3px #000, 0 0 8px #000;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 42vw;
+  max-width: 100%;
 }
 
 .hotbar {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(8, 1fr);
   gap: 4px;
-  width: min(42vw, 196px);
   padding: 4px;
-  border-radius: 9px;
+  border-radius: 10px;
   background: var(--chapa);
   border: 1px solid var(--borda);
   box-shadow: var(--sombra-modulo);
@@ -765,7 +758,8 @@ body {
 
 .socket {
   position: relative;
-  aspect-ratio: 1;
+  width: 44px;
+  height: 44px;
   background: radial-gradient(circle at 50% 30%, #1d1c2b, #0b0a12 80%);
   border: 1px solid #0a0910;
   border-radius: 7px;
@@ -807,7 +801,7 @@ body {
   left: 3px;
   top: 1px;
   font-size: 7px;
-  color: rgba(157, 149, 184, 0.55);
+  color: rgba(157, 149, 184, 0.5);
 }
 
 .socket.ativo {
@@ -831,11 +825,13 @@ body {
   50% { opacity: 1; }
 }
 
+/* ---------- Botões de acção ---------- */
+
 .botoes {
   display: flex;
   align-items: flex-end;
-  gap: 7px;
-  flex-shrink: 0;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .botoes-secundarios {
@@ -856,7 +852,7 @@ body {
   color: var(--texto);
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   cursor: pointer;
   box-shadow: 0 5px 14px rgba(0, 0, 0, 0.7), inset 0 2px 4px rgba(255, 255, 255, 0.12),
     inset 0 -4px 10px rgba(0, 0, 0, 0.75);
@@ -866,7 +862,6 @@ body {
 }
 
 .botao-redondo::before {
-  /* Anel interior gravado. */
   content: '';
   position: absolute;
   inset: 7px;
@@ -881,9 +876,9 @@ body {
 }
 
 .botao-atacar {
-  width: 80px;
-  height: 80px;
-  font-size: 12px;
+  width: 78px;
+  height: 78px;
+  font-size: 11px;
   border-color: #7a3a32;
   background:
     radial-gradient(circle at 38% 26%, rgba(255, 200, 160, 0.22), transparent 54%),
@@ -909,12 +904,12 @@ body {
 
 .botao-estacao {
   border-color: #4a6b2f;
-  width: 46px;
-  height: 46px;
   background:
     radial-gradient(circle at 38% 26%, rgba(200, 255, 160, 0.18), transparent 54%),
     conic-gradient(from 200deg, #2c4a1d, #16240f, #3a5c24, #101a0b, #2c4a1d);
   color: #cdf0a8;
+  width: 46px;
+  height: 46px;
   font-size: 8px;
 }
 
@@ -929,6 +924,149 @@ body {
 .botao-redondo.is-down {
   transform: scale(0.93);
   filter: brightness(1.45);
+}
+
+/* ---------- Ecrã de pé: barras ao alto e aviso para rodar ---------- */
+
+@media (orientation: portrait) {
+  .modulo-vitais {
+    align-items: flex-start;
+  }
+
+  .barra {
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .barras {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  .barra-rotulo {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    height: 30px;
+    width: auto;
+    text-align: center;
+  }
+
+  .barra-corpo,
+  .barra-vida .barra-corpo,
+  .barra-fome .barra-corpo {
+    width: 15px;
+    height: 54px;
+  }
+
+  .barra-liquido {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: auto;
+    height: var(--nivel, 100%);
+    transition: height 140ms ease-out;
+  }
+
+  .barra-brilho {
+    left: 3px;
+    right: auto;
+    top: 4px;
+    bottom: 4px;
+    width: 3px;
+    height: auto;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.05));
+  }
+
+  .barra-marcas {
+    background: repeating-linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.5) 0px,
+      rgba(0, 0, 0, 0.5) 1px,
+      transparent 1px,
+      transparent 7px
+    );
+  }
+
+  .buffs {
+    flex-direction: column;
+  }
+
+  .hotbar {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .chefe-caixa {
+    width: min(86vw, 440px);
+  }
+
+  .mensagens {
+    width: min(90vw, 460px);
+  }
+}
+
+/* Num telemóvel de pé, o jogo pede para rodar: foi desenhado para deitado. */
+.rodar {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  text-align: center;
+  background: radial-gradient(circle at 50% 45%, #14101f, #05040a 75%);
+}
+
+@media (orientation: portrait) and (pointer: coarse) {
+  .rodar {
+    display: flex;
+  }
+}
+
+.rodar-icone {
+  width: 74px;
+  height: 108px;
+  border: 3px solid var(--borda-luz);
+  border-radius: 12px;
+  position: relative;
+  animation: rodarTelemovel 2.6s ease-in-out infinite;
+}
+
+.rodar-icone::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 7px;
+  width: 26px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--borda-luz);
+  transform: translateX(-50%);
+}
+
+@keyframes rodarTelemovel {
+  0%, 30% { transform: rotate(0deg); }
+  60%, 100% { transform: rotate(-90deg); }
+}
+
+.rodar h2 {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ciano);
+}
+
+.rodar p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--texto-suave);
+  max-width: 280px;
+  line-height: 1.6;
 }
 
 /* ---------- Painéis ---------- */
@@ -1051,6 +1189,19 @@ body {
   gap: 4px;
 }
 
+/* Nos painéis os slots esticam com a largura; na hotbar têm tamanho fixo. */
+.grelha .socket,
+.equipamento .socket {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.equipamento .socket {
+  aspect-ratio: auto;
+  height: 58px;
+}
+
 .socket.slot-grande.de-hotbar {
   border-color: #38364d;
   background: radial-gradient(circle at 50% 30%, #262437, #0e0d16 80%);
@@ -1065,9 +1216,105 @@ body {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  max-height: 46vh;
+  max-height: 40vh;
   overflow-y: auto;
   padding-right: 2px;
+}
+
+/* Deitado há pouca altura: o painel usa duas colunas e encolhe o cabeçalho. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .painel-caixa {
+    width: min(760px, 100%);
+    padding: 10px 12px;
+    gap: 7px;
+  }
+
+  /* O menu fica estreito de propósito: deixa ver Veyra a arder por trás. */
+  .menu-caixa {
+    width: min(720px, 86%);
+    padding: 12px 16px;
+    gap: 16px;
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    align-items: center;
+    text-align: left;
+  }
+
+  .menu-caixa .menu-col-esq {
+    text-align: center;
+  }
+
+  .menu-caixa .subtitulo {
+    font-size: 11px;
+  }
+
+  /* A pausa é curta: continua numa coluna só. */
+  .menu-caixa.menu-simples {
+    display: flex;
+    flex-direction: column;
+    width: min(420px, 70%);
+    text-align: center;
+  }
+
+  .painel-caixa h2 {
+    font-size: 13px;
+  }
+
+  .abas button {
+    padding: 7px;
+    font-size: 10px;
+  }
+
+  .receitas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: 44vh;
+  }
+
+  .equipamento .socket {
+    height: 48px;
+  }
+
+  .grelha {
+    gap: 3px;
+  }
+
+  .painel-rodape {
+    min-height: 0;
+    font-size: 10px;
+    padding-top: 6px;
+  }
+
+  .menu-caixa {
+    gap: 8px;
+  }
+
+  .logo strong {
+    font-size: 22px;
+  }
+
+  .subtitulo {
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .ajuda {
+    padding: 8px;
+    font-size: 11px;
+  }
+
+  .rodape-menu {
+    font-size: 9px;
+  }
+
+  .botao {
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  .ajuda ul {
+    line-height: 1.5;
+  }
 }
 
 .receita {
@@ -1139,6 +1386,22 @@ body {
 }
 
 /* ---------- Menus ---------- */
+
+.menu-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.menu-col-esq {
+  justify-content: center;
+}
+
+.menu-col-dir {
+  justify-content: center;
+}
+
 
 .fundo-menu {
   position: absolute;

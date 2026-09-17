@@ -83,7 +83,16 @@ hud.aoEscolherSlot = (i) => {
   if (jogo) jogo.inventario.selecionado = i;
 };
 
-app.append(hud.raiz, painel.raiz, menus.raiz, ecraMorte.raiz);
+// Aviso para rodar: o jogo foi desenhado para ecrã deitado.
+const rodar = document.createElement('div');
+rodar.className = 'rodar';
+rodar.innerHTML = `
+  <div class="rodar-icone"></div>
+  <h2>Roda o telemóvel</h2>
+  <p>The Hollow Star joga-se com o ecrã deitado — é assim que vês a caverna à tua frente
+  e alcanças os controlos com os dois polegares.</p>`;
+
+app.append(hud.raiz, painel.raiz, menus.raiz, ecraMorte.raiz, rodar);
 
 const ganchos: GanchosUI = {
   mensagem: (texto, tipo) => hud.mensagem(texto, tipo),

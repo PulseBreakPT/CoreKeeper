@@ -157,15 +157,31 @@ export class Lighting {
    * A tonalidade do bioma é aplicada aqui, numa imagem de algumas centenas de
    * píxeis, em vez de numa passagem por cima do ecrã inteiro.
    */
-  escreverImagem(img: ImageData, grading: [number, number, number] = [1, 1, 1]): void {
+  escreverImagem(
+    img: ImageData,
+    grading: [number, number, number] = [1, 1, 1],
+    vinheta?: { centroX: number; centroY: number; raio: number; forca: number },
+  ): void {
     const dados = img.data;
-    const n = this.largura * this.altura;
     const [gr, gg, gb] = grading;
-    for (let i = 0; i < n; i++) {
-      dados[i * 4] = Math.min(255, this.r[i] * 255 * gr) | 0;
-      dados[i * 4 + 1] = Math.min(255, this.g[i] * 255 * gg) | 0;
-      dados[i * 4 + 2] = Math.min(255, this.b[i] * 255 * gb) | 0;
-      dados[i * 4 + 3] = 255;
+    const w = this.largura;
+    const h = this.altura;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        let escurece = 1;
+        if (vinheta) {
+          const dx = (x - vinheta.centroX) / vinheta.raio;
+          const dy = (y - vinheta.centroY) / vinheta.raio;
+          const d = Math.min(1, Math.sqrt(dx * dx + dy * dy));
+          escurece = 1 - vinheta.forca * d * d;
+        }
+        const j = i * 4;
+        dados[j] = Math.min(255, this.r[i] * 255 * gr * escurece) | 0;
+        dados[j + 1] = Math.min(255, this.g[i] * 255 * gg * escurece) | 0;
+        dados[j + 2] = Math.min(255, this.b[i] * 255 * gb * escurece) | 0;
+        dados[j + 3] = 255;
+      }
     }
   }
 }
