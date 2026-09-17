@@ -9,7 +9,8 @@ import type { Game } from '../game/game';
 import { TAMANHO_HOTBAR } from '../game/inventory';
 import { itemDef } from '../game/items';
 import type { InfoBioma } from '../world/worldgen';
-import { iconeItem } from './icones';
+import { paleta } from '../render/paleta';
+import { iconeItem, iconeUi } from './icones';
 
 interface SlotHud {
   el: HTMLElement;
@@ -17,6 +18,11 @@ interface SlotHud {
   contagem: HTMLElement;
   chave: string;
 }
+
+const GLIFO_MINAR = paleta('#2a120e', '#7a3a2a', '#c07050', '#ffd2b8', '#fff0e2');
+const GLIFO_POR = paleta('#0d2029', '#25566b', '#4d93b0', '#b8e6ff', '#ffffff');
+const GLIFO_USAR = paleta('#16240f', '#3a5c24', '#6d9a40', '#cdf0a8', '#ffffff');
+const GLIFO_MOCH = paleta('#241c0d', '#5c4820', '#9a7c3a', '#f0dca8', '#ffffff');
 
 const SIGILO = `
 <svg viewBox="0 0 48 48" class="sigilo" aria-hidden="true">
@@ -49,6 +55,7 @@ function barra(classe: string, rotulo: string): string {
   <div class="barra ${classe}">
     <span class="barra-rotulo">${rotulo}</span>
     <div class="barra-corpo">
+      <span class="barra-rasto"></span>
       <span class="barra-liquido"></span>
       <span class="barra-brilho"></span>
       <span class="barra-marcas"></span>
@@ -63,6 +70,10 @@ export class Hud {
   aoEscolherSlot: ((indice: number) => void) | null = null;
 
   private vidaLiquido!: HTMLElement;
+  private vidaRasto!: HTMLElement;
+  /** Fracção mostrada pelo rasto; desce devagar atrás da vida real. */
+  private rastoVida = 1;
+  private ultimoQuadro = 0;
   private vidaValor!: HTMLElement;
   private fomeLiquido!: HTMLElement;
   private fomeValor!: HTMLElement;
@@ -165,13 +176,22 @@ export class Hud {
         <div class="botoes">
           <div class="botoes-secundarios">
             <button class="botao-redondo botao-estacao oculto" data-acao="interact" aria-label="Usar">
+              <img class="glifo-img" src="${iconeUi('ui_mao', GLIFO_USAR)}" alt="" />
               <span class="glifo">USAR</span>
             </button>
-            <button class="botao-redondo botao-mochila" aria-label="Mochila"><span class="glifo">MOCH</span></button>
+            <button class="botao-redondo botao-mochila" aria-label="Mochila">
+              <img class="glifo-img" src="${iconeUi('ui_mochila', GLIFO_MOCH)}" alt="" />
+              <span class="glifo">MOCH</span>
+            </button>
           </div>
-          <button class="botao-redondo botao-colocar" data-acao="place" aria-label="Colocar"><span class="glifo">POR</span></button>
+          <button class="botao-redondo botao-colocar" data-acao="place" aria-label="Colocar">
+            <img class="glifo-img" src="${iconeUi('ui_bloco', GLIFO_POR)}" alt="" />
+            <span class="glifo">POR</span>
+          </button>
           <button class="botao-redondo botao-atacar" data-acao="attack" aria-label="Atacar e minar">
-            <span class="anel-atacar"></span><span class="glifo">MINAR</span>
+            <span class="anel-atacar"></span>
+            <img class="glifo-img glifo-grande" src="${iconeUi('ui_picareta', GLIFO_MINAR)}" alt="" />
+            <span class="glifo">MINAR</span>
           </button>
         </div>
       </div>`;
@@ -182,6 +202,7 @@ export class Hud {
   private ligar(): void {
     const q = <T extends HTMLElement>(sel: string): T => this.raiz.querySelector(sel) as T;
     this.vidaLiquido = q('.barra-vida .barra-liquido');
+    this.vidaRasto = q('.barra-vida .barra-rasto');
     this.vidaValor = q('.barra-vida .barra-valor');
     this.fomeLiquido = q('.barra-fome .barra-liquido');
     this.fomeValor = q('.barra-fome .barra-valor');
@@ -303,6 +324,15 @@ export class Hud {
     this.atualizarMedidor();
     const vida = Math.max(0, p.vida / p.vidaMax);
     this.vidaLiquido.style.setProperty('--nivel', `${(vida * 100).toFixed(1)}%`);
+
+    // Rasto: fica para trás quando levas dano e só depois desce, para se ver
+    // quanto é que aquele golpe tirou.
+    const agora = performance.now();
+    const dt = Math.min(0.1, (agora - this.ultimoQuadro) / 1000) || 0.016;
+    this.ultimoQuadro = agora;
+    if (vida > this.rastoVida) this.rastoVida = vida;
+    else if (this.rastoVida > vida) this.rastoVida = Math.max(vida, this.rastoVida - dt * 0.5);
+    this.vidaRasto.style.setProperty('--nivel', `${(this.rastoVida * 100).toFixed(1)}%`);
     this.vidaValor.textContent = `${Math.ceil(p.vida)}`;
     this.raiz.classList.toggle('critico', vida < 0.3);
     this.sigilo.style.setProperty('--pulso', String(0.6 + vida * 0.4));

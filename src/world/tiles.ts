@@ -19,6 +19,8 @@ export interface GroundDef {
   corLuz?: [number, number, number];
   /** Quantos frames de animação tem o chão (líquidos). */
   anima?: boolean;
+  /** Detalhes espalhados por cima deste chão, e com que frequência. */
+  decalques?: { chaves: string[]; hipotese: number };
 }
 
 export interface BlockDrop {
@@ -83,24 +85,24 @@ const VIOLETA: [number, number, number] = [0.72, 0.6, 1];
 const OURO: [number, number, number] = [1, 0.82, 0.35];
 
 export const GROUNDS: GroundDef[] = [
-  { id: 0, nome: 'Pó de caverna', sprite: 'g_po', paleta: ROCHA.duststone, velocidade: 1 },
-  { id: 1, nome: 'Ardósia', sprite: 'g_ardosia', paleta: ROCHA.slate, velocidade: 1 },
-  { id: 2, nome: 'Solo de esporos', sprite: 'g_esporo', paleta: ROCHA.rootmass, velocidade: 1 },
-  { id: 3, nome: 'Leito de micélio', sprite: 'g_micelio', paleta: ROCHA.micelio, velocidade: 1.06, luz: 0.12, corLuz: VIOLETA },
-  { id: 4, nome: 'Grelha industrial', sprite: 'g_grelha', paleta: ROCHA.maquina, velocidade: 1.08 },
-  { id: 5, nome: 'Escória', sprite: 'g_cinza', paleta: ROCHA.slag, velocidade: 0.94 },
-  { id: 6, nome: 'Areia de tempestade', sprite: 'g_areia', paleta: ROCHA.areia, velocidade: 0.86 },
-  { id: 7, nome: 'Vidro estilhaçado', sprite: 'g_vidro', paleta: ROCHA.vidro, velocidade: 1, dano: 1.5 },
-  { id: 8, nome: 'Pedra de maré', sprite: 'g_mare', paleta: ROCHA.mare, velocidade: 0.96 },
+  { id: 0, nome: 'Pó de caverna', sprite: 'g_po', paleta: ROCHA.duststone, velocidade: 1 , decalques: { chaves: ['d_pedras', 'd_fissura', 'd_raizes'], hipotese: 0.16 } },
+  { id: 1, nome: 'Ardósia', sprite: 'g_ardosia', paleta: ROCHA.slate, velocidade: 1 , decalques: { chaves: ['d_pedras', 'd_fissura'], hipotese: 0.18 } },
+  { id: 2, nome: 'Solo de esporos', sprite: 'g_esporo', paleta: ROCHA.rootmass, velocidade: 1 , decalques: { chaves: ['d_musgo', 'd_raizes', 'd_poca'], hipotese: 0.22 } },
+  { id: 3, nome: 'Leito de micélio', sprite: 'g_micelio', paleta: ROCHA.micelio, velocidade: 1.06, luz: 0.12, corLuz: VIOLETA , decalques: { chaves: ['d_musgo', 'd_cristais'], hipotese: 0.2 } },
+  { id: 4, nome: 'Grelha industrial', sprite: 'g_grelha', paleta: ROCHA.maquina, velocidade: 1.08 , decalques: { chaves: ['d_sucata', 'd_fissura'], hipotese: 0.18 } },
+  { id: 5, nome: 'Escória', sprite: 'g_cinza', paleta: ROCHA.slag, velocidade: 0.94 , decalques: { chaves: ['d_sucata', 'd_pedras'], hipotese: 0.16 } },
+  { id: 6, nome: 'Areia de tempestade', sprite: 'g_areia', paleta: ROCHA.areia, velocidade: 0.86 , decalques: { chaves: ['d_pedras', 'd_cristais'], hipotese: 0.12 } },
+  { id: 7, nome: 'Vidro estilhaçado', sprite: 'g_vidro', paleta: ROCHA.vidro, velocidade: 1, dano: 1.5 , decalques: { chaves: ['d_cristais', 'd_fissura'], hipotese: 0.14 } },
+  { id: 8, nome: 'Pedra de maré', sprite: 'g_mare', paleta: ROCHA.mare, velocidade: 0.96 , decalques: { chaves: ['d_poca', 'd_musgo'], hipotese: 0.2 } },
   { id: 9, nome: 'Água profunda', sprite: 'g_agua', paleta: ROCHA.mare, velocidade: 0.55, liquido: true, anima: true },
   {
     id: 10, nome: 'Canal fundido', sprite: 'g_fundido', paleta: MINERAL.emberiron, velocidade: 0.5,
     dano: 16, liquido: true, luz: 0.9, corLuz: AMBAR, anima: true,
   },
-  { id: 11, nome: 'Cinza fóssil', sprite: 'g_fossil', paleta: ROCHA.osso, velocidade: 1 },
-  { id: 12, nome: 'Placa Kael', sprite: 'g_kael', paleta: ROCHA.kael, velocidade: 1.12, luz: 0.16, corLuz: CIANO },
-  { id: 13, nome: 'Piso do Véu', sprite: 'g_veu', paleta: ROCHA.veil, velocidade: 1.05, luz: 0.14, corLuz: VIOLETA },
-  { id: 14, nome: 'Lajes', sprite: 'g_lajes', paleta: ROCHA.slate, velocidade: 1.12 },
+  { id: 11, nome: 'Cinza fóssil', sprite: 'g_fossil', paleta: ROCHA.osso, velocidade: 1 , decalques: { chaves: ['d_ossos', 'd_pedras', 'd_fissura'], hipotese: 0.22 } },
+  { id: 12, nome: 'Placa Kael', sprite: 'g_kael', paleta: ROCHA.kael, velocidade: 1.12, luz: 0.16, corLuz: CIANO , decalques: { chaves: ['d_sucata', 'd_glifo'], hipotese: 0.1 } },
+  { id: 13, nome: 'Piso do Véu', sprite: 'g_veu', paleta: ROCHA.veil, velocidade: 1.05, luz: 0.14, corLuz: VIOLETA , decalques: { chaves: ['d_glifo', 'd_cristais'], hipotese: 0.14 } },
+  { id: 14, nome: 'Lajes', sprite: 'g_lajes', paleta: ROCHA.slate, velocidade: 1.12 , decalques: { chaves: ['d_pedras', 'd_fissura'], hipotese: 0.12 } },
   { id: 15, nome: 'Piso do Relé', sprite: 'g_rele', paleta: ROCHA.nulo, velocidade: 1.12, luz: 0.2, corLuz: OURO },
 ];
 
@@ -182,7 +184,7 @@ function parede(
 }
 
 export const BLOCKS: BlockDef[] = [
-  { id: 0, nome: '—', sprite: '', paleta: ROCHA.slate, solido: false, minavel: false, nivel: 0, dureza: 0, drops: [] },
+  { id: 0, nome: '—', sprite: '', paleta: ROCHA.slate, solido: false, minavel: false, nivel: 0, dureza: 0, drops: []  },
 
   parede(1, 'Duststone', 'b_duststone', ROCHA.duststone, 1, 26, [{ item: 'duststone', min: 1, max: 2 }], {
     lore: 'Rocha castanha quebradiça. As Burrows são feitas dela.',

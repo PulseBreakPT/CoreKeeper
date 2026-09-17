@@ -4,8 +4,31 @@ import { CONJUNTOS, ITEMS, itemDef } from '../src/game/items';
 import { Inventory, TAMANHO_HOTBAR } from '../src/game/inventory';
 import { criar, podeCriar, receitasDe, RECEITAS, validarReceitas } from '../src/game/crafting';
 import { ELITES, INIMIGOS, sortearElite } from '../src/entities/enemies';
+import { temPintorItem } from '../src/render/itens';
+import { PINTORES as PINTORES_CRIATURA } from '../src/render/bestiario';
 
 describe('coerência dos registos', () => {
+  it('cada item tem arte própria ou é um bloco colocável', () => {
+    for (const item of Object.values(ITEMS)) {
+      const eBloco = item.sprite.startsWith('b_') || item.sprite.startsWith('g_');
+      expect(
+        temPintorItem(item.sprite) || eBloco,
+        `${item.nome} usa o sprite ${item.sprite}, que não tem pintor`,
+      ).toBe(true);
+    }
+  });
+
+  it('cada criatura tem um pintor para a sua forma', () => {
+    for (const def of Object.values(INIMIGOS)) {
+      const chave = `${def.forma}:${def.detalhe ?? ''}`;
+      const base = `${def.forma}:`;
+      expect(
+        chave in PINTORES_CRIATURA || base in PINTORES_CRIATURA,
+        `${def.nome} pede ${chave}, que não existe`,
+      ).toBe(true);
+    }
+  });
+
   it('todos os blocos largam itens que existem', () => {
     for (const b of BLOCKS) {
       for (const d of b.drops) expect(itemDef(d.item), `${b.nome} larga ${d.item}`).toBeDefined();

@@ -9,6 +9,9 @@ import { clearSave, hasSave, loadSettings, saveSettings } from './core/storage';
 import { Game, type GanchosUI } from './game/game';
 import { Renderer } from './render/renderer';
 import { sprite } from './render/sprites';
+import { spriteItem, temPintorItem } from './render/itens';
+import { desenharInimigo, desenharJogador } from './render/criaturas';
+import { Inimigo, INIMIGOS } from './entities/enemies';
 import { BLOCKS, GROUNDS } from './world/tiles';
 import { ITEMS } from './game/items';
 import { Hud } from './ui/hud';
@@ -191,7 +194,10 @@ app.addEventListener('pointerdown', () => {
   jogo: () => jogo,
   comecar,
   hud,
-  arte: { sprite, BLOCKS, GROUNDS, ITEMS },
+  arte: {
+    sprite, spriteItem, temPintorItem, BLOCKS, GROUNDS, ITEMS,
+    desenharJogador, desenharInimigo, Inimigo, INIMIGOS,
+  },
   perf,
 };
 

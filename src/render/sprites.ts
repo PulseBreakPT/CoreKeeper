@@ -799,6 +799,264 @@ DESENHOS.b_plankwall = (c, v) => {
 
 DESENHOS.b_brickwall = tijolo(ROCHA.forgebrick, 8);
 
+// --- Rebordos e coroas de rocha ----------------------------------------------
+// Pequenos acrescentos que quebram a linha recta entre rocha e chão.
+
+DESENHOS.r_pendente = (c, v, p) => {
+  const r = mulberry32(61000 + v * 131);
+  for (let x = 0; x < TILE; x += 2) {
+    if (r() > 0.6) continue;
+    const h = 2 + Math.floor(r() * 6);
+    px(c, x, 0, 2, h, p.escuro);
+    px(c, x, 0, 1, Math.max(1, h - 1), p.base);
+    if (r() > 0.75) px(c, x, h, 1, 2, p.claro);
+  }
+};
+
+DESENHOS.r_coroa = (c, v, p) => {
+  const r = mulberry32(62000 + v * 197);
+  // Pedras soltas e tufos assentes no topo da rocha.
+  for (let i = 0; i < 3; i++) {
+    const x = 3 + Math.floor(r() * 24);
+    const t = 3 + Math.floor(r() * 4);
+    px(c, x, TILE - t - 1, t + 1, t + 1, p.contorno);
+    px(c, x, TILE - t - 1, t, t, p.claro);
+    px(c, x, TILE - t - 1, 1, 1, p.acento);
+  }
+};
+
+// --- Glifos de interface -----------------------------------------------------
+// Os botões usam ícones desenhados em vez de palavras: lê-se num relance e
+// não depende da língua.
+
+DESENHOS.ui_picareta = (c, _v, p) => {
+  // Cabo na diagonal com cabeça de picareta.
+  c.save();
+  c.translate(16, 16);
+  c.rotate(-0.35);
+  px(c, -2, -4, 4, 20, p.escuro);
+  px(c, -2, -4, 2, 20, p.base);
+  c.restore();
+  c.strokeStyle = p.claro;
+  c.lineWidth = 4;
+  c.lineCap = 'round';
+  c.beginPath();
+  c.moveTo(4, 12);
+  c.quadraticCurveTo(16, 3, 28, 12);
+  c.stroke();
+  c.strokeStyle = p.acento;
+  c.lineWidth = 1.5;
+  c.beginPath();
+  c.moveTo(6, 11);
+  c.quadraticCurveTo(16, 4, 26, 11);
+  c.stroke();
+};
+
+DESENHOS.ui_bloco = (c, _v, p) => {
+  // Cubo em perspectiva com um sinal de mais.
+  c.fillStyle = p.escuro;
+  c.beginPath();
+  c.moveTo(16, 5);
+  c.lineTo(28, 11);
+  c.lineTo(28, 23);
+  c.lineTo(16, 29);
+  c.lineTo(4, 23);
+  c.lineTo(4, 11);
+  c.closePath();
+  c.fill();
+  c.fillStyle = p.base;
+  c.beginPath();
+  c.moveTo(16, 5);
+  c.lineTo(28, 11);
+  c.lineTo(16, 17);
+  c.lineTo(4, 11);
+  c.closePath();
+  c.fill();
+  c.fillStyle = p.claro;
+  c.beginPath();
+  c.moveTo(16, 17);
+  c.lineTo(28, 11);
+  c.lineTo(28, 23);
+  c.lineTo(16, 29);
+  c.closePath();
+  c.fill();
+  px(c, 14, 19, 4, 1, p.acento);
+  px(c, 15, 18, 2, 3, p.acento);
+};
+
+DESENHOS.ui_mao = (c, _v, p) => {
+  // Mão aberta, de frente.
+  px(c, 9, 13, 14, 13, p.escuro);
+  px(c, 10, 14, 12, 11, p.base);
+  for (let i = 0; i < 4; i++) {
+    const x = 9 + i * 4;
+    const alt = i === 0 || i === 3 ? 7 : 10;
+    px(c, x, 13 - alt, 3, alt + 2, p.escuro);
+    px(c, x, 14 - alt, 2, alt, p.claro);
+  }
+  px(c, 5, 16, 5, 7, p.escuro);
+  px(c, 6, 17, 3, 5, p.claro);
+  px(c, 12, 18, 6, 2, p.acento);
+};
+
+DESENHOS.ui_mochila = (c, _v, p) => {
+  px(c, 8, 4, 16, 5, p.escuro);
+  px(c, 10, 2, 12, 4, p.base);
+  px(c, 5, 8, 22, 21, p.escuro);
+  px(c, 6, 9, 20, 19, p.base);
+  px(c, 6, 9, 20, 5, p.claro);
+  px(c, 9, 16, 14, 9, p.escuro);
+  px(c, 10, 17, 12, 7, p.claro);
+  px(c, 14, 19, 4, 3, p.acento);
+  px(c, 3, 12, 3, 12, p.escuro);
+  px(c, 26, 12, 3, 12, p.escuro);
+};
+
+// --- Decalques de chão -------------------------------------------------------
+// Pequenos detalhes espalhados pelo chão. Vivem no buffer de terreno, por isso
+// custam praticamente nada e são o que tira o ar de "azulejo repetido".
+
+function decalque(desenho: (c: CanvasRenderingContext2D, r: () => number, p: Paleta) => void): Pincel {
+  return (c, v, p) => desenho(c, mulberry32(52000 + v * 733), p);
+}
+
+DESENHOS.d_pedras = decalque((c, r, p) => {
+  for (let i = 0; i < 4 + Math.floor(r() * 4); i++) {
+    const x = 2 + Math.floor(r() * 26);
+    const y = 2 + Math.floor(r() * 26);
+    const t = 2 + Math.floor(r() * 3);
+    px(c, x, y + 1, t + 1, t, p.contorno);
+    px(c, x, y, t, t - 1, p.claro);
+    px(c, x, y, 1, 1, p.acento);
+  }
+});
+
+DESENHOS.d_fissura = decalque((c, r, p) => {
+  let x = 3 + Math.floor(r() * 10);
+  let y = 2;
+  while (y < TILE - 2) {
+    const comp = 2 + Math.floor(r() * 3);
+    px(c, x, y, 1, comp, p.contorno);
+    px(c, x + 1, y, 1, Math.max(1, comp - 1), '#00000044');
+    x += r() > 0.5 ? 1 : -1;
+    y += comp;
+    if (r() > 0.78) {
+      px(c, x, y, 4 + Math.floor(r() * 5), 1, p.contorno);
+    }
+  }
+});
+
+DESENHOS.d_ossos = decalque((c, r, p) => {
+  const x = 4 + Math.floor(r() * 14);
+  const y = 8 + Math.floor(r() * 14);
+  px(c, x, y, 13, 3, p.contorno);
+  px(c, x + 1, y, 11, 2, '#d8cdb4');
+  px(c, x - 1, y - 1, 3, 5, p.contorno);
+  px(c, x, y - 1, 2, 4, '#e8ddc4');
+  px(c, x + 12, y - 1, 3, 5, p.contorno);
+  px(c, x + 12, y - 1, 2, 4, '#e8ddc4');
+  if (r() > 0.5) {
+    px(c, x + 3, y + 7, 8, 2, p.contorno);
+    px(c, x + 4, y + 7, 6, 1, '#cfc3a8');
+  }
+});
+
+DESENHOS.d_sucata = decalque((c, r, p) => {
+  for (let i = 0; i < 3; i++) {
+    const x = 3 + Math.floor(r() * 22);
+    const y = 3 + Math.floor(r() * 22);
+    if (r() > 0.5) {
+      px(c, x, y, 7, 3, p.contorno);
+      px(c, x, y, 6, 2, p.claro);
+      px(c, x + 1, y, 2, 1, p.acento);
+    } else {
+      px(c, x, y, 4, 4, p.contorno);
+      px(c, x + 1, y + 1, 2, 2, p.base);
+    }
+  }
+});
+
+DESENHOS.d_musgo = decalque((c, r, p) => {
+  for (let i = 0; i < 16; i++) {
+    const x = Math.floor(r() * TILE);
+    const y = Math.floor(r() * TILE);
+    const t = 2 + Math.floor(r() * 3);
+    px(c, x, y, t, t, r() > 0.5 ? p.escuro : p.base);
+    if (r() > 0.7) px(c, x, y, 1, 1, p.acento);
+  }
+});
+
+DESENHOS.d_poca = decalque((c, r, p) => {
+  const x = 5 + Math.floor(r() * 10);
+  const y = 7 + Math.floor(r() * 10);
+  const w = 10 + Math.floor(r() * 9);
+  const h = 5 + Math.floor(r() * 5);
+  c.fillStyle = '#00000055';
+  c.beginPath();
+  c.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
+  c.fill();
+  c.fillStyle = p.escuro;
+  c.beginPath();
+  c.ellipse(x + w / 2, y + h / 2, w / 2 - 1, h / 2 - 1, 0, 0, Math.PI * 2);
+  c.fill();
+  px(c, x + 3, y + 1, 4, 1, p.acento);
+});
+
+DESENHOS.d_cristais = decalque((c, r, p) => {
+  for (let i = 0; i < 3; i++) {
+    const x = 5 + Math.floor(r() * 20);
+    const y = 10 + Math.floor(r() * 14);
+    const alt = 4 + Math.floor(r() * 5);
+    px(c, x - 1, y - alt, 4, alt + 2, p.contorno);
+    px(c, x, y - alt + 1, 2, alt, p.base);
+    px(c, x, y - alt + 1, 1, 2, p.acento);
+  }
+});
+
+DESENHOS.d_raizes = decalque((c, r, p) => {
+  for (let i = 0; i < 3; i++) {
+    let x = Math.floor(r() * TILE);
+    let y = Math.floor(r() * 6);
+    for (let k = 0; k < 10; k++) {
+      px(c, x, y, 2, 2, r() > 0.6 ? p.claro : p.base);
+      x += r() > 0.5 ? 1 : -1;
+      y += 3;
+      if (y > TILE) break;
+    }
+  }
+});
+
+DESENHOS.d_glifo = decalque((c, r, p) => {
+  // Marca circular gravada na placa, não um símbolo de texto: o objectivo é
+  // parecer que alguém carimbou o chão há mil anos.
+  const cx = 10 + Math.floor(r() * 12);
+  const cy = 10 + Math.floor(r() * 12);
+  const raio = 5 + Math.floor(r() * 2);
+  c.globalAlpha = 0.5;
+  c.strokeStyle = p.acento;
+  c.lineWidth = 1;
+  c.beginPath();
+  c.arc(cx + 0.5, cy + 0.5, raio, 0, Math.PI * 2);
+  c.stroke();
+  c.globalAlpha = 0.32;
+  c.beginPath();
+  c.arc(cx + 0.5, cy + 0.5, raio - 2.5, 0, Math.PI * 2);
+  c.stroke();
+  // Quatro traços radiais, um deles em falta — desgaste.
+  c.globalAlpha = 0.45;
+  const falta = Math.floor(r() * 4);
+  for (let i = 0; i < 4; i++) {
+    if (i === falta) continue;
+    const a = (i / 4) * Math.PI * 2 + 0.4;
+    c.beginPath();
+    c.moveTo(cx + Math.cos(a) * (raio - 2), cy + Math.sin(a) * (raio - 2));
+    c.lineTo(cx + Math.cos(a) * (raio + 2), cy + Math.sin(a) * (raio + 2));
+    c.stroke();
+  }
+  c.globalAlpha = 1;
+  halo(c, cx, cy, 12, `${p.acento}18`);
+});
+
 // --- Itens -------------------------------------------------------------------
 // Os itens usam a paleta passada em runtime, por isso o mesmo desenho serve
 // para todos os materiais da progressão.

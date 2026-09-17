@@ -7,19 +7,21 @@
  *   4. final    — color grading do bioma, vinheta, grão e aberração cromática
  */
 
-import { hash2d } from '../core/rng';
+import { cellRandom, hash2d } from '../core/rng';
 import type { Inimigo } from '../entities/enemies';
 import type { Player } from '../entities/player';
 import { itemDef } from '../game/items';
 import type { Particula, Projetil, Queda, TextoFlutuante } from '../game/tipos';
 import type { Lighting } from '../world/lighting';
-import { blockDef, groundDef, type BlockDef } from '../world/tiles';
+import { ROCHA, type Paleta } from './paleta';
+import { blockDef, groundDef, type BlockDef, type GroundDef } from '../world/tiles';
 import type { InfoBioma } from '../world/worldgen';
 import type { World } from '../world/world';
-import { arestaParede, oclusaoChao, E, N, NE, NO, O, S, SE, SO } from './autotile';
+import { arestaParede, oclusaoChao, transicaoChao, E, N, NE, NO, O, S, SE, SO } from './autotile';
 import { Camera } from './camera';
 import { desenharGolpe, desenharInimigo, desenharJogador } from './criaturas';
 import { brilhoRedondo, spriteDe } from './sprites';
+import { spriteItem, temPintorItem } from './itens';
 
 export interface Cena {
   world: World;
@@ -40,6 +42,32 @@ export interface Cena {
   tempo: number;
   /** 0..1 — intensidade do flash vermelho quando o Portador é atingido. */
   dor: number;
+}
+
+/**
+ * Que material pende de uma parede. Nem toda a rocha pende — só a que tem
+ * vegetação ou raízes por perto.
+ */
+function grupoPendente(def: { paleta: Paleta; sprite: string }): Paleta | null {
+  switch (def.sprite) {
+    case 'b_duststone':
+    case 'b_argila':
+      return ROCHA.rootmass;
+    case 'b_rootmass':
+    case 'b_lumibark':
+    case 'b_ironroot':
+      return ROCHA.lumibark;
+    case 'b_micelio':
+      return ROCHA.micelio;
+    case 'b_coralstone':
+    case 'b_tidebrick':
+      return ROCHA.coral;
+    case 'b_bonewall':
+    case 'b_marrowstone':
+      return ROCHA.osso;
+    default:
+      return null;
+  }
 }
 
 /** Cores memorizadas, para não construir strings rgba a cada quadro. */
@@ -83,7 +111,6 @@ export class Renderer {
   private mundoCols = 0;
   private mundoLinhas = 0;
   private mundoVersao = -1;
-  private mundoAnim = -1;
   private mundoZoom = -1;
   /** Blocos com animação própria: ficam fora do buffer e desenham-se a cada quadro. */
   private animados: { x: number; y: number; def: BlockDef }[] = [];
@@ -92,6 +119,8 @@ export class Renderer {
    * o mundo todo a cada quadro só para encontrar tochas era desperdício.
    */
   private fontes: { x: number; y: number; luz: number; cor: string; tremula: boolean }[] = [];
+  /** Chãos líquidos visíveis: animam-se por cima do buffer, sem o invalidar. */
+  private liquidos: { x: number; y: number; def: GroundDef }[] = [];
   private emissivoBorrado = document.createElement('canvas');
   private grao = document.createElement('canvas');
   private padraoGrao: CanvasPattern | null = null;
@@ -213,11 +242,14 @@ export class Renderer {
   }
 
   desenhar(cena: Cena, dtMs = 16): void {
+    // A qualidade é decidida antes de desenhar. Se for decidida no fim, o
+    // redimensionamento do canvas deixa-o em branco até ao quadro seguinte —
+    // o que se vê como um flash preto de cada vez que a resolução muda.
+    this.ajustarQualidade(dtMs);
     this.desenharCena(cena);
     this.aplicarLuz(cena.lighting, cena.bioma.grading);
     if (this.qualidade !== 'baixa') this.desenharEmissivo(cena);
     this.composicaoFinal(cena);
-    this.ajustarQualidade(dtMs);
   }
 
   /**
@@ -284,6 +316,7 @@ export class Renderer {
 
     // --- Terreno (chão, oclusão, sombras e rocha) ---
     this.atualizarMundo(cena);
+    this.varrerVisiveis(cena);
     c.drawImage(
       this.mundo,
       Math.round(cam.paraEcraX(this.mundoOrigemX)),
@@ -291,6 +324,21 @@ export class Renderer {
       this.mundoCols * z,
       this.mundoLinhas * z,
     );
+
+    // Líquidos animados por cima do buffer: assim a água mexe-se sem obrigar
+    // a repintar o terreno todo.
+    if (this.liquidos.length > 0) {
+      const quadro = Math.floor(cena.tempo * 4) & 3;
+      for (const l of this.liquidos) {
+        c.drawImage(
+          spriteDe(l.def, l.def.sprite, quadro, l.def.paleta),
+          Math.floor(cam.paraEcraX(l.x)),
+          Math.floor(cam.paraEcraY(l.y)),
+          z + 1,
+          z + 1,
+        );
+      }
+    }
 
     // Blocos com animação própria, por cima do terreno memorizado.
     if (this.animados.length > 0) {
@@ -346,7 +394,10 @@ export class Renderer {
       c.ellipse(px, py + z * 0.2, z * 0.2, z * 0.08, 0, 0, Math.PI * 2);
       c.fill();
       c.globalAlpha = 1;
-      c.drawImage(spriteDe(def, def.sprite, 0, def.paleta), px - z * 0.3, py - z * 0.34 + flut, z * 0.6, z * 0.6);
+      const arte = temPintorItem(def.sprite)
+        ? spriteItem(def.sprite, def.paleta, undefined, def.variante ?? 0)
+        : spriteDe(def, def.sprite, 0, def.paleta);
+      c.drawImage(arte, px - z * 0.3, py - z * 0.34 + flut, z * 0.6, z * 0.6);
     }
 
     // --- Entidades por profundidade ---
@@ -416,65 +467,123 @@ export class Renderer {
   }
 
   /**
-   * Repinta a camada de terreno se alguma coisa mudou: a vista andou um tile,
-   * o mundo foi alterado, ou o quadro de animação dos líquidos avançou.
-   * Entre repinturas, o terreno todo custa um único drawImage.
+   * Mantém a camada de terreno actualizada.
+   *
+   * Quando a vista anda, o buffer é deslocado sobre si próprio e só se pintam
+   * as tiras que entraram — pintar o ecrã todo a cada passo limitava a riqueza
+   * que se podia pôr em cada tile.
    */
   private atualizarMundo(cena: Cena): void {
     const cam = this.camera;
     const z = cam.zoom;
     const origemX = Math.floor(cam.x - cam.larguraPx / 2 / z) - 1;
     const origemY = Math.floor(cam.y - cam.alturaPx / 2 / z) - 1;
-    // Só a animação dos líquidos obriga a repintar o terreno, e a 3 Hz.
-    const anim = Math.floor(cena.tempo * 3) & 3;
+    const mudouMundo = this.mundoVersao !== cena.world.versao;
+    const mudouZoom = this.mundoZoom !== z;
 
-    if (
-      origemX === this.mundoOrigemX &&
-      origemY === this.mundoOrigemY &&
-      this.mundoVersao === cena.world.versao &&
-      this.mundoAnim === anim &&
-      this.mundoZoom === z
-    ) {
-      return;
-    }
+    if (!mudouMundo && !mudouZoom && origemX === this.mundoOrigemX && origemY === this.mundoOrigemY) return;
+
+    const dx = origemX - this.mundoOrigemX;
+    const dy = origemY - this.mundoOrigemY;
+    const podeDeslocar =
+      !mudouMundo &&
+      !mudouZoom &&
+      Number.isFinite(dx) &&
+      Number.isFinite(dy) &&
+      Math.abs(dx) < this.mundoCols &&
+      Math.abs(dy) < this.mundoLinhas;
+
+    const c = this.mundoCtx;
+    c.setTransform(this.escalaPixel, 0, 0, this.escalaPixel, 0, 0);
+    c.imageSmoothingEnabled = false;
 
     this.mundoOrigemX = origemX;
     this.mundoOrigemY = origemY;
     this.mundoVersao = cena.world.versao;
-    this.mundoAnim = anim;
     this.mundoZoom = z;
 
+    if (!podeDeslocar) {
+      c.clearRect(0, 0, this.mundoCols * z, this.mundoLinhas * z);
+      this.pintarRegiao(cena, 0, 0, this.mundoCols - 1, this.mundoLinhas - 1);
+      return;
+    }
+    if (dx === 0 && dy === 0) return;
+
+    // Desloca o que já está pintado.
+    c.save();
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.globalCompositeOperation = 'copy';
+    c.drawImage(this.mundo, -dx * z * this.escalaPixel, -dy * z * this.escalaPixel);
+    c.restore();
+    c.setTransform(this.escalaPixel, 0, 0, this.escalaPixel, 0, 0);
+
+    // E pinta só as tiras novas, com um tile de folga para as sombras e as
+    // paredes erguidas não ficarem cortadas na costura.
+    const folga = 2;
+    if (dx > 0) this.pintarRegiao(cena, this.mundoCols - dx - folga, 0, this.mundoCols - 1, this.mundoLinhas - 1);
+    else if (dx < 0) this.pintarRegiao(cena, 0, 0, -dx + folga, this.mundoLinhas - 1);
+    if (dy > 0) this.pintarRegiao(cena, 0, this.mundoLinhas - dy - folga, this.mundoCols - 1, this.mundoLinhas - 1);
+    else if (dy < 0) this.pintarRegiao(cena, 0, 0, this.mundoCols - 1, -dy + folga);
+  }
+
+  /** Pinta uma zona do buffer, em coordenadas locais de tile. */
+  private pintarRegiao(cena: Cena, lx0: number, ly0: number, lx1: number, ly1: number): void {
     const c = this.mundoCtx;
     const world = cena.world;
     const seed = world.seed;
-    this.fontes.length = 0;
-    c.setTransform(this.escalaPixel, 0, 0, this.escalaPixel, 0, 0);
-    c.imageSmoothingEnabled = false;
-    c.clearRect(0, 0, this.mundoCols * z, this.mundoLinhas * z);
+    const z = this.camera.zoom;
+    const origemX = this.mundoOrigemX;
+    const origemY = this.mundoOrigemY;
 
-    // Chão + oclusão ambiente.
-    for (let ly = 0; ly < this.mundoLinhas; ly++) {
-      for (let lx = 0; lx < this.mundoCols; lx++) {
+    lx0 = Math.max(0, lx0);
+    ly0 = Math.max(0, ly0);
+    lx1 = Math.min(this.mundoCols - 1, lx1);
+    ly1 = Math.min(this.mundoLinhas - 1, ly1);
+    if (lx1 < lx0 || ly1 < ly0) return;
+
+    c.clearRect(lx0 * z, ly0 * z, (lx1 - lx0 + 1) * z, (ly1 - ly0 + 1) * z);
+
+    // --- Chão, orlas entre materiais, decalques e oclusão ---
+    for (let ly = ly0; ly <= ly1; ly++) {
+      for (let lx = lx0; lx <= lx1; lx++) {
         const x = origemX + lx;
         const y = origemY + ly;
-        const g = groundDef(world.chao(x, y));
-        const v = hash2d(x, y, seed) & 3;
         const sx = lx * z;
         const sy = ly * z;
-        c.drawImage(spriteDe(g, g.sprite, g.anima ? (v + anim) & 3 : v, g.paleta), sx, sy, z + 1, z + 1);
-        if (g.luz && g.luz > 0.2) {
-          const [r, gg, b] = g.corLuz ?? [1, 0.85, 0.6];
-          this.fontes.push({ x, y, luz: g.luz, cor: corLuz(r, gg, b), tremula: true });
+        const g = groundDef(world.chao(x, y));
+        const v = hash2d(x, y, seed) & 7;
+        c.drawImage(spriteDe(g, g.sprite, v & 3, g.paleta), sx, sy, z + 1, z + 1);
+
+        // O chão vizinho invade este, com uma orla irregular.
+        const lados = [
+          [0, world.chao(x, y - 1)],
+          [1, world.chao(x, y + 1)],
+          [2, world.chao(x + 1, y)],
+          [3, world.chao(x - 1, y)],
+        ] as const;
+        for (const [lado, idVizinho] of lados) {
+          if (idVizinho === g.id) continue;
+          const vizinho = groundDef(idVizinho);
+          if (vizinho.liquido) continue;
+          c.drawImage(transicaoChao(lado, vizinho.paleta), sx, sy, z + 1, z + 1);
         }
+
+        // Detalhe espalhado: pedras, fissuras, ossos, sucata.
+        const dec = g.decalques;
+        if (dec && cellRandom(x, y, seed + 7717) < dec.hipotese) {
+          const qual = dec.chaves[hash2d(x, y, seed + 31) % dec.chaves.length];
+          c.drawImage(spriteDe(dec, qual, v & 3, g.paleta), sx, sy, z + 1, z + 1);
+        }
+
         if (world.solido(x, y)) continue;
         const ao = oclusaoChao(this.mascara(world, x, y));
         if (ao) c.drawImage(ao, sx, sy, z + 1, z + 1);
       }
     }
 
-    // Sombras projectadas pela rocha.
-    for (let ly = 0; ly < this.mundoLinhas; ly++) {
-      for (let lx = 0; lx < this.mundoCols; lx++) {
+    // --- Sombras projectadas pela rocha ---
+    for (let ly = ly0; ly <= ly1; ly++) {
+      for (let lx = lx0; lx <= lx1; lx++) {
         const x = origemX + lx;
         const y = origemY + ly;
         const def = blockDef(world.bloco(x, y));
@@ -483,45 +592,125 @@ export class Renderer {
       }
     }
 
-    // Rocha e objectos, erguidos para mostrarem a face frontal.
-    const altura = Math.round(z * 0.17);
-    this.animados.length = 0;
-    for (let ly = 0; ly < this.mundoLinhas; ly++) {
-      for (let lx = 0; lx < this.mundoCols; lx++) {
+    // --- Rocha, com silhueta arredondada onde está exposta ---
+    // Face frontal alta: é o que faz a rocha parecer um volume e não um azulejo.
+    const altura = Math.round(z * 0.26);
+    for (let ly = ly0; ly <= ly1; ly++) {
+      for (let lx = lx0; lx <= lx1; lx++) {
         const x = origemX + lx;
         const y = origemY + ly;
         const id = world.bloco(x, y);
         if (id === 0) continue;
         const def = blockDef(id);
-        if (def.luz && def.luz > 0.2) {
-          const [r, gg, b] = def.corLuz ?? [1, 0.85, 0.6];
-          // Só as chamas tremem; um veio de minério brilha parado.
-          this.fontes.push({ x, y, luz: def.luz, cor: corLuz(r, gg, b), tremula: def.anima === true });
-        }
-        if (def.anima) {
-          // Tochas, forjas e o Relé desenham-se por cima, a cada quadro.
-          this.animados.push({ x, y, def });
-          continue;
-        }
+        if (def.anima) continue;
+
         const v = hash2d(x, y, seed + 9) & 3;
         const sx = lx * z;
         const sy = ly * z;
         const img = spriteDe(def, def.sprite, v, def.paleta);
         const sobe = def.parede ? altura : 0;
+        const m = def.parede ? this.mascaraParede(world, x, y) : 0;
 
-        if (def.parede && !world.solido(x, y + 1)) {
-          c.drawImage(img, 0, 22, 32, 10, sx, sy + z - altura, z + 1, altura + 1);
-          c.fillStyle = 'rgba(0,0,0,0.42)';
+        c.save();
+        if (def.parede && m) {
+          // Cantos arredondados só onde os dois lados estão livres: é o que
+          // dá à rocha um contorno orgânico em vez de um quadrado perfeito.
+          const r = z * 0.28;
+          const cima = (m & N) !== 0;
+          const baixo = (m & S) !== 0;
+          const dir = (m & E) !== 0;
+          const esq = (m & O) !== 0;
+          this.caminhoRocha(
+            c, sx, sy - sobe, z, z + sobe,
+            cima && esq ? r : 0,
+            cima && dir ? r : 0,
+            baixo && dir ? r : 0,
+            baixo && esq ? r : 0,
+          );
+          c.clip();
+        }
+
+        const exposta = def.parede && !world.solido(x, y + 1);
+        if (exposta) {
+          // A face usa a faixa de baixo do sprite, esticada e escurecida, com
+          // um degrau de luz em cima e sombra de contacto no fundo.
+          c.drawImage(img, 0, 20, 32, 12, sx, sy + z - altura, z + 1, altura + 1);
+          c.fillStyle = 'rgba(0,0,0,0.45)';
           c.fillRect(sx, sy + z - altura, z + 1, altura + 1);
+          c.fillStyle = def.paleta.escuro;
+          c.globalAlpha = 0.6;
+          c.fillRect(sx, sy + z - altura, z + 1, 2);
+          c.globalAlpha = 1;
+          c.fillStyle = 'rgba(0,0,0,0.5)';
+          c.fillRect(sx, sy + z - 2, z + 1, 2);
           c.fillStyle = def.paleta.contorno;
           c.fillRect(sx, sy + z, z + 1, 1);
         }
 
         c.drawImage(img, sx, sy - sobe, z + 1, z + 1);
+        if (m) c.drawImage(arestaParede(m, def.paleta), sx, sy - sobe, z + 1, z + 1);
 
-        if (def.parede) {
-          const m = this.mascaraParede(world, x, y);
-          if (m) c.drawImage(arestaParede(m, def.paleta), sx, sy - sobe, z + 1, z + 1);
+        // Coroa no topo: pedras assentes no rebordo iluminado.
+        if (def.parede && (m & N) && cellRandom(x, y, seed + 991) < 0.3) {
+          c.drawImage(spriteDe(def, 'r_coroa', v, def.paleta), sx, sy - sobe - z, z + 1, z + 1);
+        }
+        c.restore();
+
+        // Vegetação e raízes a pender da rocha para o chão de baixo.
+        if (exposta && def.paleta !== undefined && cellRandom(x, y, seed + 1777) < 0.34) {
+          const pendura = grupoPendente(def);
+          if (pendura) c.drawImage(spriteDe(pendura, 'r_pendente', v, pendura), sx, sy + z, z + 1, z + 1);
+        }
+      }
+    }
+  }
+
+  /** Rectângulo com raio próprio em cada canto. */
+  private caminhoRocha(
+    c: CanvasRenderingContext2D,
+    x: number, y: number, w: number, h: number,
+    rNO: number, rNE: number, rSE: number, rSO: number,
+  ): void {
+    c.beginPath();
+    c.moveTo(x + rNO, y);
+    c.lineTo(x + w - rNE, y);
+    if (rNE) c.quadraticCurveTo(x + w, y, x + w, y + rNE);
+    c.lineTo(x + w, y + h - rSE);
+    if (rSE) c.quadraticCurveTo(x + w, y + h, x + w - rSE, y + h);
+    c.lineTo(x + rSO, y + h);
+    if (rSO) c.quadraticCurveTo(x, y + h, x, y + h - rSO);
+    c.lineTo(x, y + rNO);
+    if (rNO) c.quadraticCurveTo(x, y, x + rNO, y);
+    c.closePath();
+  }
+
+  /**
+   * Percorre a área visível e recolhe o que se desenha ao vivo por cima do
+   * buffer: líquidos, objectos com chama e fontes de luz.
+   */
+  private varrerVisiveis(cena: Cena): void {
+    const cam = this.camera;
+    const area = cam.areaVisivel(1);
+    const world = cena.world;
+    this.animados.length = 0;
+    this.fontes.length = 0;
+    this.liquidos.length = 0;
+
+    for (let y = area.y0; y <= area.y1; y++) {
+      for (let x = area.x0; x <= area.x1; x++) {
+        const g = groundDef(world.chao(x, y));
+        if (g.anima) this.liquidos.push({ x, y, def: g });
+        if (g.luz && g.luz > 0.2) {
+          const [r, gg, b] = g.corLuz ?? [1, 0.85, 0.6];
+          this.fontes.push({ x, y, luz: g.luz, cor: corLuz(r, gg, b), tremula: true });
+        }
+        const id = world.bloco(x, y);
+        if (id === 0) continue;
+        const def = blockDef(id);
+        if (def.anima) this.animados.push({ x, y, def });
+        if (def.luz && def.luz > 0.2) {
+          const [r, gg, b] = def.corLuz ?? [1, 0.85, 0.6];
+          this.fontes.push({ x, y, luz: def.luz, cor: corLuz(r, gg, b), tremula: def.anima === true });
         }
       }
     }

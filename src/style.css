@@ -240,13 +240,24 @@ body {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07), 0 2px 5px rgba(0, 0, 0, 0.7);
 }
 
-.barra-liquido {
+.barra-liquido,
+.barra-rasto {
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
   width: var(--nivel, 100%);
-  transition: width 140ms ease-out;
+}
+
+.barra-liquido {
+  transition: width 120ms ease-out;
+  z-index: 1;
+}
+
+/* Rasto do golpe: mostra o que acabaste de perder antes de desaparecer. */
+.barra-rasto {
+  background: linear-gradient(180deg, #ffd6c2, #ff8a6a 60%, #a33a2a);
+  opacity: 0.75;
 }
 
 .barra-vida .barra-corpo {
@@ -871,8 +882,36 @@ body {
 }
 
 .botao-redondo .glifo {
-  position: relative;
+  position: absolute;
+  bottom: 7px;
+  left: 0;
+  right: 0;
+  font-size: 7px;
+  letter-spacing: 0.1em;
+  opacity: 0.75;
   text-shadow: 0 1px 2px #000;
+}
+
+.glifo-img {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  margin-bottom: 6px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.9));
+}
+
+.glifo-grande {
+  width: 38px;
+  height: 38px;
+  margin-bottom: 8px;
+}
+
+.botao-estacao .glifo-img,
+.botao-mochila .glifo-img {
+  width: 22px;
+  height: 22px;
+  margin-bottom: 5px;
 }
 
 .botao-atacar {

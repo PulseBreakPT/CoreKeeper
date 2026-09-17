@@ -44,6 +44,8 @@ export interface InimigoDef {
   velocidade: number;
   raio: number;
   forma: FormaCriatura;
+  /** Variante do desenho dentro da mesma família (fungo, raiz, osso...). */
+  detalhe?: string;
   paleta: Paleta;
   comportamento: Comportamento;
   visao: number;
@@ -83,13 +85,13 @@ export const INIMIGOS: Record<string, InimigoDef> = {
     lore: 'O chão treme antes de ele aparecer.',
   }),
   lantern_tick: def({
-    id: 'lantern_tick', nome: 'Lantern Tick', vida: 14, dano: 3, velocidade: 2, raio: 0.26, forma: 'besouro',
+    id: 'lantern_tick', nome: 'Lantern Tick', vida: 14, dano: 3, velocidade: 2, raio: 0.26, forma: 'besouro', detalhe: 'lanterna',
     paleta: ORGANICO.glowfruit, comportamento: 'passivo', visao: 6, luz: 0.7,
     quedas: [{ item: 'glowmoss', min: 1, max: 2, chance: 0.9 }],
     lore: 'Passivo — até se assustar e chamar a vizinhança toda.',
   }),
   stoneback: def({
-    id: 'stoneback', nome: 'Stoneback', vida: 70, dano: 12, velocidade: 1.5, raio: 0.42, forma: 'besouro',
+    id: 'stoneback', nome: 'Stoneback', vida: 70, dano: 12, velocidade: 1.5, raio: 0.42, forma: 'besouro', detalhe: 'placas',
     paleta: ROCHA.slate, comportamento: 'perseguir', visao: 7, armadura: 6,
     quedas: [{ item: 'slate', min: 2, max: 4, chance: 0.9 }, { item: 'minerio_tinshade', min: 1, max: 2, chance: 0.3 }],
     lore: 'Placas minerais à frente. Por trás é só carne.',
@@ -97,12 +99,12 @@ export const INIMIGOS: Record<string, InimigoDef> = {
 
   // --- The Verdant Deep ---
   sporekin: def({
-    id: 'sporekin', nome: 'Sporekin', vida: 52, dano: 13, velocidade: 2.2, raio: 0.34, forma: 'humanoide',
+    id: 'sporekin', nome: 'Sporekin', vida: 52, dano: 13, velocidade: 2.2, raio: 0.34, forma: 'humanoide', detalhe: 'fungo',
     paleta: ORGANICO.spore, comportamento: 'perseguir', visao: 9, luz: 0.25,
     quedas: [{ item: 'sporecap', min: 1, max: 3, chance: 0.8 }, { item: 'micelio', min: 1, max: 2, chance: 0.5 }],
   }),
   vine_stalker: def({
-    id: 'vine_stalker', nome: 'Vine Stalker', vida: 58, dano: 18, velocidade: 3.6, raio: 0.34, forma: 'humanoide',
+    id: 'vine_stalker', nome: 'Vine Stalker', vida: 58, dano: 18, velocidade: 3.6, raio: 0.34, forma: 'humanoide', detalhe: 'espinho',
     paleta: ROCHA.rootmass, comportamento: 'emboscada', visao: 8,
     quedas: [{ item: 'fibra', min: 2, max: 4, chance: 0.9 }, { item: 'ambersap', min: 1, max: 1, chance: 0.3 }],
     lore: 'Parece vegetação normal. Até deixar de parecer.',
@@ -113,7 +115,7 @@ export const INIMIGOS: Record<string, InimigoDef> = {
     quedas: [{ item: 'sporecap', min: 2, max: 3, chance: 0.9 }, { item: 'glowfruit', min: 1, max: 2, chance: 0.4 }],
   }),
   root_walker: def({
-    id: 'root_walker', nome: 'Root Walker', vida: 96, dano: 17, velocidade: 1.8, raio: 0.46, forma: 'humanoide',
+    id: 'root_walker', nome: 'Root Walker', vida: 96, dano: 17, velocidade: 1.8, raio: 0.46, forma: 'humanoide', detalhe: 'raiz',
     paleta: ROCHA.raiz, comportamento: 'perseguir', visao: 8, armadura: 4,
     quedas: [{ item: 'ironroot', min: 2, max: 4, chance: 0.9 }, { item: 'lumibark', min: 1, max: 2, chance: 0.4 }],
     lore: 'Reconstrói-se se ficar em solo fértil.',
@@ -126,47 +128,47 @@ export const INIMIGOS: Record<string, InimigoDef> = {
 
   // --- The Ashen Foundries ---
   furnace_drone: def({
-    id: 'furnace_drone', nome: 'Furnace Drone', vida: 68, dano: 16, velocidade: 2.4, raio: 0.34, forma: 'maquina',
+    id: 'furnace_drone', nome: 'Furnace Drone', vida: 68, dano: 16, velocidade: 2.4, raio: 0.34, forma: 'maquina', detalhe: 'drone',
     paleta: ROCHA.maquina, comportamento: 'perseguir', visao: 9, luz: 0.3,
     quedas: [{ item: 'machineplate', min: 1, max: 2, chance: 0.7 }, { item: 'minerio_kaelite', min: 1, max: 1, chance: 0.2 }],
     lore: 'Continua a cumprir protocolos de uma fábrica que já ninguém gere.',
   }),
   scrap_hound: def({
-    id: 'scrap_hound', nome: 'Scrap Hound', vida: 54, dano: 14, velocidade: 4.2, raio: 0.32, forma: 'cao',
+    id: 'scrap_hound', nome: 'Scrap Hound', vida: 54, dano: 14, velocidade: 4.2, raio: 0.32, forma: 'cao', detalhe: 'cao',
     paleta: MINERAL.ferrite, comportamento: 'perseguir', visao: 11,
     quedas: [{ item: 'machineplate', min: 1, max: 2, chance: 0.5 }, { item: 'minerio_emberiron', min: 1, max: 2, chance: 0.4 }],
     lore: 'Anda a recolher metal. O teu também serve.',
   }),
   forge_sentinel: def({
-    id: 'forge_sentinel', nome: 'Forge Sentinel', vida: 130, dano: 24, velocidade: 1.9, raio: 0.46, forma: 'maquina',
+    id: 'forge_sentinel', nome: 'Forge Sentinel', vida: 130, dano: 24, velocidade: 1.9, raio: 0.46, forma: 'maquina', detalhe: 'sentinela',
     paleta: MINERAL.emberiron, comportamento: 'perseguir', visao: 10, armadura: 10, luz: 0.4,
     quedas: [{ item: 'barra_emberiron', min: 1, max: 2, chance: 0.6 }, { item: 'machineplate', min: 2, max: 3, chance: 0.8 }],
   }),
   smelter: def({
-    id: 'smelter', nome: 'Smelter', vida: 88, dano: 22, velocidade: 1.6, raio: 0.42, forma: 'maquina',
+    id: 'smelter', nome: 'Smelter', vida: 88, dano: 22, velocidade: 1.6, raio: 0.42, forma: 'maquina', detalhe: 'fundidor',
     paleta: MINERAL.emberiron, comportamento: 'atirador', visao: 12, luz: 0.6,
     quedas: [{ item: 'slag', min: 2, max: 4, chance: 0.9 }, { item: 'minerio_emberiron', min: 1, max: 3, chance: 0.5 }],
   }),
   chain_walker: def({
-    id: 'chain_walker', nome: 'Chain Walker', vida: 150, dano: 26, velocidade: 1.7, raio: 0.5, forma: 'maquina',
+    id: 'chain_walker', nome: 'Chain Walker', vida: 150, dano: 26, velocidade: 1.7, raio: 0.5, forma: 'maquina', detalhe: 'corrente',
     paleta: ROCHA.slag, comportamento: 'perseguir', visao: 10, armadura: 8,
     quedas: [{ item: 'machineplate', min: 2, max: 4, chance: 0.9 }, { item: 'barra_kaelite', min: 1, max: 1, chance: 0.3 }],
   }),
 
   // --- The Glass Desert ---
   glasscrawler: def({
-    id: 'glasscrawler', nome: 'Glasscrawler', vida: 84, dano: 20, velocidade: 3.2, raio: 0.34, forma: 'aracnideo',
+    id: 'glasscrawler', nome: 'Glasscrawler', vida: 84, dano: 20, velocidade: 3.2, raio: 0.34, forma: 'aracnideo', detalhe: 'vidro',
     paleta: ROCHA.vidro, comportamento: 'emboscada', visao: 9,
     quedas: [{ item: 'shatterglass', min: 2, max: 4, chance: 0.9 }],
   }),
   storm_beetle: def({
-    id: 'storm_beetle', nome: 'Storm Beetle', vida: 72, dano: 18, velocidade: 2.8, raio: 0.36, forma: 'besouro',
+    id: 'storm_beetle', nome: 'Storm Beetle', vida: 72, dano: 18, velocidade: 2.8, raio: 0.36, forma: 'besouro', detalhe: 'tempestade',
     paleta: MINERAL.stormglass, comportamento: 'perseguir', visao: 10, luz: 0.45, explode: 26,
     quedas: [{ item: 'minerio_stormglass', min: 1, max: 2, chance: 0.6 }, { item: 'stormsand', min: 1, max: 3, chance: 0.5 }],
     lore: 'Guarda a carga no casco. Rebenta com ela.',
   }),
   sand_wraith: def({
-    id: 'sand_wraith', nome: 'Sand Wraith', vida: 96, dano: 22, velocidade: 3.4, raio: 0.38, forma: 'espectro',
+    id: 'sand_wraith', nome: 'Sand Wraith', vida: 96, dano: 22, velocidade: 3.4, raio: 0.38, forma: 'espectro', detalhe: 'areia',
     paleta: ROCHA.areia, comportamento: 'fase', visao: 12, luz: 0.3,
     quedas: [{ item: 'stormsand', min: 2, max: 4, chance: 0.9 }, { item: 'minerio_palesilver', min: 1, max: 2, chance: 0.3 }],
   }),
@@ -201,30 +203,30 @@ export const INIMIGOS: Record<string, InimigoDef> = {
 
   // --- The Bone Expanse ---
   marrow_crawler: def({
-    id: 'marrow_crawler', nome: 'Marrow Crawler', vida: 130, dano: 30, velocidade: 3.4, raio: 0.36, forma: 'aracnideo',
+    id: 'marrow_crawler', nome: 'Marrow Crawler', vida: 130, dano: 30, velocidade: 3.4, raio: 0.36, forma: 'aracnideo', detalhe: 'medula',
     paleta: ROCHA.medula, comportamento: 'perseguir', visao: 10,
     quedas: [{ item: 'marrowstone', min: 1, max: 3, chance: 0.8 }, { item: 'minerio_ossium', min: 1, max: 2, chance: 0.4 }],
   }),
   bone_weaver: def({
-    id: 'bone_weaver', nome: 'Bone Weaver', vida: 150, dano: 28, velocidade: 2.6, raio: 0.44, forma: 'aracnideo',
+    id: 'bone_weaver', nome: 'Bone Weaver', vida: 150, dano: 28, velocidade: 2.6, raio: 0.44, forma: 'aracnideo', detalhe: 'tecelao',
     paleta: ROCHA.osso, comportamento: 'atirador', visao: 12, armadura: 8,
     quedas: [{ item: 'bonewall', min: 2, max: 4, chance: 0.9 }, { item: 'minerio_ossium', min: 1, max: 3, chance: 0.5 }],
   }),
   pale_hunger: def({
-    id: 'pale_hunger', nome: 'Pale Hunger', vida: 175, dano: 44, velocidade: 4.6, raio: 0.42, forma: 'humanoide',
+    id: 'pale_hunger', nome: 'Pale Hunger', vida: 175, dano: 44, velocidade: 4.6, raio: 0.42, forma: 'humanoide', detalhe: 'osso',
     paleta: ROCHA.osso, comportamento: 'observador', visao: 14,
     quedas: [{ item: 'minerio_ossium', min: 2, max: 3, chance: 0.8 }, { item: 'bonebroth', min: 1, max: 1, chance: 0.3 }],
     lore: 'Reage ao som. Se andares devagar, talvez não te encontre.',
   }),
   ossuary_knight: def({
-    id: 'ossuary_knight', nome: 'Ossuary Knight', vida: 260, dano: 38, velocidade: 2.2, raio: 0.48, forma: 'humanoide',
+    id: 'ossuary_knight', nome: 'Ossuary Knight', vida: 260, dano: 38, velocidade: 2.2, raio: 0.48, forma: 'humanoide', detalhe: 'cavaleiro',
     paleta: MINERAL.ossium, comportamento: 'perseguir', visao: 11, armadura: 16, luz: 0.2,
     quedas: [{ item: 'minerio_ossium', min: 2, max: 4, chance: 0.9 }, { item: 'bearer_token', min: 1, max: 1, chance: 0.08 }],
   }),
 
   // --- The Silent City / The Veil ---
   echo_shade: def({
-    id: 'echo_shade', nome: 'Echo', vida: 180, dano: 34, velocidade: 3.2, raio: 0.36, forma: 'espectro',
+    id: 'echo_shade', nome: 'Echo', vida: 180, dano: 34, velocidade: 3.2, raio: 0.36, forma: 'espectro', detalhe: 'eco',
     paleta: MINERAL.veilstone, comportamento: 'fase', visao: 13, luz: 0.4,
     quedas: [{ item: 'echoblock', min: 1, max: 2, chance: 0.6 }, { item: 'veilstone', min: 1, max: 2, chance: 0.4 }],
     lore: 'Uma cópia temporal de alguma coisa que morreu aqui.',
@@ -235,7 +237,7 @@ export const INIMIGOS: Record<string, InimigoDef> = {
     quedas: [{ item: 'minerio_veilore', min: 1, max: 2, chance: 0.5 }, { item: 'phaseglass', min: 1, max: 2, chance: 0.5 }],
   }),
   nullborn: def({
-    id: 'nullborn', nome: 'Nullborn', vida: 300, dano: 50, velocidade: 2.6, raio: 0.5, forma: 'espectro',
+    id: 'nullborn', nome: 'Nullborn', vida: 300, dano: 50, velocidade: 2.6, raio: 0.5, forma: 'espectro', detalhe: 'nulo',
     paleta: MINERAL.nullstone, comportamento: 'perseguir', visao: 13, armadura: 12,
     quedas: [{ item: 'nullstone', min: 1, max: 2, chance: 0.6 }, { item: 'veilstone', min: 1, max: 3, chance: 0.5 }],
     lore: 'Feito de ausência de matéria. Apaga o chão por onde passa.',
@@ -259,7 +261,7 @@ export const INIMIGOS: Record<string, InimigoDef> = {
     lore: 'Era uma criatura pequena. Um fragmento de Veyra tornou-a quase imortal.',
   }),
   myra: def({
-    id: 'myra', nome: 'Myra, a Mente em Flor', vida: 1600, dano: 34, velocidade: 1.2, raio: 1.4, forma: 'flor',
+    id: 'myra', nome: 'Myra, a Mente em Flor', vida: 1600, dano: 34, velocidade: 1.2, raio: 1.4, forma: 'flor', detalhe: 'mente',
     paleta: ORGANICO.spore, comportamento: 'chefe_colonia', visao: 22, chefe: true, luz: 0.8,
     quedas: [
       { item: 'fragmento_growth', min: 1, max: 1, chance: 1 },
@@ -269,7 +271,7 @@ export const INIMIGOS: Record<string, InimigoDef> = {
     lore: 'O centro consciente da colónia Mycel. A arena cresce enquanto lutas.',
   }),
   varkan: def({
-    id: 'varkan', nome: 'Varkan, o Santo da Fornalha', vida: 2600, dano: 44, velocidade: 2.6, raio: 1.4, forma: 'maquina',
+    id: 'varkan', nome: 'Varkan, o Santo da Fornalha', vida: 2600, dano: 44, velocidade: 2.6, raio: 1.4, forma: 'maquina', detalhe: 'santo',
     paleta: MINERAL.emberiron, comportamento: 'chefe_forja', visao: 24, chefe: true, armadura: 12, luz: 1,
     quedas: [
       { item: 'fragmento_dominion', min: 1, max: 1, chance: 1 },
@@ -279,7 +281,7 @@ export const INIMIGOS: Record<string, InimigoDef> = {
     lore: 'Um general Kael fundido com a sua forja. Ainda acha que a guerra continua.',
   }),
   tempest: def({
-    id: 'tempest', nome: 'A Serpente Tempestade', vida: 3600, dano: 52, velocidade: 5.2, raio: 1.3, forma: 'serpente',
+    id: 'tempest', nome: 'A Serpente Tempestade', vida: 3600, dano: 52, velocidade: 5.2, raio: 1.3, forma: 'serpente', detalhe: 'tempestade',
     paleta: MINERAL.stormglass, comportamento: 'chefe_serpente', visao: 26, chefe: true, luz: 1,
     quedas: [
       { item: 'fragmento_motion', min: 1, max: 1, chance: 1 },
@@ -288,7 +290,7 @@ export const INIMIGOS: Record<string, InimigoDef> = {
     ],
   }),
   nereth: def({
-    id: 'nereth', nome: 'Nereth, o Oráculo Afogado', vida: 4800, dano: 58, velocidade: 2, raio: 1.5, forma: 'olho',
+    id: 'nereth', nome: 'Nereth, o Oráculo Afogado', vida: 4800, dano: 58, velocidade: 2, raio: 1.5, forma: 'olho', detalhe: 'oraculo',
     paleta: MINERAL.abysspearl, comportamento: 'chefe_oraculo', visao: 28, chefe: true, armadura: 14, luz: 1.2,
     quedas: [
       { item: 'fragmento_sight', min: 1, max: 1, chance: 1 },
@@ -379,6 +381,8 @@ export class Inimigo implements CorpoMovel {
   anim = 0;
   acordado = false;
   morto = false;
+  virado = 1;
+  private xAnterior = 0;
   escalaX = 1;
   escalaY = 1;
   /** 0..1 — usado pelo desenho para o efeito de fase. */
@@ -465,6 +469,12 @@ export class Inimigo implements CorpoMovel {
     if (this.def.id === 'nullborn' && this.acordado) {
       ctx.apagarBloco(Math.floor(this.x), Math.floor(this.y));
     }
+
+    // Fica virado para o lado em que se deslocou, para o desenho espelhar.
+    if (Math.abs(this.x - this.xAnterior) > 0.002) {
+      this.virado = this.x > this.xAnterior ? 1 : -1;
+    }
+    this.xAnterior = this.x;
 
     this.tocar(ctx, dist, nx, ny);
   }

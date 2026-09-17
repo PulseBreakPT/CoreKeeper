@@ -58,6 +58,8 @@ export interface ItemDef {
   comida?: ComidaStats;
   coloca?: number;
   colocaChao?: number;
+  /** Variante do pintor: distingue peças que partilham a mesma forma base. */
+  variante?: number;
   desc?: string;
 }
 
@@ -66,8 +68,8 @@ function reg(d: ItemDef): void {
   defs.push(d);
 }
 
-function material(id: string, nome: string, sprite: string, p: Paleta, desc?: string): void {
-  reg({ id, nome, categoria: 'material', sprite, paleta: p, pilha: 999, desc });
+function material(id: string, nome: string, sprite: string, p: Paleta, desc?: string, variante = 0): void {
+  reg({ id, nome, categoria: 'material', sprite, paleta: p, pilha: 999, variante, desc });
 }
 
 // --- Materiais de rocha ------------------------------------------------------
@@ -113,10 +115,10 @@ const MINERIOS: [string, string, Paleta][] = [
   ['veilore', 'Veilstone bruto', MINERAL.veilstone],
 ];
 
-for (const [chave, nome, p] of MINERIOS) {
-  material(`minerio_${chave}`, `Minério de ${nome}`, 'i_minerio', p);
-  material(`barra_${chave}`, `Lingote de ${nome}`, 'i_lingote', p);
-}
+MINERIOS.forEach(([chave, nome, p], nivel) => {
+  material(`minerio_${chave}`, `Minério de ${nome}`, 'i_minerio', p, undefined, nivel);
+  material(`barra_${chave}`, `Lingote de ${nome}`, 'i_lingote', p, undefined, nivel);
+});
 
 // --- Fragmentos do Núcleo ----------------------------------------------------
 const FRAGMENTOS: [string, string, string][] = [
@@ -128,20 +130,21 @@ const FRAGMENTOS: [string, string, string][] = [
   ['memory', 'Memória', 'O Hollow Giant lembrava-se de quem o matou.'],
 ];
 
-for (const [chave, nome, desc] of FRAGMENTOS) {
+FRAGMENTOS.forEach(([chave, nome, desc], i) => {
   reg({
     id: `fragmento_${chave}`,
     nome: `Fragmento: ${nome}`,
     categoria: 'relíquia',
-    sprite: 'i_fragmento',
+    sprite: 'i_nucleo',
     paleta: MINERAL.starshard,
     pilha: 9,
+    variante: i,
     desc,
   });
-}
+});
 
 reg({
-  id: 'architect_key', nome: 'Chave dos Architects', categoria: 'relíquia', sprite: 'i_estrela',
+  id: 'architect_key', nome: 'Chave dos Architects', categoria: 'relíquia', sprite: 'i_chave',
   paleta: MINERAL.nullstone, pilha: 1, desc: 'Bearer Zero guardou-a durante milhares de anos. Agora é tua.',
 });
 reg({
@@ -196,7 +199,7 @@ const COMIDAS: DefComida[] = [
     id: 'starfruit', nome: 'Starfruit', sprite: 'i_estrela', p: MINERAL.starshard, fome: 50, cura: 80, regen: 40,
     buff: { tipo: 'dano', valor: 8, duracao: 180 }, desc: 'Extremamente raro. Sabe a luz.',
   },
-  { id: 'carne_crua', nome: 'Carne de caverna', sprite: 'i_raiz', p: ORGANICO.carne, fome: 10, cura: 0, regen: 0 },
+  { id: 'carne_crua', nome: 'Carne de caverna', sprite: 'i_carne', p: ORGANICO.carne, fome: 10, cura: 0, regen: 0 },
 ];
 
 for (const c of COMIDAS) {
@@ -246,16 +249,17 @@ interface DefFerramenta {
 const FERRAMENTAS: DefFerramenta[] = [
   { id: 'pick_stone', nome: 'Picareta de pedra', nivel: 1, poder: 1, p: ROCHA.slate, sprite: 'i_picareta', desc: 'O que se arranja no primeiro dia.' },
   { id: 'pick_ferrite', nome: 'Picareta de Ferrite', nivel: 2, poder: 1.5, p: MINERAL.ferrite, sprite: 'i_picareta', desc: 'Abre ardósia e os primeiros veios.' },
-  { id: 'drill_ember', nome: 'Broca de Ember', nivel: 3, poder: 2.1, p: MINERAL.emberiron, sprite: 'i_picareta', desc: 'Aquece a rocha até ela ceder.' },
-  { id: 'laser_kael', nome: 'Laser mineiro Kael', nivel: 4, poder: 2.9, p: MINERAL.kaelite, sprite: 'i_canhao', desc: 'Corta Mirrorstone e Tidebrick.' },
-  { id: 'bore_ossium', nome: 'Perfurador de Ossium', nivel: 5, poder: 3.8, p: MINERAL.ossium, sprite: 'i_picareta', desc: 'Feito do osso que resistiu a tudo.' },
-  { id: 'extractor_phase', nome: 'Extractor de Fase', nivel: 6, poder: 4.8, p: MINERAL.veilstone, sprite: 'i_canhao', desc: 'Arranca blocos que não deviam sair.' },
-  { id: 'tool_architect', nome: 'Mão dos Architects', nivel: 7, poder: 6.5, p: MINERAL.nullstone, sprite: 'i_estrela', desc: 'Não parece uma ferramenta. Manipula matéria.' },
+  { id: 'drill_ember', nome: 'Broca de Ember', nivel: 3, poder: 2.1, p: MINERAL.emberiron, sprite: 'i_broca', desc: 'Aquece a rocha até ela ceder.' },
+  { id: 'laser_kael', nome: 'Laser mineiro Kael', nivel: 4, poder: 2.9, p: MINERAL.kaelite, sprite: 'i_laser', desc: 'Corta Mirrorstone e Tidebrick.' },
+  { id: 'bore_ossium', nome: 'Perfurador de Ossium', nivel: 5, poder: 3.8, p: MINERAL.ossium, sprite: 'i_perfurador', desc: 'Feito do osso que resistiu a tudo.' },
+  { id: 'extractor_phase', nome: 'Extractor de Fase', nivel: 6, poder: 4.8, p: MINERAL.veilstone, sprite: 'i_extractor', desc: 'Arranca blocos que não deviam sair.' },
+  { id: 'tool_architect', nome: 'Mão dos Architects', nivel: 7, poder: 6.5, p: MINERAL.nullstone, sprite: 'i_mao', desc: 'Não parece uma ferramenta. Manipula matéria.' },
 ];
 
 for (const f of FERRAMENTAS) {
   reg({
     id: f.id, nome: f.nome, categoria: 'ferramenta', sprite: f.sprite, paleta: f.p, pilha: 1,
+    variante: f.id === 'pick_stone' ? 0 : 1,
     ferramenta: { nivel: f.nivel, poder: f.poder },
     arma: { dano: 4 + f.nivel * 3, alcance: 1.2, cadencia: 0.45, arco: 1.5, empurrao: 3 },
     desc: `${f.desc} · Parte blocos até ao nível ${f.nivel}.`,
@@ -279,15 +283,15 @@ interface DefArma {
 
 const ARMAS: DefArma[] = [
   {
-    id: 'rust_cleaver', nome: 'Rust Cleaver', sprite: 'i_espada', p: MINERAL.ferrite,
+    id: 'rust_cleaver', nome: 'Rust Cleaver', sprite: 'i_cutelo', p: MINERAL.ferrite,
     dano: 11, alcance: 1.5, cadencia: 0.38, arco: 1.9, empurrao: 5, desc: 'Ferro enferrujado de uma expedição perdida.',
   },
   {
-    id: 'pickblade', nome: 'Miner Pickblade', sprite: 'i_picareta', p: MINERAL.tinshade,
+    id: 'pickblade', nome: 'Miner Pickblade', sprite: 'i_picalamina', p: MINERAL.tinshade,
     dano: 13, alcance: 1.35, cadencia: 0.42, arco: 1.7, empurrao: 4, desc: 'Mina e mata sem trocar de mão.',
   },
   {
-    id: 'rootfang', nome: 'Rootfang', sprite: 'i_espada', p: MINERAL.verdglass,
+    id: 'rootfang', nome: 'Rootfang', sprite: 'i_presa', p: MINERAL.verdglass,
     dano: 16, alcance: 1.25, cadencia: 0.3, arco: 1.6, empurrao: 3, extra: { roubo: 0.22 },
     desc: 'Rouba vida a cada golpe.',
   },
@@ -297,11 +301,11 @@ const ARMAS: DefArma[] = [
     desc: 'Cada pancada abre um raio de brasa.',
   },
   {
-    id: 'kael_glaive', nome: 'Kael Glaive', sprite: 'i_lanca', p: MINERAL.kaelite,
+    id: 'kael_glaive', nome: 'Kael Glaive', sprite: 'i_alabarda', p: MINERAL.kaelite,
     dano: 26, alcance: 2.4, cadencia: 0.5, arco: 1.1, empurrao: 8, desc: 'Alcance de lança Kael.',
   },
   {
-    id: 'storm_sabre', nome: 'Storm Sabre', sprite: 'i_espada', p: MINERAL.stormglass,
+    id: 'storm_sabre', nome: 'Storm Sabre', sprite: 'i_sabre', p: MINERAL.stormglass,
     dano: 34, alcance: 1.6, cadencia: 0.32, arco: 2, empurrao: 6, extra: { critico: 0.25 },
     desc: 'Acumula carga e descarrega-a no alvo.',
   },
@@ -316,12 +320,12 @@ const ARMAS: DefArma[] = [
     desc: 'Atravessa parte da armadura do alvo.',
   },
   {
-    id: 'starbreaker', nome: 'Starbreaker', sprite: 'i_martelo', p: MINERAL.starshard,
+    id: 'starbreaker', nome: 'Starbreaker', sprite: 'i_malho', p: MINERAL.starshard,
     dano: 78, alcance: 1.8, cadencia: 0.75, arco: 2.6, empurrao: 16, extra: { area: 2.4, critico: 0.2 },
     desc: 'Feito com o que sobrou de um guardião.',
   },
   {
-    id: 'nullblade', nome: 'Nullblade', sprite: 'i_espada', p: MINERAL.nullstone,
+    id: 'nullblade', nome: 'Nullblade', sprite: 'i_nullblade', p: MINERAL.nullstone,
     dano: 92, alcance: 1.9, cadencia: 0.3, arco: 2.1, empurrao: 9,
     extra: { perfuraArmadura: 1, critico: 0.3 }, desc: 'Ignora armadura. Ignora quase tudo.',
   },
@@ -343,22 +347,22 @@ const DISTANCIA: DefArma[] = [
     extra: { projectil: { velocidade: 14, cor: '#d9b48f' } }, desc: 'Improvisado com sucata e fibra.',
   },
   {
-    id: 'thorncaster', nome: 'Thorncaster', sprite: 'i_arco', p: MINERAL.verdglass,
+    id: 'thorncaster', nome: 'Thorncaster', sprite: 'i_besta', p: MINERAL.verdglass,
     dano: 20, alcance: 10, cadencia: 0.45, arco: 0.4, empurrao: 3,
     extra: { projectil: { velocidade: 15, cor: '#8fffc4' } }, desc: 'A munição volta a crescer sozinha.',
   },
   {
-    id: 'bolt_driver', nome: 'Bolt Driver', sprite: 'i_canhao', p: MINERAL.kaelite,
+    id: 'bolt_driver', nome: 'Bolt Driver', sprite: 'i_rebitadora', p: MINERAL.kaelite,
     dano: 32, alcance: 11, cadencia: 0.62, arco: 0.35, empurrao: 8,
     extra: { projectil: { velocidade: 18, cor: '#6de0ff', perfura: 1 } }, desc: 'Dispara rebites que atravessam um alvo.',
   },
   {
-    id: 'arc_rifle', nome: 'Arc Rifle', sprite: 'i_canhao', p: MINERAL.stormglass,
+    id: 'arc_rifle', nome: 'Arc Rifle', sprite: 'i_espingarda', p: MINERAL.stormglass,
     dano: 38, alcance: 12, cadencia: 0.5, arco: 0.3, empurrao: 5,
     extra: { projectil: { velocidade: 22, cor: '#d9c2ff', salta: 2 } }, desc: 'O disparo salta entre inimigos.',
   },
   {
-    id: 'pressure_lance', nome: 'Pressure Lance', sprite: 'i_lanca', p: MINERAL.abysspearl,
+    id: 'pressure_lance', nome: 'Pressure Lance', sprite: 'i_jacto', p: MINERAL.abysspearl,
     dano: 46, alcance: 10, cadencia: 0.42, arco: 0.35, empurrao: 10,
     extra: { projectil: { velocidade: 19, cor: '#b6ffff' } }, desc: 'Jacto de alta pressão do Drowned Kingdom.',
   },
@@ -368,7 +372,7 @@ const DISTANCIA: DefArma[] = [
     extra: { projectil: { velocidade: 24, cor: '#d5a8ff', perfura: 3 } }, desc: 'Os tiros atravessam paredes finas.',
   },
   {
-    id: 'starcaster', nome: 'Starcaster', sprite: 'i_estrela', p: MINERAL.starshard,
+    id: 'starcaster', nome: 'Starcaster', sprite: 'i_bastao', p: MINERAL.starshard,
     dano: 84, alcance: 14, cadencia: 0.6, arco: 0.3, empurrao: 12,
     extra: { projectil: { velocidade: 20, cor: '#fff3b0', perfura: 2, salta: 1 } },
     desc: 'Transforma Starshards em projécteis.',
@@ -409,7 +413,7 @@ const PECAS: { slot: ArmaduraStats['slot']; nome: string; sprite: string; mult: 
   { slot: 'pernas', nome: 'Grevas', sprite: 'i_grevas', mult: 0.9 },
 ];
 
-for (const conj of CONJUNTOS) {
+CONJUNTOS.forEach((conj, iConj) => {
   for (const peca of PECAS) {
     reg({
       id: `${peca.slot}_${conj.chave}`,
@@ -418,11 +422,12 @@ for (const conj of CONJUNTOS) {
       sprite: peca.sprite,
       paleta: conj.p,
       pilha: 1,
+      variante: iConj,
       armadura: { slot: peca.slot, defesa: Math.round(conj.defesa * peca.mult), conjunto: conj.chave },
       desc: `Conjunto ${conj.nome} — ${conj.bonus}`,
     });
   }
-}
+});
 
 export const ITEMS: Record<string, ItemDef> = Object.fromEntries(defs.map((d) => [d.id, d]));
 
