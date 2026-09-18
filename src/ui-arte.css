@@ -287,6 +287,18 @@
   box-shadow: none;
 }
 
+.slot-equip[data-equip='cabeca'] { background-image: url('./assets/ui/slots/elmo.png'); }
+.slot-equip[data-equip='peito'] { background-image: url('./assets/ui/slots/peito.png'); }
+.slot-equip[data-equip='pernas'] { background-image: url('./assets/ui/slots/pernas.png'); }
+
+.slot-equip.tem-item { background-image: url('./assets/ui/slots/activo.png'); }
+
+.slot-equip .rotulo-equip {
+  bottom: -2px;
+  font-size: 6px;
+  opacity: 0.8;
+}
+
 /* ---------- Mensagens ---------- */
 
 .mensagem {
@@ -523,3 +535,60 @@
 /* O glifo do botão sobe um pouco: em baixo ficava por cima da moldura. */
 .botao-redondo .glifo-img { margin-bottom: 11px; }
 .botao-atacar .glifo-img { margin-bottom: 14px; }
+
+/* ---------- Grelha e equipamento ---------- */
+
+/* As peças são quadradas (com a gema a sair por cima): esticadas à largura da
+   coluna ficavam faixas. Largura fixa e centradas. */
+.equipamento {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+}
+
+.equipamento .socket,
+.slot-equip {
+  width: 58px;
+  height: 64px;
+  aspect-ratio: auto;
+  flex: none;
+}
+
+.rotulo-equip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -11px;
+  font-size: 6px;
+  color: var(--texto-suave);
+}
+
+.grelha .socket {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 128 / 147;
+}
+
+/* Os primeiros oito são os da hotbar: moldura rara para se distinguirem.
+   O atalho `background` do style.css repõe tamanho e repetição, por isso aqui
+   repete-se o atalho inteiro em vez de trocar só a imagem. */
+.socket.slot-grande.de-hotbar {
+  background: url('./assets/ui/slots/raro.png') center / 100% 100% no-repeat;
+  border-color: transparent;
+}
+
+.socket.escolhido {
+  background: url('./assets/ui/slots/activo.png') center / 100% 100% no-repeat;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* Com moldura os slots ficaram mais altos: a mochila passa a rolar em vez de
+   sair pelo fundo do painel num ecrã deitado. */
+.aba-mochila {
+  max-height: 48vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.grelha { gap: 3px; }

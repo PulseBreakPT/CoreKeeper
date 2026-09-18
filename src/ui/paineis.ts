@@ -206,6 +206,10 @@ export class PainelInventario {
       const slot = el.dataset.equip as SlotEquipamento;
       const id = inv.equipamento[slot];
       const img = el.querySelector('img') as HTMLImageElement;
+      // Com peça vestida a moldura passa a lisa: a silhueta desenhada no slot
+      // serve para dizer o que lá vai quando está vazio, não para ficar por
+      // baixo do item.
+      el.classList.toggle('tem-item', Boolean(id));
       if (id) {
         img.src = iconeItem(id);
         img.style.visibility = 'visible';
