@@ -1,0 +1,134 @@
+/**
+ * Letras do jogo.
+ *
+ * A interface é de metal e gema gravados; uma sans-serif de sistema ao lado
+ * disso parece um formulário colado por cima da armadura. Entram duas letras,
+ * as duas com licença aberta e guardadas no próprio jogo — nada é pedido à
+ * rede, que é o que um jogo instalado no telemóvel tem de garantir:
+ *
+ * - Cinzel, capitulares à romana, para tudo o que é moldura: títulos, botões,
+ *   rótulos, números do HUD. É desenhada a partir de letra gravada em pedra,
+ *   que é exactamente o que as peças da interface imitam.
+ * - Spectral, serifada de ecrã, para o texto que se lê a sério: a história,
+ *   as descrições, as listas de materiais.
+ *
+ * Só se guarda o subconjunto latino — chega para o português e são 100 KB em
+ * vez de meio mega.
+ */
+
+@font-face {
+  font-family: 'Cinzel';
+  src: url('./assets/fontes/cinzel-600.woff2') format('woff2');
+  font-weight: 600 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Spectral';
+  src: url('./assets/fontes/spectral-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Spectral';
+  src: url('./assets/fontes/spectral-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Spectral';
+  src: url('./assets/fontes/spectral-400-italico.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  --fonte-ui: 'Cinzel', 'Trajan Pro', Georgia, 'Times New Roman', serif;
+  --fonte-corpo: 'Spectral', Georgia, 'Times New Roman', serif;
+}
+
+body,
+.painel,
+.menu,
+.morte {
+  font-family: var(--fonte-corpo);
+}
+
+/* Moldura: tudo o que vive dentro de uma peça de metal. */
+h1,
+h2,
+h3,
+.botao,
+.abas button,
+.escolhas button,
+.painel-titulo,
+.painel-fechar,
+.barra-valor,
+.barra-rotulo,
+.leitura-camada,
+.leitura-num,
+.leitura-un,
+.medidor,
+.nome-mao,
+.glifo,
+.rotulo-equip,
+.socket .contagem,
+.socket-num,
+.chefe-nome,
+.chefe-valor,
+.cartao-nome,
+.cartao-sub,
+.rotulo-estacao,
+.receita-info strong,
+.buff {
+  font-family: var(--fonte-ui);
+  font-weight: 700;
+}
+
+/* Corpo: o que se lê em frases. */
+.receita-info,
+.painel-rodape,
+.mensagem,
+.ajuda,
+.menu-col-esq p,
+.dica,
+input,
+textarea {
+  font-family: var(--fonte-corpo);
+}
+
+/* A Cinzel é toda capitular e larga: a caixa alta é o seu estado natural e
+   precisa de mais espaço entre letras do que uma sans. */
+.botao,
+.abas button,
+.painel-titulo,
+.leitura-camada,
+.glifo,
+.rotulo-equip,
+.chefe-nome,
+.cartao-nome {
+  text-transform: uppercase;
+}
+
+.painel-titulo { letter-spacing: 0.14em; }
+.botao { letter-spacing: 0.12em; }
+.abas button { letter-spacing: 0.12em; }
+.glifo { letter-spacing: 0.06em; }
+.leitura-camada { letter-spacing: 0.04em; }
+.chefe-nome { letter-spacing: 0.08em; }
+
+/* Números: a Cinzel tem algarismos de caixa alta, que assentam bem nas
+   ranhuras das barras, mas precisam de travessão fixo para não dançarem. */
+.barra-valor,
+.leitura-num,
+.medidor,
+.socket .contagem,
+.chefe-valor {
+  font-variant-numeric: tabular-nums lining-nums;
+}

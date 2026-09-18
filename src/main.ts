@@ -1,6 +1,7 @@
 /** Arranque: liga canvas, entrada, HUD e ciclo de jogo. */
 
 import './style.css';
+import './tipografia.css';
 import './ui-arte.css';
 import { audio } from './core/audio';
 import { Input } from './core/input';

@@ -813,3 +813,221 @@
 .menu.com-fundo .menu-caixa {
   width: min(calc(var(--hud) * 48), 94vw);
 }
+
+/* ---------- Texto dentro da cavidade de cada peça ---------- */
+
+/*
+ * Cada peça tem uma ranhura escura desenhada, e é lá dentro que o texto tem de
+ * cair — não centrado no rectângulo do elemento, que inclui gemas e pontas.
+ * As percentagens abaixo são as cavidades medidas em cada imagem.
+ */
+
+/* Barra: cavidade y 36.7%..69.2% */
+.barra-valor {
+  top: 52.9%;
+  right: 10.5%;
+  font-size: calc(var(--hud) * 0.76);
+}
+
+/* Leitura de zona: cavidade x 25%..89%, y 25.8%..68.3% */
+.modulo-leitura {
+  padding: 0 calc(var(--hud) * 1.62) 0 calc(var(--hud) * 3.65);
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.modulo-leitura .leitura-camada,
+.modulo-leitura .leitura-linha,
+.modulo-leitura .fragmentos {
+  margin-right: 0;
+}
+
+/* O bloco de texto centra-se na cavidade, não na peça. */
+.modulo-leitura::after {
+  content: '';
+  display: block;
+  height: calc((100% - 68.3% + 25.8%) * 0);
+}
+
+/* Etiqueta do item: a coroa ocupa o cimo, a ranhura fica em baixo (centro 62%) */
+.nome-mao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--hud) * 2) calc(var(--hud) * 1.6) 0;
+}
+
+/* Botões redondos: cavidade y 29.4%..78.9% */
+.botao-redondo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--hud) * 1.45) 0 calc(var(--hud) * 1.05);
+}
+
+.botao-redondo .glifo {
+  position: static;
+  bottom: auto;
+  line-height: 1;
+}
+
+.botao-redondo .glifo-img {
+  margin: 0 0 calc(var(--hud) * 0.18);
+}
+
+.botao-atacar {
+  /* A moldura de cristal tem a ranhura mais alta: 22.6%..80.6% */
+  padding: calc(var(--hud) * 1.6) 0 calc(var(--hud) * 1.3);
+}
+
+/* Slots: cavidade y 31.3%..90.5%, x 10.9%..87.5% */
+.socket .icone {
+  left: 12%;
+  top: 33%;
+  width: 76%;
+  height: 55%;
+}
+
+.socket .contagem {
+  right: 13%;
+  bottom: 10%;
+  line-height: 1;
+}
+
+.socket-num {
+  top: 34%;
+  left: 15%;
+  line-height: 1;
+}
+
+/* Faixa do guardião: o nome e a percentagem na ranhura, a barra por baixo. */
+.chefe-topo {
+  top: 38%;
+  transform: translateY(-50%);
+}
+
+.chefe-nome { font-size: calc(var(--hud) * 0.68); }
+.chefe-valor { font-size: calc(var(--hud) * 0.68); }
+
+.chefe-barra {
+  top: 56%;
+  height: 9%;
+}
+
+/* Medidor: uma linha centrada na ranhura (centro 46%) */
+.medidor {
+  align-items: baseline;
+  padding: calc(var(--hud) * 0.3) calc(var(--hud) * 2.2) calc(var(--hud) * 0.42);
+}
+
+/* ---------- Correcções de caixa ---------- */
+
+/* Como item de um flex em linha, o botão podia crescer em altura para caber o
+   conteúdo e deixava de ser redondo. Aqui fica preso ao tamanho pedido. */
+.botao-redondo {
+  flex: none;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.botao-atacar .glifo-img {
+  width: calc(var(--hud) * 2.2);
+  height: calc(var(--hud) * 2.2);
+}
+
+/* A etiqueta do item tinha medidas em percentagem da própria largura, que
+   cresce com o texto: a caixa engordava sozinha. Agora a proporção é a da
+   peça e o texto assenta na ranhura de baixo (centro a 62% da altura). */
+.nome-mao {
+  width: min(calc(var(--hud) * 14), 42vw);
+  aspect-ratio: 433 / 138;
+  min-width: 0;
+  min-height: 0;
+  padding: calc(var(--hud) * 2) calc(var(--hud) * 1.6) 0;
+  align-items: flex-start;
+  font-size: calc(var(--hud) * 0.62);
+  line-height: 1;
+}
+
+.medidor {
+  padding: calc(var(--hud) * 0.28) calc(var(--hud) * 1.5) calc(var(--hud) * 0.4);
+  min-width: calc(var(--hud) * 8);
+}
+
+.medidor-fps { font-size: calc(var(--hud) * 0.6); }
+.medidor-ms { font-size: calc(var(--hud) * 0.42); }
+
+/* A Cinzel é larga: o nome da camada precisa de corpo menor para caber na
+   ranhura sem reticências. */
+.modulo-leitura .leitura-camada { font-size: calc(var(--hud) * 0.42); }
+.modulo-leitura .leitura-num { font-size: calc(var(--hud) * 1.25); }
+.modulo-leitura .leitura-un { font-size: calc(var(--hud) * 0.46); }
+
+/* ---------- Afinações finais de texto ---------- */
+
+/* A peça `paineis/barra` tem uma gema ao centro que parte a ranhura em duas:
+   um texto comprido atravessava-a. O medidor passa para a barra lisa, em nove
+   fatias, onde só o meio estica. */
+.medidor {
+  background: none;
+  border-style: solid;
+  border-color: transparent;
+  border-width: calc(var(--hud) * 0.5) calc(var(--hud) * 1.7);
+  border-image: url('./assets/ui/controlos/principal.png') 30 62 fill /
+    calc(var(--hud) * 0.5) calc(var(--hud) * 1.7) stretch;
+  padding: 0;
+  min-width: 0;
+  gap: calc(var(--hud) * 0.45);
+}
+
+/* O bloco de leitura desce um pouco: estava encostado ao topo da ranhura. */
+.modulo-leitura {
+  padding-top: calc(var(--hud) * 0.9);
+  padding-bottom: calc(var(--hud) * 0.45);
+}
+
+/* A etiqueta tem a coroa em cima; o texto assenta mais abaixo. */
+.nome-mao { padding-top: calc(var(--hud) * 2.35); }
+
+/* Folga entre o rótulo e o aro do botão. */
+.botao-redondo { padding-bottom: calc(var(--hud) * 1.25); }
+.botao-atacar { padding-bottom: calc(var(--hud) * 1.5); }
+
+/* Mais folga à direita: a ranhura acaba antes da ponta de cristal. */
+.modulo-leitura {
+  padding-right: calc(var(--hud) * 2.4);
+}
+
+.modulo-leitura .leitura-camada { font-size: calc(var(--hud) * 0.4); }
+
+/* A gema da aba fica no topo da peça: mais borda em cima empurra o texto para
+   o meio da ranhura, como nos botões. */
+.abas button {
+  border-width: calc(var(--hud) * 0.85) calc(var(--hud) * 1.8) calc(var(--hud) * 0.5);
+  border-image-width: calc(var(--hud) * 0.85) calc(var(--hud) * 1.8) calc(var(--hud) * 0.5);
+}
+
+/* O rótulo do slot de equipamento cai por baixo da moldura, não por cima dela. */
+.rotulo-equip { bottom: calc(var(--hud) * -0.85); }
+.equipamento { gap: calc(var(--hud) * 0.95); }
+
+/* A contagem da pilha entra um pouco mais para dentro da ranhura. */
+.socket .contagem { right: 15%; bottom: 12%; }
+
+/* Os botões de qualidade eram os únicos com aspecto de formulário: ficam em
+   metal e ouro como o resto, sem precisar de mais uma peça. */
+.escolhas button {
+  background: linear-gradient(180deg, #1b1927, #0d0c15);
+  border: 1px solid #7c5f24;
+  border-radius: 3px;
+  color: var(--texto-suave);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.escolhas button.ativa {
+  border-color: var(--ouro);
+  color: #fff4d6;
+  box-shadow: inset 0 0 10px rgba(242, 195, 51, 0.28);
+}
