@@ -375,8 +375,20 @@
     "h": 145,
     "w": 128
   },
+  "slots/elmo": {
+    "h": 141,
+    "w": 128
+  },
   "slots/normal": {
     "h": 147,
+    "w": 128
+  },
+  "slots/peito": {
+    "h": 141,
+    "w": 128
+  },
+  "slots/pernas": {
+    "h": 146,
     "w": 128
   },
   "slots/raro": {

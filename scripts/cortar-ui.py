@@ -83,6 +83,12 @@ PECAS: list[tuple[str, str, tuple[int, int, int, int], int]] = [
     ('slots/raro',       '4-slots', (379, 13, 544, 195), 128),
     ('slots/bloqueado',  '4-slots', (556, 13, 717, 195), 128),
 
+    # Slots de equipamento: já vêm com a peça desenhada por dentro, o que diz
+    # ao jogador o que lá vai antes de ter alguma coisa para pôr.
+    ('slots/elmo',   '4-slots', (210, 203, 370, 379), 128),
+    ('slots/peito',  '4-slots', (384, 203, 544, 379), 128),
+    ('slots/pernas', '4-slots', (726, 203, 884, 379), 128),
+
     # --- Ícones de categoria ------------------------------------------------
     ('icones/mochila',     '4-slots', (26, 763, 134, 891), 96),
     ('icones/combate',     '4-slots', (141, 762, 251, 890), 96),
