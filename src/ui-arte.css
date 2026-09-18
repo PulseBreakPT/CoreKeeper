@@ -8,7 +8,19 @@
  *
  * As percentagens de recorte vêm da cavidade escura de cada peça: como são
  * relativas, a moldura serve em qualquer tamanho de ecrã.
+ *
+ * Tamanhos
+ * --------
+ * Tudo o que se vê no HUD é medido em `--hud`, uma unidade que segue a altura
+ * do ecrã — deitado, a altura é o que escasseia. Números soltos afinados num
+ * telemóvel ficavam minúsculos num tablet e gigantes num ecrã baixo; com uma
+ * unidade só, as proporções entre moldura, texto e ícone mantêm-se em todo o
+ * lado e afina-se tudo num sítio.
  */
+
+:root {
+  --hud: clamp(11px, 3.4vh, 19px);
+}
 
 /* ---------- Barras vitais ---------- */
 
@@ -32,7 +44,7 @@
 .barra {
   position: relative;
   display: block;
-  width: 172px;
+  width: calc(var(--hud) * 10.2);
   max-width: 34vw;
   aspect-ratio: 511 / 120;
   background: url('./assets/ui/hud/barra-vida.png') center / 100% 100% no-repeat;
@@ -68,7 +80,7 @@
   top: 46%;
   transform: translateY(-50%);
   z-index: 3;
-  font-size: 11px;
+  font-size: calc(var(--hud) * 0.82);
   min-width: 0;
   text-shadow: 0 1px 2px #000, 0 0 6px rgba(0, 0, 0, 0.9);
 }
@@ -87,13 +99,13 @@
   border: 0;
   box-shadow: none;
   aspect-ratio: 683 / 271;
-  width: 244px;
+  width: calc(var(--hud) * 14.6);
   max-width: 38vw;
   /* A cavidade da peça começa a 30% (o medalhão ocupa a esquerda) e acaba
      antes da ponta de cristal: é aí que o texto tem de caber. */
   /* Em px e não em %: a percentagem vertical conta a partir da largura, o que
      deixava a linha do nome da zona esmagada a zero. */
-  padding: 8px 20px 12px 78px;
+  padding: calc(var(--hud) * 0.5) calc(var(--hud) * 1.7) calc(var(--hud) * 0.85) calc(var(--hud) * 3.8);
   gap: 0;
   justify-content: center;
 }
@@ -107,20 +119,26 @@
   background: url('./assets/ui/paineis/barra.png') center / 100% 100% no-repeat;
   border: 0;
   box-shadow: none;
-  padding: 10px 26px;
-  min-width: 88px;
+  /* A cavidade da peça é uma ranhura deitada: as duas linhas não cabiam lá,
+     por isso os FPS e o tempo por quadro passam a ler-se na mesma linha. */
+  flex-direction: row;
+  align-items: baseline;
+  padding: calc(var(--hud) * 0.34) calc(var(--hud) * 2.2);
+  min-width: calc(var(--hud) * 7);
+  justify-content: center;
+  gap: calc(var(--hud) * 0.4);
 }
 
-.medidor-fps { font-size: 10px; }
-.medidor-ms { font-size: 6px; }
+.medidor-fps { font-size: calc(var(--hud) * 0.72); line-height: 1.1; }
+.medidor-ms { font-size: calc(var(--hud) * 0.46); line-height: 1.1; }
 
 /* Nenhuma linha pode encolher: o nome da zona tem de sobreviver. */
 .modulo-leitura > * { flex: none; }
-.modulo-leitura .leitura-camada { font-size: 7.5px; letter-spacing: 0.1em; }
+.modulo-leitura .leitura-camada { font-size: calc(var(--hud) * 0.5); letter-spacing: 0.02em; }
 .modulo-leitura .leitura-linha { align-items: baseline; }
 .modulo-leitura .leitura-un { white-space: nowrap; }
-.modulo-leitura .leitura-num { font-size: 16px; }
-.modulo-leitura .leitura-un { font-size: 7px; }
+.modulo-leitura .leitura-num { font-size: calc(var(--hud) * 1.4); }
+.modulo-leitura .leitura-un { font-size: calc(var(--hud) * 0.54); }
 .modulo-leitura .fragmentos { margin-top: 1px; }
 .modulo-leitura .varrimento { display: none; }
 
@@ -128,8 +146,8 @@
   background: url('./assets/ui/controlos/botao-simples.png') center / 100% 100% no-repeat;
   border: 0;
   box-shadow: none;
-  width: 46px;
-  height: 46px;
+  width: calc(var(--hud) * 3.4);
+  height: calc(var(--hud) * 3.4);
 }
 
 .botao-chapa:active { background-image: url('./assets/ui/controlos/botao-premido.png'); }
@@ -146,19 +164,19 @@
   background: url('./assets/ui/controlos/joystick-punho.png') center / 100% 100% no-repeat;
   border: 0;
   box-shadow: none;
-  width: 50px;
-  height: 50px;
-  margin: -25px 0 0 -25px;
+  width: calc(var(--hud) * 3.9);
+  height: calc(var(--hud) * 3.9);
+  margin: calc(var(--hud) * -1.95) 0 0 calc(var(--hud) * -1.95);
 }
 
 /* ---------- Hotbar ---------- */
 
 .nome-mao {
-  min-width: 158px;
-  padding: 7px 26px 9px;
+  min-width: calc(var(--hud) * 11);
+  padding: calc(var(--hud) * 0.45) calc(var(--hud) * 1.9) calc(var(--hud) * 0.6);
   background: url('./assets/ui/hud/etiqueta.png') center / 100% 100% no-repeat;
   color: var(--texto);
-  font-size: 10px;
+  font-size: calc(var(--hud) * 0.74);
 }
 
 .nome-mao:empty { background: none; }
@@ -176,8 +194,8 @@
   border: 0;
   border-radius: 0;
   box-shadow: none;
-  width: 46px;
-  height: 51px;
+  width: calc(var(--hud) * 3.6);
+  height: calc(var(--hud) * 4.14);
   padding: 0;
   display: block;
 }
@@ -186,10 +204,10 @@
 
 .socket .icone {
   position: absolute;
-  left: 14%;
-  top: 26%;
-  width: 72%;
-  height: 62%;
+  left: 11%;
+  top: 24%;
+  width: 78%;
+  height: 67%;
   object-fit: contain;
 }
 
@@ -210,8 +228,8 @@
 
 /* Num telemóvel o polegar precisa de alvo: o botão principal é o maior. */
 .botao-redondo {
-  width: 64px;
-  height: 64px;
+  width: calc(var(--hud) * 4.9);
+  height: calc(var(--hud) * 4.9);
   background: url('./assets/ui/controlos/botao.png') center / 100% 100% no-repeat;
   border: 0;
   box-shadow: none;
@@ -228,8 +246,8 @@
 /* O botão de minar é o principal: leva a moldura de cristal, maior. */
 .botao-atacar {
   background-image: url('./assets/ui/controlos/botao-cristal.png');
-  width: 88px;
-  height: 88px;
+  width: calc(var(--hud) * 6.8);
+  height: calc(var(--hud) * 6.8);
 }
 
 .botao-atacar:active,
@@ -238,8 +256,10 @@
 .anel-atacar { display: none; }
 
 .botao-redondo .glifo {
-  bottom: 15%;
-  font-size: 6px;
+  bottom: 13%;
+  font-size: calc(var(--hud) * 0.52);
+  letter-spacing: 0.08em;
+  opacity: 0.95;
   text-shadow: 0 1px 3px #000;
 }
 
@@ -250,8 +270,8 @@
    esticava-se por dentro do painel. */
 .painel-caixa,
 .menu-caixa {
-  border: 32px solid transparent;
-  border-image: url('./assets/ui/paineis/inventario.png') 74 / 32px stretch;
+  border: calc(var(--hud) * 2.2) solid transparent;
+  border-image: url('./assets/ui/paineis/inventario.png') 74 / calc(var(--hud) * 2.2) stretch;
   background: linear-gradient(180deg, rgba(14, 12, 22, 0.97), rgba(8, 7, 13, 0.97));
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.75);
   border-radius: 0;
@@ -323,8 +343,8 @@
   background: center / contain no-repeat;
   border: 0;
   box-shadow: none;
-  width: 26px;
-  height: 26px;
+  width: calc(var(--hud) * 2);
+  height: calc(var(--hud) * 2);
   font-size: 0;
 }
 
@@ -337,17 +357,17 @@
 
 /* Cada estação entra com o seu emblema por cima da moldura: ao abrir o painel
    vê-se logo se é a bancada, a forja ou o fogão, sem ter de ler o título. */
-.painel[data-estacao]:not([data-estacao='']) .painel-caixa { margin-top: 46px; }
+.painel[data-estacao]:not([data-estacao='']) .painel-caixa { margin-top: calc(var(--hud) * 3.4); }
 
 .painel[data-estacao]:not([data-estacao='']) .painel-caixa::before {
   display: block;
   content: '';
   position: absolute;
   left: 50%;
-  top: -64px;
+  top: calc(var(--hud) * -4.8);
   transform: translateX(-50%);
-  width: 86px;
-  height: 94px;
+  width: calc(var(--hud) * 6.4);
+  height: calc(var(--hud) * 7);
   background: center / contain no-repeat;
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.8));
   pointer-events: none;
@@ -372,23 +392,23 @@
 /* A forja e a fundição levam o forno a sério — aceso e ao rubro. */
 .painel[data-estacao='forja'] .painel-caixa::before {
   background-image: url('./assets/ui/estacoes/forno-aceso.png');
-  width: 112px;
-  height: 132px;
-  top: -92px;
+  width: calc(var(--hud) * 8.2);
+  height: calc(var(--hud) * 9.7);
+  top: calc(var(--hud) * -6.8);
 }
 
 .painel[data-estacao='fundicao'] .painel-caixa::before {
   background-image: url('./assets/ui/estacoes/forno-maximo.png');
-  width: 112px;
-  height: 132px;
-  top: -92px;
+  width: calc(var(--hud) * 8.2);
+  height: calc(var(--hud) * 9.7);
+  top: calc(var(--hud) * -6.8);
 }
 
 .painel[data-estacao='fogao'] .painel-caixa::before {
   background-image: url('./assets/ui/estacoes/caldeirao.png');
-  width: 116px;
-  height: 118px;
-  top: -84px;
+  width: calc(var(--hud) * 8.6);
+  height: calc(var(--hud) * 8.7);
+  top: calc(var(--hud) * -6.2);
 }
 
 /* ---------- Barra do guardião ---------- */
@@ -398,7 +418,7 @@
   border: 0;
   box-shadow: none;
   padding: 0;
-  width: 340px;
+  width: calc(var(--hud) * 23);
   max-width: 54vw;
   aspect-ratio: 512 / 229;
   position: relative;
@@ -445,8 +465,10 @@
   background: none;
   border-style: solid;
   border-color: transparent;
-  border-width: 9px 24px 9px 58px;
-  border-image: url('./assets/ui/paineis/linha.png') 16 50 16 90 fill / 9px 24px 9px 58px stretch;
+  --cap: calc(var(--hud) * 4.2);
+  border-width: calc(var(--hud) * 0.62) calc(var(--hud) * 1.7) calc(var(--hud) * 0.62) var(--cap);
+  border-image: url('./assets/ui/paineis/linha.png') 16 50 16 90 fill /
+    calc(var(--hud) * 0.62) calc(var(--hud) * 1.7) calc(var(--hud) * 0.62) var(--cap) stretch;
   padding: 0;
   margin-bottom: 10px;
   min-height: 30px;
@@ -457,10 +479,11 @@
 .abas button {
   background: none;
   border: 0;
-  border-width: 14px 30px;
+  border-width: calc(var(--hud) * 0.9) calc(var(--hud) * 2);
   border-style: solid;
   border-color: transparent;
-  border-image: url('./assets/ui/controlos/principal.png') 30 62 fill / 14px 30px stretch;
+  border-image: url('./assets/ui/controlos/principal.png') 30 62 fill /
+    calc(var(--hud) * 0.9) calc(var(--hud) * 2) stretch;
   color: var(--texto-suave);
 }
 
@@ -474,18 +497,20 @@
   background: none;
   border-style: solid;
   border-color: transparent;
-  border-width: 8px 22px 8px 56px;
-  border-image: url('./assets/ui/paineis/linha.png') 16 50 16 90 fill / 8px 22px 8px 56px stretch;
+  --cap: calc(var(--hud) * 4);
+  border-width: calc(var(--hud) * 0.55) calc(var(--hud) * 1.55) calc(var(--hud) * 0.55) var(--cap);
+  border-image: url('./assets/ui/paineis/linha.png') 16 50 16 90 fill /
+    calc(var(--hud) * 0.55) calc(var(--hud) * 1.55) calc(var(--hud) * 0.55) var(--cap) stretch;
   border-radius: 0;
   padding: 2px 4px;
 }
 
 /* O ícone do item encaixa no medalhão que a peça já tem à esquerda. */
 .receita .icone {
-  margin-left: -46px;
-  margin-right: 8px;
-  width: 30px;
-  height: 30px;
+  margin-left: calc(var(--cap) * -0.82);
+  margin-right: calc(var(--hud) * 0.5);
+  width: calc(var(--hud) * 2.2);
+  height: calc(var(--hud) * 2.2);
 }
 
 .receita:not(.bloqueada):hover,
@@ -508,8 +533,9 @@
   background: none;
   border-style: solid;
   border-color: transparent;
-  border-width: 14px 30px;
-  border-image: url('./assets/ui/controlos/principal.png') 30 62 fill / 14px 30px stretch;
+  border-width: calc(var(--hud) * 0.9) calc(var(--hud) * 2);
+  border-image: url('./assets/ui/controlos/principal.png') 30 62 fill /
+    calc(var(--hud) * 0.9) calc(var(--hud) * 2) stretch;
   border-radius: 0;
   box-shadow: none;
   color: var(--texto);
@@ -523,18 +549,29 @@
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
+/* A peça do "não" traz um X desenhado no meio, que tapava o texto: aqui fica
+   a moldura comum e o aviso vem da cor da letra. */
 .botao.perigo {
   background: none;
   box-shadow: none;
-  border-image-source: url('./assets/ui/estacoes/botao-nao.png');
-  border-image-slice: 26 52 fill;
+  color: #ff9c9c;
+  text-shadow: 0 1px 3px #000, 0 0 10px rgba(216, 72, 76, 0.5);
 }
 
 .botao:active { filter: brightness(1.15); transform: translateY(1px); }
 
 /* O glifo do botão sobe um pouco: em baixo ficava por cima da moldura. */
-.botao-redondo .glifo-img { margin-bottom: 11px; }
-.botao-atacar .glifo-img { margin-bottom: 14px; }
+.botao-redondo .glifo-img {
+  width: calc(var(--hud) * 1.9);
+  height: calc(var(--hud) * 1.9);
+  margin-bottom: calc(var(--hud) * 0.8);
+}
+
+.botao-atacar .glifo-img {
+  width: calc(var(--hud) * 2.6);
+  height: calc(var(--hud) * 2.6);
+  margin-bottom: calc(var(--hud) * 1);
+}
 
 /* ---------- Grelha e equipamento ---------- */
 
@@ -548,8 +585,8 @@
 
 .equipamento .socket,
 .slot-equip {
-  width: 58px;
-  height: 64px;
+  width: calc(var(--hud) * 4.4);
+  height: calc(var(--hud) * 5);
   aspect-ratio: auto;
   flex: none;
 }
@@ -592,3 +629,187 @@
 }
 
 .grelha { gap: 3px; }
+
+/* ---------- Repartição do rodapé ---------- */
+
+/* A hotbar está ao centro e os botões à direita: se ela não ceder largura,
+   o último slot acaba por baixo do botão da mochila. Aqui a hotbar tem um
+   tecto e os slots encolhem com ela; os botões nunca encolhem, porque são o
+   que o polegar procura. */
+.bloco-hotbar {
+  width: min(44vw, calc(var(--hud) * 30));
+}
+
+.hotbar { width: 100%; }
+
+.hotbar .socket {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 128 / 147;
+}
+
+.grupo-direita,
+.botoes,
+.botoes-secundarios { flex-shrink: 0; }
+
+/* ---------- Texto dos painéis ---------- */
+
+/* Também segue a unidade: com moldura a ocupar espaço, o texto tinha de descer
+   um ponto para a caixa não crescer só por causa das letras. */
+.painel-caixa h2 { font-size: calc(var(--hud) * 0.95); }
+.painel-caixa,
+.menu-caixa { width: min(calc(var(--hud) * 42), 92vw); }
+.abas button { font-size: calc(var(--hud) * 0.72); }
+.receita-info strong { font-size: calc(var(--hud) * 0.82); }
+.receita-info { font-size: calc(var(--hud) * 0.66); }
+.painel-rodape { font-size: calc(var(--hud) * 0.66); }
+.rotulo-equip { font-size: calc(var(--hud) * 0.46); }
+.socket .contagem { font-size: calc(var(--hud) * 0.62); }
+.socket-num { font-size: calc(var(--hud) * 0.5); }
+
+/* ---------- Densidade dos painéis ---------- */
+
+/* As abas e o cabeçalho comiam altura que fazia falta aos slots: num ecrã
+   deitado, cada píxel vertical conta. */
+.abas button {
+  border-width: calc(var(--hud) * 0.55) calc(var(--hud) * 1.8);
+  border-image-width: calc(var(--hud) * 0.55) calc(var(--hud) * 1.8);
+  padding: 0;
+}
+
+.painel-caixa header {
+  border-width: calc(var(--hud) * 0.45) calc(var(--hud) * 1.7) calc(var(--hud) * 0.45) var(--cap);
+  border-image-width: calc(var(--hud) * 0.45) calc(var(--hud) * 1.7) calc(var(--hud) * 0.45) var(--cap);
+  margin-bottom: calc(var(--hud) * 0.4);
+}
+
+.painel-caixa,
+.menu-caixa {
+  gap: calc(var(--hud) * 0.45);
+  padding: calc(var(--hud) * 0.4);
+}
+
+/* O rótulo do slot fica por baixo da moldura: a grelha tem de lhe dar espaço. */
+.equipamento { margin-bottom: calc(var(--hud) * 0.9); }
+
+.aba-mochila { max-height: 52vh; }
+
+/* ---------- Mochila em ecrã deitado ---------- */
+
+/* Deitado sobra largura e falta altura: o equipamento passa para uma coluna ao
+   lado da grelha em vez de uma linha por cima, e a grelha ganha duas colunas.
+   Assim a mochila inteira cabe sem rolar. */
+.aba-mochila {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: calc(var(--hud) * 1.4);
+  max-height: none;
+  overflow: visible;
+}
+
+.equipamento {
+  flex-direction: column;
+  gap: calc(var(--hud) * 0.9);
+  margin: 0;
+  flex: none;
+}
+
+.grelha {
+  flex: 1;
+  grid-template-columns: repeat(10, 1fr);
+  gap: calc(var(--hud) * 0.22);
+  min-width: 0;
+}
+
+@media (orientation: portrait) {
+  .aba-mochila {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .equipamento {
+    flex-direction: row;
+    justify-content: center;
+    margin-bottom: calc(var(--hud) * 0.9);
+  }
+
+  .grelha { grid-template-columns: repeat(8, 1fr); }
+}
+
+/* Última afinação de altura: com a moldura a ocupar 2 unidades de cada lado,
+   faltavam poucos píxeis para o rodapé do painel caber no ecrã deitado. */
+.painel-caixa,
+.menu-caixa {
+  border-width: calc(var(--hud) * 1.85);
+  border-image-width: calc(var(--hud) * 1.85);
+}
+
+.equipamento { gap: calc(var(--hud) * 0.55); }
+
+.equipamento .socket,
+.slot-equip {
+  width: calc(var(--hud) * 4);
+  height: calc(var(--hud) * 4.6);
+}
+
+/* O medalhão da peça é redondo: se a linha crescer mais do que ele, vira
+   elipse. A linha passa a ter altura estável e a tampa acompanha-a. */
+.receita {
+  --cap: calc(var(--hud) * 5.6);
+  min-height: calc(var(--hud) * 3.3);
+  align-items: center;
+}
+
+.receita-info {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.receita .icone {
+  width: calc(var(--hud) * 2.6);
+  height: calc(var(--hud) * 2.6);
+  margin-left: calc(var(--cap) * -0.78);
+}
+
+/* ---------- Menus ---------- */
+
+/* O menu de pausa tem seis botões e um ecrã deitado tem 393 px de altura:
+   tudo o que lá está mede-se pela unidade e encolhe junto. */
+.menu-caixa h2 {
+  font-size: calc(var(--hud) * 1.5);
+  margin: 0 0 calc(var(--hud) * 0.3);
+}
+
+.menu-caixa {
+  width: min(calc(var(--hud) * 32), 88vw);
+  gap: calc(var(--hud) * 0.35);
+}
+
+.botao {
+  width: 100%;
+  padding: 0;
+  min-height: calc(var(--hud) * 2.2);
+  font-size: calc(var(--hud) * 0.78);
+  letter-spacing: 0.14em;
+  /* Mais borda em cima: a gema da peça fica no topo e o texto ia por baixo
+     dela. */
+  border-width: calc(var(--hud) * 0.85) calc(var(--hud) * 1.9) calc(var(--hud) * 0.5);
+  border-image-width: calc(var(--hud) * 0.85) calc(var(--hud) * 1.9) calc(var(--hud) * 0.5);
+}
+
+.escolhas button {
+  font-size: calc(var(--hud) * 0.7);
+  padding: calc(var(--hud) * 0.3) calc(var(--hud) * 0.6);
+}
+
+.menu-caixa .escolhas,
+.menu-caixa .rotulo-escolhas { font-size: calc(var(--hud) * 0.62); }
+
+/* O menu inicial tem duas colunas (história e botões): precisa de mais largura
+   do que o de pausa, senão o título parte-se e a semente não cabe. */
+.menu.com-fundo .menu-caixa {
+  width: min(calc(var(--hud) * 48), 94vw);
+}
