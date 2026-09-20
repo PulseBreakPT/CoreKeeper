@@ -55,7 +55,6 @@ function lerModo(): Modo {
 }
 
 const palco = elemento<HTMLDivElement>('palco');
-const hud = elemento<HTMLElement>('hud');
 const arena = elemento<HTMLDivElement>('arena');
 const tela = elemento<HTMLCanvasElement>('tela');
 const marcadorPontos = elemento<HTMLDivElement>('marcador-pontos');
@@ -71,6 +70,13 @@ const fimMedalha = elemento<HTMLParagraphElement>('fim-medalha');
 const botaoJogar = elemento<HTMLButtonElement>('jogar');
 const botaoSom = elemento<HTMLButtonElement>('som');
 const botaoModo = elemento<HTMLButtonElement>('modo');
+const botaoPausar = elemento<HTMLButtonElement>('pausar');
+const inicio = elemento<HTMLDivElement>('inicio');
+const pausa = elemento<HTMLDivElement>('pausa');
+const estado = elemento<HTMLSpanElement>('estado');
+const progresso = elemento<HTMLProgressElement>('progresso');
+let pausado = false;
+let estadoAplicado = '';
 
 const modoInicial = lerModo();
 const jogo = new Jogo({ lado: LADO, recorde: lerRecorde(modoInicial), modo: modoInicial });
@@ -114,24 +120,46 @@ function actualizarHud(): void {
   alvoPontos.textContent = String(jogo.pontos);
   alvoRecorde.textContent = String(jogo.recorde);
   coroa.hidden = !(jogo.pontos > 0 && jogo.pontos === jogo.recorde);
+  const marco = (Math.floor(jogo.pontos / 10) + 1) * 10;
+  elemento('marco-texto').textContent = `${jogo.pontos} / ${marco}`;
+  progresso.value = jogo.pontos % 10;
+  elemento('comprimento').textContent = String(jogo.corpo.length);
+  elemento('velocidade').textContent = `${(150 / jogo.passoMs()).toFixed(2)}× RITMO`;
 }
 
 function medirArena(): void {
-  // Medimos a partir do ecrã (e não da arena) para não haver realimentação de tamanhos.
-  const caixa = document.documentElement;
-  const estilo = getComputedStyle(palco.parentElement as HTMLElement);
-  const folgaH = parseFloat(estilo.paddingLeft) + parseFloat(estilo.paddingRight);
-  const folgaV = parseFloat(estilo.paddingTop) + parseFloat(estilo.paddingBottom);
-  const intervalo = parseFloat(estilo.rowGap) || 0;
-  const largura = caixa.clientWidth - folgaH;
-  const altura = window.innerHeight - folgaV - hud.offsetHeight - intervalo;
-  const lado = Math.max(180, Math.floor(Math.min(largura, altura)));
+  // A largura vem da coluna; a altura reserva espaço para o cabeçalho e os controlos.
+  const deitado = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
+  const movel = window.matchMedia('(max-width: 800px)').matches;
+  const topo = palco.getBoundingClientRect().top;
+  const reserva = deitado ? 42 : movel ? (window.innerHeight <= 720 ? 88 : 134) : 155;
+  const lado = Math.max(100, Math.floor(Math.min(palco.clientWidth, window.innerHeight - topo - reserva)));
+  if (tela.style.width === `${lado}px`) return;
   pintor.redimensionar(lado);
   arena.style.width = `${lado}px`;
   arena.style.height = `${lado}px`;
   arena.style.borderRadius = `${pintor.raio}px`;
-  // A HUD acompanha a largura da arena para os números assentarem nos cantos dela.
-  document.documentElement.style.setProperty('--largura-arena', `${Math.max(260, lado)}px`);
+}
+
+function sincronizarEstado(): void {
+  const chave = `${jogo.estado}:${pausado}:${arranque >= 0}`;
+  if (chave === estadoAplicado) return;
+  estadoAplicado = chave;
+  inicio.hidden = jogo.estado !== 'pronto';
+  pausa.hidden = !pausado;
+  botaoPausar.disabled = jogo.estado !== 'a-jogar';
+  botaoPausar.setAttribute('aria-pressed', String(pausado));
+  botaoPausar.setAttribute('aria-label', pausado ? 'Continuar partida' : 'Pausar partida');
+  estado.textContent = pausado ? 'EM PAUSA' : jogo.estado === 'pronto' ? 'À TUA ESPERA'
+    : jogo.estado === 'a-jogar' ? (arranque >= 0 ? 'PREPARA-TE' : 'NO FLOW')
+    : jogo.estado === 'completo' ? 'ARENA CONQUISTADA' : 'MAIS UMA?';
+}
+
+function alternarPausa(): void {
+  if (jogo.estado !== 'a-jogar') return;
+  pausado = !pausado;
+  ultimo = performance.now();
+  sincronizarEstado();
 }
 
 function mostrarFim(): void {
@@ -165,6 +193,7 @@ function reiniciar(): void {
     temporizadorFim = null;
   }
   podeReiniciar = false;
+  pausado = false;
   arranque = -1;
   arranqueAnunciado = -1;
   pintor.arranque = null;
@@ -217,7 +246,7 @@ function aplicar(): void {
 }
 
 function quadro(agora: number): void {
-  const dt = Math.min(64, Math.max(0, agora - ultimo));
+  const dt = pausado ? 0 : Math.min(64, Math.max(0, agora - ultimo));
   ultimo = agora;
 
   if (arranque >= 0) {
@@ -246,7 +275,7 @@ function quadro(agora: number): void {
   }
 
   // Durante a contagem o jogo já está "a jogar", mas ainda não se mexe.
-  const aCorrer = jogo.estado === 'a-jogar' && arranque < 0;
+  const aCorrer = jogo.estado === 'a-jogar' && arranque < 0 && !pausado;
 
   if (aCorrer && jogo.modo === 'relogio') {
     restante -= dt;
@@ -276,13 +305,15 @@ function quadro(agora: number): void {
     if (jogo.estado !== 'a-jogar') acumulado = 0;
   }
 
-  const t = aCorrer ? Math.min(1, acumulado / jogo.passoMs()) : 1;
+  const t = jogo.estado === 'a-jogar' && arranque < 0 ? Math.min(1, acumulado / jogo.passoMs()) : 1;
   pintor.desenhar(jogo, t, dt, agora);
   sincronizarMatiz();
+  sincronizarEstado();
   requestAnimationFrame(quadro);
 }
 
 function virar(d: Direcao): void {
+  if (pausado) return;
   const arrancava = jogo.estado === 'pronto';
   // Se a direcção for recusada (inversão), a dica fica — o jogo ainda não arrancou.
   if (!jogo.virar(d)) return;
@@ -300,6 +331,7 @@ function comecarContagem(): void {
 }
 
 function confirmar(): void {
+  if (pausado) { alternarPausa(); return; }
   if (jogo.estado === 'pronto') {
     dica.hidden = true;
     jogo.comecar();
@@ -318,6 +350,10 @@ function sincronizarBotaoModo(): void {
     : 'Modo clássico. Tocar liga o modo relógio';
   botaoModo.setAttribute('aria-label', etiqueta);
   botaoModo.title = etiqueta;
+  elemento('modo-nome').textContent = relogio ? 'Relógio' : 'Clássico';
+  elemento('modo-dica').textContent = relogio
+    ? `${SEGUNDOS_RELOGIO} segundos para comer. Cada luz renova o tempo.`
+    : 'O original. Sem limites de tempo.';
 }
 
 function trocarModo(): void {
@@ -341,6 +377,14 @@ function sincronizarBotaoSom(): void {
 }
 
 ligarControlos(arena, { virar, confirmar, interacao: () => som.garantir() });
+elemento('comecar').addEventListener('click', () => { elemento('comecar').blur(); som.garantir(); confirmar(); });
+elemento('continuar').addEventListener('click', () => { elemento('continuar').blur(); alternarPausa(); });
+botaoPausar.addEventListener('click', () => { botaoPausar.blur(); alternarPausa(); });
+window.addEventListener('keydown', (e) => {
+  if (e.repeat || (e.code !== 'KeyP' && e.code !== 'Escape')) return;
+  e.preventDefault();
+  alternarPausa();
+});
 
 botaoJogar.addEventListener('click', () => {
   som.garantir();
@@ -362,16 +406,17 @@ botaoSom.addEventListener('click', () => {
 
 arena.addEventListener('mousedown', (e) => {
   // Clicar na arena acorda o áudio e arranca; o cartão de fim tem o seu botão.
-  if (cartao.contains(e.target as Node)) return;
+  if (cartao.contains(e.target as Node) || (e.target as Element).closest('button')) return;
   som.garantir();
   if (jogo.estado === 'pronto') confirmar();
 });
 
 window.addEventListener('resize', medirArena);
 window.addEventListener('orientationchange', () => window.setTimeout(medirArena, 120));
-if ('ResizeObserver' in window) new ResizeObserver(medirArena).observe(document.documentElement);
+if ('ResizeObserver' in window) new ResizeObserver(medirArena).observe(palco);
 
 document.addEventListener('visibilitychange', () => {
+  if (document.hidden && jogo.estado === 'a-jogar' && !pausado) alternarPausa();
   if (document.visibilityState === 'visible') {
     ultimo = performance.now();
     acumulado = 0;
@@ -392,4 +437,5 @@ reporRelogio();
 sincronizarMatiz();
 actualizarHud();
 medirArena();
+sincronizarEstado();
 requestAnimationFrame(quadro);

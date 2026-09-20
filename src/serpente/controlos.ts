@@ -29,7 +29,7 @@ export function ligarControlos(alvo: HTMLElement, ouvintes: Ouvintes): () => voi
   let arrastou = false;
 
   const aoTeclado = (e: KeyboardEvent): void => {
-    if (e.repeat) return;
+    if (e.repeat || (e.target instanceof Element && e.target.closest('button, a, input, textarea, select'))) return;
     const d = TECLAS[e.code];
     if (d) {
       e.preventDefault();
@@ -53,6 +53,7 @@ export function ligarControlos(alvo: HTMLElement, ouvintes: Ouvintes): () => voi
   };
 
   const aoTocar = (e: TouchEvent): void => {
+    if (e.target instanceof Element && e.target.closest('button')) { origem = null; return; }
     const t = e.changedTouches[0];
     if (!t) return;
     origem = { x: t.clientX, y: t.clientY };
@@ -75,7 +76,7 @@ export function ligarControlos(alvo: HTMLElement, ouvintes: Ouvintes): () => voi
   };
 
   const aoLargar = (): void => {
-    if (!arrastou) ouvintes.confirmar();
+    if (origem && !arrastou) ouvintes.confirmar();
     origem = null;
     arrastou = false;
   };

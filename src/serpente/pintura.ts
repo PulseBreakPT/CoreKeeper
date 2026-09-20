@@ -3,13 +3,13 @@
 import { PASSO_INICIAL, PASSO_MINIMO, vetor, type Jogo, type Ponto } from './logica';
 
 /** Matiz do corpo parado (esmeralda) e à velocidade máxima (turquesa). */
-const MATIZ_LENTO = 155;
-const MATIZ_RAPIDO = 192;
+const MATIZ_LENTO = 83;
+const MATIZ_RAPIDO = 155;
 /** A cor só aquece a sério na parte final da curva de velocidade. */
 const CURVA_MATIZ = 1.8;
 
-const COR_COMIDA = '#ffc46b';
-const COR_COMIDA_BORDA = '#ff7a59';
+const COR_COMIDA = '#f8bd91';
+const COR_COMIDA_BORDA = '#ed956d';
 const COR_MORTE = '#ff6b7a';
 
 const LETRA = '"Space Grotesk", ui-sans-serif, system-ui, sans-serif';
@@ -331,16 +331,25 @@ export class Pintor {
 
     caminhoRedondo(c, 0, 0, L, L, this.raio);
     const fundo = c.createLinearGradient(0, 0, L * 0.35, L);
-    fundo.addColorStop(0, '#16203a');
-    fundo.addColorStop(0.55, '#101829');
-    fundo.addColorStop(1, '#0b1220');
+    fundo.addColorStop(0, '#172013');
+    fundo.addColorStop(0.55, '#11190f');
+    fundo.addColorStop(1, '#0e140c');
     c.fillStyle = fundo;
     c.fill();
     c.save();
     c.clip();
 
+    c.strokeStyle = 'rgba(174, 198, 143, 0.045)';
+    c.lineWidth = 1;
+    c.beginPath();
+    for (let i = 1; i < lado; i++) {
+      c.moveTo(i * cel, 0); c.lineTo(i * cel, L);
+      c.moveTo(0, i * cel); c.lineTo(L, i * cel);
+    }
+    c.stroke();
+
     // Grelha de pontos nos cruzamentos: dá escala sem sujar o campo de jogo.
-    c.fillStyle = 'rgba(160, 200, 255, 0.17)';
+    c.fillStyle = 'rgba(174, 198, 143, 0.17)';
     const r = Math.max(0.7, cel * 0.045);
     for (let y = 1; y < lado; y++) {
       for (let x = 1; x < lado; x++) {
@@ -363,7 +372,7 @@ export class Pintor {
 
   private arena(L: number, cel: number, lado: number, matiz: number): void {
     const ctx = this.ctx;
-    ctx.fillStyle = '#05070e';
+    ctx.fillStyle = '#10150d';
     ctx.fillRect(-L, -L, L * 3, L * 3);
 
     if (!this.chao || this.celulasChao !== lado) {

@@ -9,14 +9,14 @@ import { DENSIDADES, png, svg } from './lib/icones.mjs';
 
 const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-const FUNDO = '#070c17';
+const FUNDO = '#10120f';
 const PALETA = {
-  '.': [7, 12, 23, 255],
-  v: [15, 122, 92, 255],
-  V: [46, 209, 149, 255],
-  h: [201, 255, 232, 255],
-  e: [4, 32, 26, 255],
-  o: [255, 196, 107, 255],
+  '.': [16, 18, 15, 255],
+  v: [101, 142, 51, 255],
+  V: [190, 235, 112, 255],
+  h: [220, 255, 160, 255],
+  e: [26, 35, 16, 255],
+  o: [248, 174, 136, 255],
 };
 
 // A serpente enrolada em gancho: a cauda afunila em baixo, o corpo sobe pela
