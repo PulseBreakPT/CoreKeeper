@@ -123,6 +123,19 @@ fica em `localStorage`.
 
 Toda a lógica vive em `src/serpente/logica.ts`, sem DOM nem canvas, e é testada à parte.
 
+**O desenho.** O chão da arena — gradiente, grelha de pontos e vinheta — é pintado uma
+vez para um buffer e reaproveitado; por cima ficam só a serpente, a comida e os efeitos,
+o que deixa margem para detalhe sem sair dos 60 FPS. A serpente é desenhada como uma
+linha interpolada entre dois passos e traçada em bandas que vão afinando da cabeça para
+a cauda, cada uma com o seu contorno escuro — é o contorno que a mantém legível a
+qualquer velocidade. A cor não é fixa: `--matiz` acompanha o intervalo entre passos, por
+isso a serpente, a moldura, o halo, o marcador e o botão aquecem de esmeralda a turquesa
+à medida que o jogo acelera. Ao comer há partículas, um anel, um "+1" a subir e a
+moldura a acender; ao morrer, tremor, um clarão pelas bordas e o corpo a desfazer-se em
+pó da cauda para a cabeça, deixando a cara para o fim. A letra é a
+[Space Grotesk](https://fonts.google.com/specimen/Space+Grotesk) (OFL), guardada no
+próprio jogo.
+
 ---
 
 ## Desenvolvimento

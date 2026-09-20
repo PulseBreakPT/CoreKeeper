@@ -144,6 +144,8 @@ const depoisDeMorrer = await estado();
 await verificar(depoisDeMorrer.corpo.join('|') === morto.corpo.join('|'), 'o movimento pára no instante da morte');
 
 await verificar(await pagina.isVisible('#fim'), 'aparece o cartão de fim de jogo');
+// A serpente desfaz-se em partículas; nenhum quadro dessa animação pode rebentar.
+await verificar(erros.length === 0, `a animação de morte corre sem erros${erros.length ? `: ${erros.join(' | ')}` : ''}`);
 await verificar((await pagina.textContent('#fim-pontos')) === String(morto.pontos), 'o cartão mostra a pontuação final');
 await verificar((await pagina.textContent('#fim-recorde')) === String(morto.recorde), 'o cartão mostra o recorde');
 await pagina.screenshot({ path: join(saida, '3-fim.png') });

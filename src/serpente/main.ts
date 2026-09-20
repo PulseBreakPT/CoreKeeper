@@ -40,6 +40,7 @@ const tela = elemento<HTMLCanvasElement>('tela');
 const marcadorPontos = elemento<HTMLDivElement>('marcador-pontos');
 const alvoPontos = elemento<HTMLSpanElement>('pontos');
 const alvoRecorde = elemento<HTMLSpanElement>('recorde');
+const coroa = elemento<HTMLElement>('coroa');
 const dica = elemento<HTMLParagraphElement>('dica');
 const cartao = elemento<HTMLDivElement>('fim');
 const tituloFim = elemento<HTMLHeadingElement>('fim-titulo');
@@ -68,9 +69,20 @@ function animar(alvo: HTMLElement, classe: string): void {
   alvo.classList.add(classe);
 }
 
+let matizAplicada = -1;
+
+/** A interface acompanha a cor da serpente, que por sua vez segue a velocidade. */
+function sincronizarMatiz(): void {
+  const matiz = Math.round(pintor.matiz);
+  if (matiz === matizAplicada) return;
+  matizAplicada = matiz;
+  document.documentElement.style.setProperty('--matiz', String(matiz));
+}
+
 function actualizarHud(): void {
   alvoPontos.textContent = String(jogo.pontos);
   alvoRecorde.textContent = String(jogo.recorde);
+  coroa.hidden = !(jogo.pontos > 0 && jogo.pontos === jogo.recorde);
 }
 
 function medirArena(): void {
@@ -95,6 +107,7 @@ function mostrarFim(): void {
   temporizadorFim = null;
   podeReiniciar = true;
   const ganhou = jogo.estado === 'completo';
+  cartao.classList.toggle('vitoria', ganhou);
   tituloFim.textContent = ganhou ? 'ARENA CHEIA' : 'FIM DE JOGO';
   fimPontos.textContent = String(jogo.pontos);
   fimRecorde.textContent = String(jogo.recorde);
@@ -135,7 +148,7 @@ function reiniciar(): void {
 function aplicar(): void {
   const r = jogo.passo();
   if (r.comeu) {
-    pintor.explodir(jogo.corpo[0]);
+    pintor.explodir(jogo.corpo[0], jogo.pontos, r.marco);
     som.comer(jogo.comidas);
     actualizarHud();
     animar(alvoPontos, 'subiu');
@@ -145,6 +158,7 @@ function aplicar(): void {
     }
   }
   if (r.completo) {
+    pintor.vitoria(jogo.corpo[0]);
     som.vitoria();
     terminar();
     return;
@@ -172,6 +186,7 @@ function quadro(agora: number): void {
 
   const t = jogo.estado === 'a-jogar' ? Math.min(1, acumulado / jogo.passoMs()) : 1;
   pintor.desenhar(jogo, t, dt, agora);
+  sincronizarMatiz();
   requestAnimationFrame(quadro);
 }
 
@@ -238,6 +253,7 @@ declare global {
 window.serpente = { jogo, som, reiniciar };
 
 sincronizarBotaoSom();
+sincronizarMatiz();
 actualizarHud();
 medirArena();
 requestAnimationFrame(quadro);

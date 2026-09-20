@@ -1,14 +1,36 @@
-/* Serpente — folha de estilo única do jogo. */
+/**
+ * Serpente — folha de estilo única do jogo.
+ *
+ * A letra é a Space Grotesk (licença aberta, OFL), guardada no próprio jogo
+ * como as do Hollow Star: nada é pedido à rede. É uma grotesca técnica, de
+ * algarismos largos e legíveis ao canto do ecrã, que é onde vive o marcador.
+ * Só vai o subconjunto latino — 22 KB para a família inteira.
+ *
+ * A interface não tem cor fixa: `--matiz` é escrita pelo jogo a cada quadro e
+ * segue a velocidade da serpente, por isso o marcador, a moldura, o halo e o
+ * botão aquecem ao mesmo tempo que ela.
+ */
+
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('../assets/fontes/space-grotesk.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
-  --fundo: #05060c;
-  --fundo-alto: #0b1020;
-  --tinta: #e9f1ff;
-  --tinta-fraca: #7f8da8;
-  --verde: #4fe3ae;
+  /* Matiz viva: segue a velocidade da serpente, definida pelo jogo. */
+  --matiz: 158;
+  --acento: hsl(var(--matiz), 82%, 66%);
+  --acento-forte: hsl(var(--matiz), 92%, 78%);
+  --fundo: #04060c;
+  --tinta: #eef4ff;
+  --tinta-fraca: #76849f;
   --ambar: #ffc46b;
   --vermelho: #ff6b7a;
-  --gap: clamp(10px, 2.2vmin, 20px);
+  --gap: clamp(14px, 2.6vmin, 22px);
+  --letra: 'Space Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   color-scheme: dark;
 }
 
@@ -24,14 +46,37 @@ body {
 }
 
 body {
-  background:
-    radial-gradient(120% 90% at 50% -10%, #16213c 0%, transparent 60%),
-    radial-gradient(90% 70% at 50% 110%, #101a30 0%, transparent 55%),
-    var(--fundo);
+  background: var(--fundo);
   color: var(--tinta);
-  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-family: var(--letra);
+  font-synthesis-weight: none;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Aurora de fundo: duas manchas que respiram e tomam a cor da serpente. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: -20%;
+  z-index: -1;
+  background:
+    radial-gradient(38% 30% at 30% 22%, hsla(var(--matiz), 70%, 45%, 0.2) 0%, transparent 70%),
+    radial-gradient(42% 34% at 72% 78%, hsla(calc(var(--matiz) + 40), 65%, 40%, 0.16) 0%, transparent 72%),
+    radial-gradient(60% 50% at 50% 50%, #0b1226 0%, transparent 80%);
+  filter: blur(6px);
+  animation: derivar 22s ease-in-out infinite alternate;
+  transition: background 900ms linear;
+  pointer-events: none;
+}
+
+@keyframes derivar {
+  from {
+    transform: translate3d(-2%, -1%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(2%, 1.5%, 0) scale(1.08);
+  }
 }
 
 .jogo {
@@ -51,17 +96,20 @@ body {
 .hud {
   flex: 0 0 auto;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: var(--gap);
   width: min(100%, var(--largura-arena, 560px));
   margin: 0 auto;
+  padding-bottom: 10px;
+  border-bottom: 1px solid hsla(var(--matiz), 40%, 60%, 0.16);
+  transition: border-color 600ms linear;
 }
 
 .marcador {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   min-width: 4.5em;
 }
 
@@ -71,27 +119,63 @@ body {
 }
 
 .rotulo {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: clamp(9px, 1.5vmin, 11px);
-  letter-spacing: 0.22em;
+  letter-spacing: 0.3em;
   font-weight: 700;
   color: var(--tinta-fraca);
 }
 
 .valor {
-  font-size: clamp(22px, 4.6vmin, 34px);
-  font-weight: 800;
-  line-height: 1;
+  font-size: clamp(24px, 5vmin, 38px);
+  font-weight: 700;
+  line-height: 0.95;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   display: inline-block;
 }
 
+#marcador-pontos .valor {
+  color: var(--acento-forte);
+  text-shadow: 0 0 26px hsla(var(--matiz), 90%, 60%, 0.35);
+  transition: color 600ms linear;
+}
+
+/* Losango aceso quando a partida actual já é o recorde. */
+.coroa {
+  width: 7px;
+  height: 7px;
+  border-radius: 1px;
+  background: var(--ambar);
+  transform: rotate(45deg);
+  box-shadow: 0 0 10px rgba(255, 196, 107, 0.9);
+  animation: bater 1.6s ease-in-out infinite;
+}
+
+.coroa[hidden] {
+  display: none;
+}
+
+@keyframes bater {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: rotate(45deg) scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: rotate(45deg) scale(1.15);
+  }
+}
+
 #pontos.subiu {
-  animation: pulo 260ms cubic-bezier(0.2, 1.4, 0.4, 1);
+  animation: pulo 280ms cubic-bezier(0.2, 1.5, 0.4, 1);
 }
 
 #marcador-pontos.marco .valor {
-  animation: brilho 700ms ease-out;
+  animation: brilho 760ms ease-out;
 }
 
 @keyframes pulo {
@@ -99,8 +183,7 @@ body {
     transform: scale(1);
   }
   40% {
-    transform: scale(1.28);
-    color: var(--verde);
+    transform: scale(1.3);
   }
   100% {
     transform: scale(1);
@@ -110,31 +193,31 @@ body {
 @keyframes brilho {
   0%,
   100% {
-    color: var(--tinta);
+    color: var(--acento-forte);
     text-shadow: none;
   }
   30% {
-    color: var(--ambar);
-    text-shadow: 0 0 18px rgba(255, 196, 107, 0.7);
+    color: #fff4dc;
+    text-shadow: 0 0 24px rgba(255, 196, 107, 0.9);
   }
 }
 
 .som {
   flex: 0 0 auto;
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(146, 180, 255, 0.18);
-  border-radius: 12px;
-  background: rgba(146, 180, 255, 0.06);
+  border: 1px solid hsla(var(--matiz), 40%, 65%, 0.2);
+  border-radius: 11px;
+  background: hsla(var(--matiz), 40%, 60%, 0.07);
   color: var(--tinta);
   cursor: pointer;
-  transition: transform 120ms ease, background 160ms ease, color 160ms ease;
+  transition: transform 120ms ease, background 200ms ease, color 200ms ease, border-color 600ms linear;
 }
 
 .som:hover {
-  background: rgba(146, 180, 255, 0.12);
+  background: hsla(var(--matiz), 50%, 60%, 0.16);
 }
 
 .som:active {
@@ -142,13 +225,13 @@ body {
 }
 
 .som:focus-visible {
-  outline: 2px solid var(--verde);
+  outline: 2px solid var(--acento);
   outline-offset: 2px;
 }
 
 .som svg {
-  width: 20px;
-  height: 20px;
+  width: 19px;
+  height: 19px;
   display: block;
 }
 
@@ -182,9 +265,10 @@ body {
   touch-action: none;
   border-radius: clamp(10px, 2vmin, 22px);
   box-shadow:
-    0 0 0 1px rgba(124, 247, 196, 0.08),
-    0 30px 70px -30px rgba(79, 227, 174, 0.35),
-    0 10px 40px rgba(0, 0, 0, 0.6);
+    0 0 0 1px hsla(var(--matiz), 60%, 60%, 0.1),
+    0 40px 90px -40px hsla(var(--matiz), 85%, 55%, 0.45),
+    0 12px 48px rgba(0, 0, 0, 0.7);
+  transition: box-shadow 900ms linear;
 }
 
 .arena canvas {
@@ -195,16 +279,16 @@ body {
 .dica {
   position: absolute;
   left: 50%;
-  bottom: 8%;
+  bottom: 7%;
   transform: translateX(-50%);
   margin: 0;
-  padding: 8px 16px;
+  padding: 9px 18px;
   border-radius: 999px;
-  background: rgba(5, 8, 16, 0.72);
-  border: 1px solid rgba(146, 180, 255, 0.14);
-  font-size: clamp(11px, 2vmin, 14px);
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  background: rgba(4, 7, 14, 0.78);
+  border: 1px solid hsla(var(--matiz), 40%, 65%, 0.18);
+  font-size: clamp(11px, 2vmin, 13px);
+  font-weight: 500;
+  letter-spacing: 0.1em;
   color: var(--tinta-fraca);
   white-space: nowrap;
   pointer-events: none;
@@ -218,7 +302,7 @@ body {
 @keyframes respirar {
   0%,
   100% {
-    opacity: 0.55;
+    opacity: 0.5;
   }
   50% {
     opacity: 1;
@@ -238,9 +322,9 @@ body {
   padding: 6%;
   text-align: center;
   border-radius: inherit;
-  background: rgba(5, 7, 14, 0.82);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: radial-gradient(70% 60% at 50% 50%, rgba(6, 9, 18, 0.86), rgba(3, 5, 11, 0.95));
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
 }
 
 .fim[hidden] {
@@ -248,13 +332,13 @@ body {
 }
 
 .fim.entrar {
-  animation: surgir 260ms cubic-bezier(0.2, 1, 0.3, 1);
+  animation: surgir 300ms cubic-bezier(0.2, 1, 0.3, 1);
 }
 
 @keyframes surgir {
   from {
     opacity: 0;
-    transform: scale(0.96);
+    transform: scale(0.94);
   }
   to {
     opacity: 1;
@@ -263,27 +347,61 @@ body {
 }
 
 .fim h2 {
-  margin: 0;
-  font-size: clamp(18px, 4.4vmin, 30px);
-  font-weight: 800;
-  letter-spacing: 0.14em;
+  position: relative;
+  margin: 0 0 2px;
+  padding-bottom: clamp(8px, 1.6vmin, 14px);
+  font-size: clamp(17px, 4vmin, 28px);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
   color: var(--vermelho);
+}
+
+/* Fio luminoso por baixo do título, a abrir a partir do centro. */
+.fim h2::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 64%;
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, currentColor, transparent);
+  opacity: 0.55;
+}
+
+.fim.vitoria h2 {
+  color: var(--ambar);
 }
 
 .fim-numeros {
   display: flex;
-  gap: clamp(18px, 5vmin, 40px);
+  gap: clamp(20px, 6vmin, 44px);
+}
+
+.fim-numeros .marcador {
+  align-items: center;
+}
+
+.fim-numeros .rotulo {
+  justify-content: center;
 }
 
 .fim-numeros .valor {
-  font-size: clamp(26px, 6vmin, 42px);
+  font-size: clamp(28px, 6.4vmin, 44px);
+  color: var(--tinta);
+  text-shadow: none;
 }
 
 .medalha {
   margin: 0;
-  font-size: clamp(11px, 2vmin, 14px);
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 196, 107, 0.35);
+  background: rgba(255, 196, 107, 0.1);
+  font-size: clamp(10px, 1.9vmin, 13px);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.14em;
   color: var(--ambar);
 }
 
@@ -292,24 +410,24 @@ body {
 }
 
 .jogar {
-  margin-top: 2px;
-  padding: 12px 26px;
+  margin-top: 4px;
+  padding: 13px 30px;
   border: 0;
   border-radius: 999px;
   font: inherit;
   font-size: clamp(13px, 2.4vmin, 16px);
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  color: #04231a;
-  background: linear-gradient(160deg, #9cffd5, var(--verde));
-  box-shadow: 0 10px 30px -10px rgba(79, 227, 174, 0.8);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: hsl(var(--matiz), 70%, 10%);
+  background: linear-gradient(160deg, var(--acento-forte), var(--acento));
+  box-shadow: 0 12px 34px -12px hsla(var(--matiz), 90%, 60%, 0.9);
   cursor: pointer;
-  transition: transform 120ms ease, box-shadow 160ms ease;
+  transition: transform 120ms ease, box-shadow 200ms ease, filter 200ms ease;
 }
 
 .jogar:hover {
   transform: translateY(-1px);
-  box-shadow: 0 14px 34px -10px rgba(79, 227, 174, 0.9);
+  filter: brightness(1.06);
 }
 
 .jogar:active {
@@ -324,23 +442,33 @@ body {
 .atalho {
   margin: 0;
   font-size: clamp(10px, 1.8vmin, 12px);
-  letter-spacing: 0.1em;
+  font-weight: 500;
+  letter-spacing: 0.18em;
   color: var(--tinta-fraca);
 }
 
 /* Telemóvel deitado: a HUD encolhe para a arena ficar com a altura toda. */
 @media (orientation: landscape) and (max-height: 500px) {
   :root {
-    --gap: 8px;
+    --gap: 10px;
+  }
+
+  .hud {
+    padding-bottom: 6px;
   }
 
   .valor {
-    font-size: 20px;
+    font-size: 21px;
   }
 
   .som {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .som svg {
+    width: 16px;
+    height: 16px;
   }
 
   .dica {
@@ -349,7 +477,9 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  body::before,
   .dica,
+  .coroa,
   #pontos.subiu,
   #marcador-pontos.marco .valor,
   .fim.entrar {
