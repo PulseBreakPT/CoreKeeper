@@ -124,6 +124,18 @@ export class Som {
     this.tom(590, 0.005, 0.07, 0.1, 'triangle');
   }
 
+  /** Bip da contagem de arranque; o último é mais alto e mais longo. */
+  contagem(final: boolean): void {
+    if (!this.ligado) return;
+    this.garantir();
+    if (final) {
+      this.tom(880, 0, 0.26, 0.26, 'triangle');
+      this.tom(1320, 0.02, 0.22, 0.14, 'sine');
+    } else {
+      this.tom(523.25, 0, 0.12, 0.22, 'triangle');
+    }
+  }
+
   /** Baque e descida — fim de partida. */
   fim(): void {
     if (!this.ligado) return;

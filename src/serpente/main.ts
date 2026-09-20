@@ -15,6 +15,13 @@ const CHAVE_MODO = 'serpente:modo:v1';
 /** Tempo entre a morte e o cartão de fim — dá espaço ao impacto. */
 const ESPERA_FIM = 440;
 const RELOGIO_MS = SEGUNDOS_RELOGIO * 1000;
+/** A contagem de arranque, passo a passo, com a duração de cada um. */
+const ARRANQUE: { texto: string; ms: number }[] = [
+  { texto: '3', ms: 520 },
+  { texto: '2', ms: 520 },
+  { texto: '1', ms: 520 },
+  { texto: 'VAI', ms: 380 },
+];
 
 function elemento<T extends HTMLElement>(id: string): T {
   const e = document.getElementById(id);
@@ -79,6 +86,9 @@ let restante = RELOGIO_MS;
 /** Último segundo anunciado, para o tique-taque não disparar a cada quadro. */
 let ultimoTique = 0;
 let porTempo = false;
+/** Milissegundos decorridos da contagem de arranque, ou -1 quando não há. */
+let arranque = -1;
+let arranqueAnunciado = -1;
 
 const semRato = window.matchMedia('(hover: none)').matches;
 dica.textContent = semRato ? 'Desliza para começar' : 'Setas ou WASD para começar';
@@ -155,6 +165,9 @@ function reiniciar(): void {
     temporizadorFim = null;
   }
   podeReiniciar = false;
+  arranque = -1;
+  arranqueAnunciado = -1;
+  pintor.arranque = null;
   cartao.hidden = true;
   fimMedalha.hidden = true;
   dica.hidden = false;
@@ -207,7 +220,35 @@ function quadro(agora: number): void {
   const dt = Math.min(64, Math.max(0, agora - ultimo));
   ultimo = agora;
 
-  if (jogo.estado === 'a-jogar' && jogo.modo === 'relogio') {
+  if (arranque >= 0) {
+    arranque += dt;
+    let inicio = 0;
+    let passo = 0;
+    while (passo < ARRANQUE.length && arranque >= inicio + ARRANQUE[passo].ms) {
+      inicio += ARRANQUE[passo].ms;
+      passo++;
+    }
+    if (passo >= ARRANQUE.length) {
+      // Acabou: a partir daqui é que a serpente anda e o relógio conta.
+      arranque = -1;
+      pintor.arranque = null;
+      acumulado = 0;
+    } else {
+      pintor.arranque = {
+        texto: ARRANQUE[passo].texto,
+        progresso: (arranque - inicio) / ARRANQUE[passo].ms,
+      };
+      if (passo !== arranqueAnunciado) {
+        arranqueAnunciado = passo;
+        som.contagem(passo === ARRANQUE.length - 1);
+      }
+    }
+  }
+
+  // Durante a contagem o jogo já está "a jogar", mas ainda não se mexe.
+  const aCorrer = jogo.estado === 'a-jogar' && arranque < 0;
+
+  if (aCorrer && jogo.modo === 'relogio') {
     restante -= dt;
     const segundos = Math.max(0, Math.ceil(restante / 1000));
     pintor.relogio = Math.max(0, restante / RELOGIO_MS);
@@ -225,7 +266,7 @@ function quadro(agora: number): void {
     }
   }
 
-  if (jogo.estado === 'a-jogar') {
+  if (aCorrer) {
     acumulado += dt;
     let guarda = 8;
     while (jogo.estado === 'a-jogar' && acumulado >= jogo.passoMs() && guarda-- > 0) {
@@ -235,22 +276,34 @@ function quadro(agora: number): void {
     if (jogo.estado !== 'a-jogar') acumulado = 0;
   }
 
-  const t = jogo.estado === 'a-jogar' ? Math.min(1, acumulado / jogo.passoMs()) : 1;
+  const t = aCorrer ? Math.min(1, acumulado / jogo.passoMs()) : 1;
   pintor.desenhar(jogo, t, dt, agora);
   sincronizarMatiz();
   requestAnimationFrame(quadro);
 }
 
 function virar(d: Direcao): void {
+  const arrancava = jogo.estado === 'pronto';
   // Se a direcção for recusada (inversão), a dica fica — o jogo ainda não arrancou.
-  if (jogo.virar(d)) dica.hidden = true;
+  if (!jogo.virar(d)) return;
+  dica.hidden = true;
+  // A primeira ordem não põe a serpente a andar: põe a contagem a andar.
+  if (arrancava) comecarContagem();
+}
+
+/** Arranca o 3, 2, 1, VAI. A serpente fica quieta até ele acabar. */
+function comecarContagem(): void {
+  arranque = 0;
+  arranqueAnunciado = -1;
+  acumulado = 0;
+  reporRelogio();
 }
 
 function confirmar(): void {
   if (jogo.estado === 'pronto') {
     dica.hidden = true;
     jogo.comecar();
-    acumulado = 0;
+    comecarContagem();
     return;
   }
   if ((jogo.estado === 'morto' || jogo.estado === 'completo') && podeReiniciar) reiniciar();

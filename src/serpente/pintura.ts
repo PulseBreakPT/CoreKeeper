@@ -113,6 +113,8 @@ export class Pintor {
   relogio: number | null = null;
   /** Segundos inteiros que faltam, para a contagem grande dos últimos tempos. */
   segundos = 0;
+  /** Passo actual da contagem de arranque, ou `null` fora dela. */
+  arranque: { texto: string; progresso: number } | null = null;
 
   /** O chão da arena é pintado uma vez e reaproveitado — só muda quando o ecrã muda. */
   private chao: HTMLCanvasElement | null = null;
@@ -243,6 +245,8 @@ export class Pintor {
 
     this.arena(L, cel, jogo.lado, matiz);
     this.contagem(L, tempo, jogo.estado);
+    // A contagem fica por trás de tudo: é pano de fundo, a serpente é o assunto.
+    this.arrancada(L, matiz);
     this.comida(jogo.comida, cel, tempo, jogo.estado);
     this.serpente(jogo, t, cel, tempo, matiz);
     this.efeitos(cel, jogo.lado);
@@ -447,6 +451,45 @@ export class Pintor {
     ctx.globalAlpha = 0.07 + pulso * 0.07;
     ctx.fillStyle = COR_MORTE;
     ctx.fillText(String(this.segundos), L / 2, L / 2);
+    ctx.restore();
+  }
+
+  /**
+   * O 3, 2, 1, VAI antes de a serpente se mexer.
+   *
+   * Cada passo entra a crescer e sai a encolher e a desvanecer, para o olho
+   * apanhar a mudança sem precisar de ler o número todo.
+   */
+  private arrancada(L: number, matiz: number): void {
+    if (!this.arranque) return;
+    const ctx = this.ctx;
+    const t = limitar(this.arranque.progresso, 0, 1);
+    const entrada = Math.min(1, t / 0.22);
+    const saida = t > 0.7 ? (t - 0.7) / 0.3 : 0;
+    const escala = 0.82 + entrada * 0.18 + saida * 0.25;
+    const alfa = entrada * (1 - saida * saida);
+    const vai = this.arranque.texto.length > 1;
+
+    ctx.save();
+    ctx.translate(L / 2, L / 2);
+    ctx.scale(escala, escala);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.globalAlpha = alfa;
+
+    // Anel que abre com o passo, para o número não flutuar no vazio.
+    ctx.strokeStyle = `hsla(${matiz}, 90%, 70%, ${0.5 * (1 - t)})`;
+    ctx.lineWidth = Math.max(2, L * 0.006);
+    ctx.beginPath();
+    ctx.arc(0, 0, L * (0.12 + t * 0.09), 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.font = `700 ${L * (vai ? 0.17 : 0.28)}px ${LETRA}`;
+    ctx.lineWidth = Math.max(3, L * 0.014);
+    ctx.strokeStyle = 'rgba(4, 8, 16, 0.65)';
+    ctx.strokeText(this.arranque.texto, 0, 0);
+    ctx.fillStyle = vai ? `hsl(${matiz}, 95%, 82%)` : '#ffffff';
+    ctx.fillText(this.arranque.texto, 0, 0);
     ctx.restore();
   }
 

@@ -123,6 +123,12 @@ uma curva que decai devagar para o jogo continuar controlável quando está ráp
 | Modo | Botão do cronómetro | — |
 | Som | Botão do altifalante | — |
 
+**Contagem de arranque.** A primeira ordem não põe a serpente a andar: põe o 3, 2, 1,
+VAI a andar. São 1,94 s a olhar para o tabuleiro antes de alguma coisa se mexer — no
+modo de relógio é o que impede que os dez segundos comecem a correr antes de teres
+olhado para onde está a comida. A contagem fica por trás da serpente, que continua a ser
+o assunto, e podes mudar de direcção enquanto ela corre.
+
 **Dois modos.** No clássico só as paredes e o próprio corpo matam. No **relógio** há
 sempre dez segundos para chegar à comida, e o contador volta ao topo a cada refeição —
 é sempre a mesma janela, não encolhe com a partida. Dez segundos são folgados mas nunca
