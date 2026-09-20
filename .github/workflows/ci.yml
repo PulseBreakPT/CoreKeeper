@@ -34,7 +34,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      # Sem `packages` a acção pede `tools`, que já não existe no repositório do
+      # SDK e faz o sdkmanager sair com erro. Pedimos só o que o build usa.
       - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
       - run: npm ci
       - run: npm run build
       - run: npx cap sync android
