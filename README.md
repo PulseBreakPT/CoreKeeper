@@ -120,7 +120,20 @@ uma curva que decai devagar para o jogo continuar controlável quando está ráp
 | Virar | Deslizar na arena | WASD / setas |
 | Começar | Tocar ou deslizar | Qualquer direcção |
 | Jogar de novo | Botão ou toque | Enter / Espaço |
+| Modo | Botão do cronómetro | — |
 | Som | Botão do altifalante | — |
+
+**Dois modos.** No clássico só as paredes e o próprio corpo matam. No **relógio** há
+sempre dez segundos para chegar à comida, e o contador volta ao topo a cada refeição —
+é sempre a mesma janela, não encolhe com a partida. Dez segundos são folgados mas nunca
+confortáveis: a maior distância possível na arena são 40 passos, que ao ritmo inicial
+dão seis segundos, e a folga que sobra é exactamente o que dá para hesitar.
+
+O tempo lê-se na própria moldura da arena, que vai drenando, e fica vermelha e mais
+grossa nos últimos trinta por cento; nos últimos três segundos o número aparece em
+grande, ténue, no meio do campo, com um tique a acompanhar. Não há mais nada na
+interface por causa disto. Cada modo tem o seu recorde, porque as pontuações não são
+comparáveis entre eles.
 
 O swipe é reancorado a cada 16 px, por isso encadeias curvas sem levantar o dedo, e
 só a arena trava o toque — o resto da página continua normal. As inversões sobre o

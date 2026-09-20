@@ -8,6 +8,8 @@
 
 export type Direcao = 'cima' | 'baixo' | 'esquerda' | 'direita';
 export type Estado = 'pronto' | 'a-jogar' | 'morto' | 'completo';
+/** Clássico: só as paredes e o próprio corpo matam. Relógio: o tempo também. */
+export type Modo = 'classico' | 'relogio';
 
 export interface Ponto {
   x: number;
@@ -28,6 +30,15 @@ export const MARCO = 10;
 export const FILA_MAXIMA = 2;
 /** Comprimento da serpente no arranque. */
 export const COMPRIMENTO_INICIAL = 3;
+/**
+ * Segundos para chegar à comida no modo de relógio. O contador volta ao topo a
+ * cada refeição, por isso é sempre a mesma janela — não encolhe com a partida.
+ *
+ * Dez é folgado mas nunca confortável: a maior distância possível numa arena de
+ * 21 casas são 40 passos, que ao ritmo inicial de 150 ms dão seis segundos. A
+ * folga que sobra é o que dá para hesitar, e é isso que se está a cobrar.
+ */
+export const SEGUNDOS_RELOGIO = 10;
 
 const VETORES: Record<Direcao, Ponto> = {
   cima: { x: 0, y: -1 },
@@ -60,6 +71,7 @@ export interface Resultado {
 export interface OpcoesJogo {
   lado?: number;
   recorde?: number;
+  modo?: Modo;
   aleatorio?: () => number;
 }
 
@@ -79,6 +91,7 @@ export class Jogo {
   pontos = 0;
   comidas = 0;
   recorde: number;
+  modo: Modo;
 
   private fila: Direcao[] = [];
   private readonly aleatorio: () => number;
@@ -86,6 +99,7 @@ export class Jogo {
   constructor(opcoes: OpcoesJogo = {}) {
     this.lado = opcoes.lado ?? LADO;
     this.recorde = opcoes.recorde ?? 0;
+    this.modo = opcoes.modo ?? 'classico';
     this.aleatorio = opcoes.aleatorio ?? Math.random;
     this.reiniciar();
   }
@@ -137,6 +151,21 @@ export class Jogo {
   comecar(): boolean {
     if (this.estado !== 'pronto') return false;
     this.estado = 'a-jogar';
+    return true;
+  }
+
+  /**
+   * Termina a partida por tempo esgotado. Devolve `false` se já estava acabada.
+   *
+   * O relógio anda fora daqui, com o resto do tempo real: esta classe conta
+   * passos, não segundos. O que lhe compete é a transição de estado, que tem de
+   * ser exactamente a mesma de bater na parede — incluindo o recorde.
+   */
+  esgotar(): boolean {
+    if (this.estado !== 'a-jogar') return false;
+    this.anterior = this.corpo.map((p) => ({ ...p }));
+    this.estado = 'morto';
+    this.marcarRecorde();
     return true;
   }
 

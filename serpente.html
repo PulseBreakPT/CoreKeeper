@@ -22,15 +22,25 @@
           <span class="valor" id="pontos">0</span>
         </div>
 
-        <button class="som" id="som" type="button" aria-pressed="true" aria-label="Desligar som">
+        <div class="botoes">
+          <button class="pastilha" id="modo" type="button" aria-pressed="false" aria-label="Modo clássico. Tocar liga o modo relógio">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="13" r="8" />
+              <path d="M12 9v4l2.5 2" />
+              <path d="M9 2h6" />
+            </svg>
+          </button>
+
+          <button class="pastilha som" id="som" type="button" aria-pressed="true" aria-label="Desligar som">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor" stroke="none" />
             <path class="onda" d="M15.5 8.5a5 5 0 0 1 0 7" />
             <path class="onda" d="M18.5 5.5a9 9 0 0 1 0 13" />
             <path class="risca" d="M16 9.5 21 14.5" />
             <path class="risca" d="M21 9.5 16 14.5" />
-          </svg>
-        </button>
+            </svg>
+          </button>
+        </div>
 
         <div class="marcador direita">
           <span class="rotulo"><i class="coroa" id="coroa" hidden></i>BEST</span>

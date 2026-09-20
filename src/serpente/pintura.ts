@@ -109,6 +109,10 @@ export class Pintor {
   intensidade = 0;
   /** Matiz actual do corpo — é daqui que a interface tira a sua cor. */
   matiz = MATIZ_LENTO;
+  /** Fracção do relógio que resta (1 a 0), ou `null` no modo clássico. */
+  relogio: number | null = null;
+  /** Segundos inteiros que faltam, para a contagem grande dos últimos tempos. */
+  segundos = 0;
 
   /** O chão da arena é pintado uma vez e reaproveitado — só muda quando o ecrã muda. */
   private chao: HTMLCanvasElement | null = null;
@@ -238,6 +242,7 @@ export class Pintor {
     }
 
     this.arena(L, cel, jogo.lado, matiz);
+    this.contagem(L, tempo, jogo.estado);
     this.comida(jogo.comida, cel, tempo, jogo.estado);
     this.serpente(jogo, t, cel, tempo, matiz);
     this.efeitos(cel, jogo.lado);
@@ -373,6 +378,25 @@ export class Pintor {
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
+    // O relógio drena a própria moldura: lê-se de relance, de qualquer ponto do
+    // ecrã, e não rouba um centímetro à interface.
+    if (this.relogio !== null) {
+      const largura = L - 4;
+      const r = Math.max(1, this.raio - 1);
+      const perimetro = 2 * (largura - 2 * r) * 2 + 2 * Math.PI * r;
+      const resta = limitar(this.relogio, 0, 1);
+      const aperto = resta < 0.3 ? 1 - resta / 0.3 : 0;
+      caminhoRedondo(ctx, 2, 2, largura, largura, r);
+      ctx.setLineDash([perimetro * resta, perimetro]);
+      ctx.strokeStyle =
+        aperto > 0
+          ? `hsl(${lerp(matiz, 352, aperto)}, ${lerp(88, 92, aperto)}%, ${lerp(70, 66, aperto)}%)`
+          : `hsl(${matiz}, 88%, 74%)`;
+      ctx.lineWidth = 3 + aperto * 2;
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
     // O clarão de comer ou morrer passa por cima, curto e por cima da cor base.
     if (brilho > 0.01) {
       ctx.strokeStyle = this.molduraCor;
@@ -408,6 +432,22 @@ export class Pintor {
     }
     ctx.stroke();
     ctx.lineCap = 'butt';
+  }
+
+  /** Os últimos segundos aparecem em grande no meio da arena, a pulsar. */
+  private contagem(L: number, tempo: number, estado: string): void {
+    if (this.relogio === null || estado !== 'a-jogar') return;
+    if (this.segundos > 3 || this.segundos <= 0) return;
+    const ctx = this.ctx;
+    const pulso = 0.5 + 0.5 * Math.sin(tempo / 120);
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `700 ${L * 0.4}px ${LETRA}`;
+    ctx.globalAlpha = 0.07 + pulso * 0.07;
+    ctx.fillStyle = COR_MORTE;
+    ctx.fillText(String(this.segundos), L / 2, L / 2);
+    ctx.restore();
   }
 
   // ---------- Comida ----------

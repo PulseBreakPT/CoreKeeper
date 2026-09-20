@@ -202,7 +202,14 @@ body::before {
   }
 }
 
-.som {
+.botoes {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pastilha {
   flex: 0 0 auto;
   width: 38px;
   height: 38px;
@@ -216,23 +223,30 @@ body::before {
   transition: transform 120ms ease, background 200ms ease, color 200ms ease, border-color 600ms linear;
 }
 
-.som:hover {
+.pastilha:hover {
   background: hsla(var(--matiz), 50%, 60%, 0.16);
 }
 
-.som:active {
+.pastilha:active {
   transform: scale(0.92);
 }
 
-.som:focus-visible {
+.pastilha:focus-visible {
   outline: 2px solid var(--acento);
   outline-offset: 2px;
 }
 
-.som svg {
+.pastilha svg {
   width: 19px;
   height: 19px;
   display: block;
+}
+
+.pastilha.activo {
+  color: hsl(var(--matiz), 95%, 82%);
+  border-color: hsla(var(--matiz), 80%, 70%, 0.55);
+  background: hsla(var(--matiz), 70%, 55%, 0.2);
+  box-shadow: 0 0 18px -4px hsla(var(--matiz), 90%, 60%, 0.8);
 }
 
 .som .risca {
@@ -466,7 +480,7 @@ body::before {
     height: 32px;
   }
 
-  .som svg {
+  .pastilha svg {
     width: 16px;
     height: 16px;
   }

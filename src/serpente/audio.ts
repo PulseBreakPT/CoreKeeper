@@ -116,6 +116,14 @@ export class Som {
     });
   }
 
+  /** Tique seco dos últimos segundos do relógio. */
+  tique(): void {
+    if (!this.ligado) return;
+    this.garantir();
+    this.tom(1180, 0, 0.05, 0.2, 'square');
+    this.tom(590, 0.005, 0.07, 0.1, 'triangle');
+  }
+
   /** Baque e descida — fim de partida. */
   fim(): void {
     if (!this.ligado) return;
