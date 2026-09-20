@@ -3,7 +3,7 @@
  * e com swipe, e verifica pontuação, colisões, reinício, recorde e responsividade.
  */
 import { chromium } from 'playwright';
-import { createServer } from 'vite';
+import { createServer, preview } from 'vite';
 import { existsSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,9 +12,20 @@ const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
 const saida = process.env.PASTA_FUMO ?? join(raiz, '.fumo-serpente');
 mkdirSync(saida, { recursive: true });
 
-const servidor = await createServer({ root: raiz, server: { port: 5200 }, logLevel: 'error' });
-await servidor.listen();
-const URL_JOGO = 'http://localhost:5200/serpente.html';
+// Com EMPACOTADA=1 o teste corre contra `serpente-app/www` — exactamente os
+// ficheiros que vão dentro do APK — em vez da versão de desenvolvimento.
+const empacotada = process.env.EMPACOTADA === '1';
+const servidor = empacotada
+  ? await preview({
+      root: raiz,
+      build: { outDir: 'serpente-app/www' },
+      preview: { port: 5201 },
+      logLevel: 'error',
+    })
+  : await createServer({ root: raiz, server: { port: 5200 }, logLevel: 'error' });
+if (!empacotada) await servidor.listen();
+const URL_JOGO = empacotada ? 'http://localhost:5201/index.html' : 'http://localhost:5200/serpente.html';
+console.log(`A testar ${empacotada ? 'o pacote do APK' : 'a versão de desenvolvimento'}: ${URL_JOGO}\n`);
 
 const alternativas = [
   process.env.CHROMIUM_PATH,
@@ -34,11 +45,16 @@ function vigiar(p) {
   p.on('pageerror', (e) => erros.push(String(e)));
 }
 
+async function fecharServidor() {
+  if (empacotada) servidor.httpServer.close();
+  else await servidor.close();
+}
+
 async function falhar(msg) {
   if (pagina) await pagina.screenshot({ path: join(saida, 'falha.png') }).catch(() => {});
   console.error('✗', msg);
   await navegador.close();
-  await servidor.close();
+  await fecharServidor();
   process.exit(1);
 }
 
@@ -310,4 +326,4 @@ await verificar(erros.length === 0, `não houve erros na consola${erros.length ?
 
 console.log(`\nCapturas em ${saida}`);
 await navegador.close();
-await servidor.close();
+await fecharServidor();

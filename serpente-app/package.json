@@ -1,0 +1,8 @@
+{
+  "name": "serpente-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Serpente — embrulho Capacitor do jogo da cobra para Android.",
+  "//": "As dependências vivem no package.json da raiz; aqui só mora a configuração nativa."
+}

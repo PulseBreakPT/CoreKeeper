@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Serpente</string>
+    <string name="title_activity_main">Serpente</string>
+    <string name="package_name">pt.pulsebreak.serpente</string>
+    <string name="custom_url_scheme">pt.pulsebreak.serpente</string>
+</resources>

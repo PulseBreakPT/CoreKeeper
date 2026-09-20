@@ -11,6 +11,15 @@ coverage/
 .fumo-serpente/
 
 # Artefactos de compilação Android
+serpente-app/www/
+serpente-app/android/.gradle/
+serpente-app/android/build/
+serpente-app/android/app/build/
+serpente-app/android/capacitor-cordova-android-plugins/build/
+serpente-app/android/local.properties
+serpente-app/android/app/src/main/assets/public/
+serpente-app/android/app/src/main/assets/capacitor.config.json
+serpente-app/android/app/src/main/assets/capacitor.plugins.json
 android/.gradle/
 android/build/
 android/app/build/

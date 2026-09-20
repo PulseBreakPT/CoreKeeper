@@ -7,6 +7,8 @@
   "scripts": {
     "dev": "vite",
     "serpente": "vite --open /serpente.html",
+    "serpente:build": "vite build --config vite.serpente.config.ts",
+    "serpente:apk": "npm run serpente:build && cd serpente-app && npx cap sync android && cd android && ./gradlew assembleDebug",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host",
     "typecheck": "tsc --noEmit",
@@ -16,6 +18,7 @@
     "perf": "node scripts/perf.mjs",
     "sprites": "node scripts/folha-sprites.mjs",
     "icones": "node scripts/gerar-icones.mjs",
+    "icones:serpente": "node scripts/gerar-icones-serpente.mjs",
     "apk": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug",
     "cintilacao": "node scripts/cintilacao.mjs"
   },

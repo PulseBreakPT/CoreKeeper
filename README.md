@@ -99,8 +99,16 @@ No mesmo repositório vive um segundo jogo, independente do primeiro: **Serpente
 versão moderna do clássico jogo da cobra. Abre em `serpente.html`.
 
 ```bash
-npm run serpente   # abre o jogo directamente no browser
+npm run serpente       # abre o jogo directamente no browser
+npm run serpente:apk   # compila o APK da Serpente (app própria, não o Hollow Star)
 ```
+
+A Serpente também é **aplicação Android própria**, separada do Hollow Star: `appId`
+`pt.pulsebreak.serpente`, nome *Serpente*, ícone próprio e sem orientação forçada — joga-se
+de pé ou deitado. Vive em `serpente-app/`, com a sua configuração de Capacitor e o seu
+projecto nativo; o `npm run serpente:build` compila só esta página para `serpente-app/www`,
+por isso o APK leva 3,6 MB e nem um ficheiro do outro jogo. O CI compila-o em cada push e
+publica-o como artefacto `serpente-apk`.
 
 Arena quadrada de 21×21, sempre igual em todos os ecrãs, que se ajusta ao espaço
 disponível mantendo as células quadradas. A serpente anda sozinha assim que dás a
@@ -147,6 +155,8 @@ npm run build      # verificação de tipos + build de produção para dist/
 npm test           # testes unitários (vitest)
 npm run fumo       # teste de fumo real num Chromium: joga, cria, luta e grava
 npm run fumo:serpente  # o mesmo para a Serpente: joga, come, morre, reinicia, desliza
+EMPACOTADA=1 npm run fumo:serpente  # corre o mesmo teste contra o pacote que vai no APK
+npm run serpente:apk   # APK da Serpente (JDK 17 + Android SDK, como o do Hollow Star)
 npm run perf       # mede FPS e milissegundos por quadro em cada nível de qualidade
 npm run sprites    # gera uma folha com todos os sprites, para rever a arte
 ```
@@ -165,13 +175,21 @@ src/
   render/    paletas, sprites, auto-tiling, câmara, pipeline de desenho
   ui/         HUD, painéis, menus, fundo animado
   serpente/  o segundo jogo: lógica pura, desenho, controlos, som
+serpente-app/  embrulho Capacitor da Serpente: configuração e projecto Android
 ```
 
 ---
 
 ## Android (APK)
 
-O projecto Android está em `android/`, gerado com Capacitor.
+São duas aplicações separadas, cada uma com o seu `appId` e o seu projecto nativo:
+
+| Aplicação | `appId` | Projecto | Comando |
+|---|---|---|---|
+| The Hollow Star | `pt.pulsebreak.hollowstar` | `android/` | `npm run apk` |
+| Serpente | `pt.pulsebreak.serpente` | `serpente-app/android/` | `npm run serpente:apk` |
+
+O projecto Android do jogo principal está em `android/`, gerado com Capacitor.
 
 ```bash
 npm run build
