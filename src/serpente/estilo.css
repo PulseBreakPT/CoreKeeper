@@ -89,6 +89,7 @@ kbd { font: 11px var(--letra); color: #afb5a6; display: inline-grid; place-items
 .arena { position: relative; touch-action: none; isolation: isolate; overflow: hidden; background: #11160e; box-shadow: 0 0 0 1px #414e32; border-radius: 8px; }
 .arena canvas { display: block; border-radius: inherit; }
 .inicio { position: absolute; inset: 0; background: radial-gradient(ellipse at 65% 50%, #25361866, transparent 65%), repeating-linear-gradient(0deg, transparent 0, transparent calc(100% / 21 - 1px), #8192640a calc(100% / 21 - 1px), #8192640a calc(100% / 21)), repeating-linear-gradient(90deg, #11170f 0, #11170f calc(100% / 21 - 1px), #81926418 calc(100% / 21 - 1px), #81926418 calc(100% / 21)); }
+.inicio { background-color: #11170f; }
 .inicio-titulo { position: absolute; left: 8%; top: 8%; }.inicio-titulo .sobretitulo { font-size: clamp(7px, .75vw, 9px); color: #a0ad91; }
 .inicio h2 { font-size: clamp(24px, 3vw, 39px); letter-spacing: -1.6px; font-weight: 500; margin: 9px 0; }.inicio h2 span { color: var(--acento); }
 .cobra-arte { position: absolute; width: 96%; left: 2%; top: 21%; height: 53%; }
