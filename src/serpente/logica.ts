@@ -36,6 +36,9 @@ const VETORES: Record<Direcao, Ponto> = {
   direita: { x: 1, y: 0 },
 };
 
+/** As quatro direcções, por ordem fixa — usada nas varreduras da grelha. */
+const DIRECCOES: Direcao[] = ['cima', 'baixo', 'esquerda', 'direita'];
+
 export function vetor(d: Direcao): Ponto {
   return VETORES[d];
 }
@@ -153,13 +156,141 @@ export class Jogo {
     return saida;
   }
 
-  /** Põe comida numa célula livre. Devolve `false` quando a arena está cheia. */
+  /**
+   * Parte o espaço livre em regiões ligadas (vizinhança de quatro).
+   *
+   * Devolve, para cada célula livre, o número da região a que pertence, e o
+   * tamanho de cada região. É com isto que se sabe se a comida está do lado
+   * certo de uma parede feita pelo próprio corpo.
+   */
+  private regioes(): { de: Int16Array; tamanhos: number[] } {
+    const n = this.lado * this.lado;
+    const de = new Int16Array(n).fill(-1);
+    const bloqueada = new Uint8Array(n);
+    // A cauda não conta como parede: liberta a célula no passo seguinte.
+    for (let i = 0; i < this.corpo.length - 1; i++) {
+      const p = this.corpo[i];
+      bloqueada[p.y * this.lado + p.x] = 1;
+    }
+    const tamanhos: number[] = [];
+    const fila = new Int32Array(n);
+
+    for (let inicio = 0; inicio < n; inicio++) {
+      if (bloqueada[inicio] || de[inicio] >= 0) continue;
+      const regiao = tamanhos.length;
+      let escrita = 0;
+      let leitura = 0;
+      fila[escrita++] = inicio;
+      de[inicio] = regiao;
+      let tamanho = 0;
+      while (leitura < escrita) {
+        const c = fila[leitura++];
+        tamanho++;
+        const x = c % this.lado;
+        const y = (c - x) / this.lado;
+        if (x > 0) {
+          const v = c - 1;
+          if (!bloqueada[v] && de[v] < 0) { de[v] = regiao; fila[escrita++] = v; }
+        }
+        if (x < this.lado - 1) {
+          const v = c + 1;
+          if (!bloqueada[v] && de[v] < 0) { de[v] = regiao; fila[escrita++] = v; }
+        }
+        if (y > 0) {
+          const v = c - this.lado;
+          if (!bloqueada[v] && de[v] < 0) { de[v] = regiao; fila[escrita++] = v; }
+        }
+        if (y < this.lado - 1) {
+          const v = c + this.lado;
+          if (!bloqueada[v] && de[v] < 0) { de[v] = regiao; fila[escrita++] = v; }
+        }
+      }
+      tamanhos.push(tamanho);
+    }
+    return { de, tamanhos };
+  }
+
+  /**
+   * Põe comida numa célula livre, com critério. Devolve `false` se a arena
+   * estiver cheia.
+   *
+   * Sortear uniformemente entre as livres é o que quase toda a gente faz, e é
+   * o que estraga partidas: a comida cai atrás de uma parede feita pelo próprio
+   * corpo, ou colada a ele, e o jogador perde sem ter errado. Aqui a escolha
+   * passa por dois filtros:
+   *
+   * 1. só células da maior região a que a cabeça consegue chegar — nunca do
+   *    outro lado do corpo, nunca numa bolsa apertada se houver espaço aberto;
+   * 2. dentro dessa região, as células desafogadas valem mais no sorteio, por
+   *    isso a comida raramente nasce encostada ao corpo ou a um canto.
+   *
+   * Se a cabeça estiver completamente fechada, a partida já está perdida e a
+   * comida vai para a maior região que existir — o jogo continua honesto.
+   */
   private novaComida(): boolean {
     const livres = this.livres();
     if (livres.length === 0) return false;
-    const i = Math.min(livres.length - 1, Math.floor(this.aleatorio() * livres.length));
-    this.comida = livres[i];
+
+    const { de, tamanhos } = this.regioes();
+    const cabeca = this.corpo[0];
+
+    // Regiões onde a cabeça pode entrar: as que tocam uma casa vizinha dela.
+    const alcancaveis = new Set<number>();
+    for (const d of DIRECCOES) {
+      const v = VETORES[d];
+      const x = cabeca.x + v.x;
+      const y = cabeca.y + v.y;
+      if (x < 0 || y < 0 || x >= this.lado || y >= this.lado) continue;
+      const r = de[y * this.lado + x];
+      if (r >= 0) alcancaveis.add(r);
+    }
+
+    // Só contam regiões que tenham mesmo onde pôr comida: a célula da cauda
+    // conta como livre para caminhar, mas a comida não pode nascer em cima dela.
+    const comVaga = new Set<number>();
+    for (const p of livres) comVaga.add(de[p.y * this.lado + p.x]);
+
+    const preferidas = [...alcancaveis].filter((r) => comVaga.has(r));
+    const candidatas = preferidas.length > 0 ? preferidas : [...comVaga];
+    let melhor = -1;
+    for (const r of candidatas) {
+      if (melhor < 0 || tamanhos[r] > tamanhos[melhor]) melhor = r;
+    }
+    // Há células livres, logo há sempre uma região onde as pôr.
+    if (melhor < 0) throw new Error('há células livres mas nenhuma região para a comida');
+
+    // Sorteio pesado: uma célula com quatro vizinhos livres vale cinco vezes
+    // mais do que uma encurralada com um só.
+    const alvos = livres.filter((p) => de[p.y * this.lado + p.x] === melhor);
+    let total = 0;
+    const pesos = alvos.map((p) => {
+      const peso = 1 + this.vizinhasLivres(p, de, melhor);
+      total += peso;
+      return peso;
+    });
+    let sorte = this.aleatorio() * total;
+    for (let i = 0; i < alvos.length; i++) {
+      sorte -= pesos[i];
+      if (sorte <= 0) {
+        this.comida = alvos[i];
+        return true;
+      }
+    }
+    this.comida = alvos[alvos.length - 1];
     return true;
+  }
+
+  /** Quantos dos quatro vizinhos pertencem à mesma região livre. */
+  private vizinhasLivres(p: Ponto, de: Int16Array, regiao: number): number {
+    let n = 0;
+    for (const d of DIRECCOES) {
+      const v = VETORES[d];
+      const x = p.x + v.x;
+      const y = p.y + v.y;
+      if (x < 0 || y < 0 || x >= this.lado || y >= this.lado) continue;
+      if (de[y * this.lado + x] === regiao) n++;
+    }
+    return n;
   }
 
   private marcarRecorde(): void {

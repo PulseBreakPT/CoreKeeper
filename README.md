@@ -123,11 +123,21 @@ uma curva que decai devagar para o jogo continuar controlável quando está ráp
 | Som | Botão do altifalante | — |
 
 O swipe é reancorado a cada 16 px, por isso encadeias curvas sem levantar o dedo, e
-só a arena trava o toque — o resto da página continua normal. A comida sai sempre de
-uma lista de células livres (nunca de tentativa e erro), as inversões sobre o próprio
-corpo são recusadas mesmo em rajadas de teclas, e entrar na célula que a cauda liberta
-no mesmo passo é legal, como no original. Encher o tabuleiro ganha a partida. O recorde
-fica em `localStorage`.
+só a arena trava o toque — o resto da página continua normal. As inversões sobre o
+próprio corpo são recusadas mesmo em rajadas de teclas, e entrar na célula que a cauda
+liberta no mesmo passo é legal, como no original. Encher o tabuleiro ganha a partida. O
+recorde fica em `localStorage`.
+
+**A comida tem critério.** Sortear uniformemente entre as casas livres é o que quase
+toda a gente faz, e é o que estraga partidas: a comida cai atrás de uma parede feita
+pelo próprio corpo, ou colada a ele, e perde-se sem ter errado. Aqui o espaço livre é
+partido em regiões ligadas a cada refeição, e a escolha passa por dois filtros: só
+células da **maior região a que a cabeça consegue mesmo chegar** — nunca do outro lado
+do corpo, nunca numa bolsa apertada se houver espaço aberto — e, dentro dessa região,
+um sorteio em que uma casa com quatro vizinhos livres vale cinco vezes mais do que uma
+encurralada com um só. Se a cabeça estiver fechada, a partida já está perdida e a comida
+vai para a maior região que exista: o jogo continua honesto e só declara vitória com a
+arena mesmo cheia.
 
 Toda a lógica vive em `src/serpente/logica.ts`, sem DOM nem canvas, e é testada à parte.
 

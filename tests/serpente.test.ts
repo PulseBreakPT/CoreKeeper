@@ -356,3 +356,139 @@ function vetorAplicado(j: Jogo): Ponto {
   const v = vetor(j.direcao);
   return { x: j.corpo[0].x + v.x, y: j.corpo[0].y + v.y };
 }
+
+/** BFS independente da implementação: onde é que a cabeça consegue mesmo chegar. */
+function alcancavel(j: Jogo, alvo: Ponto): boolean {
+  const bloqueada = new Set(j.corpo.slice(0, -1).map((p) => `${p.x},${p.y}`));
+  const visto = new Set<string>();
+  const fila: Ponto[] = [];
+  for (const d of ['cima', 'baixo', 'esquerda', 'direita'] as Direcao[]) {
+    const v = vetor(d);
+    const p = { x: j.corpo[0].x + v.x, y: j.corpo[0].y + v.y };
+    if (p.x < 0 || p.y < 0 || p.x >= j.lado || p.y >= j.lado) continue;
+    if (!bloqueada.has(`${p.x},${p.y}`)) fila.push(p);
+  }
+  while (fila.length > 0) {
+    const p = fila.pop() as Ponto;
+    const chave = `${p.x},${p.y}`;
+    if (visto.has(chave) || bloqueada.has(chave)) continue;
+    visto.add(chave);
+    if (igual(p, alvo)) return true;
+    for (const d of ['cima', 'baixo', 'esquerda', 'direita'] as Direcao[]) {
+      const v = vetor(d);
+      const q = { x: p.x + v.x, y: p.y + v.y };
+      if (q.x < 0 || q.y < 0 || q.x >= j.lado || q.y >= j.lado) continue;
+      if (!visto.has(`${q.x},${q.y}`)) fila.push(q);
+    }
+  }
+  return false;
+}
+
+/** Vizinhos de `p` que estão dentro da arena e fora do corpo. */
+function desafogo(j: Jogo, p: Ponto): number {
+  let n = 0;
+  for (const d of ['cima', 'baixo', 'esquerda', 'direita'] as Direcao[]) {
+    const v = vetor(d);
+    const q = { x: p.x + v.x, y: p.y + v.y };
+    if (q.x < 0 || q.y < 0 || q.x >= j.lado || q.y >= j.lado) continue;
+    if (!j.corpo.some((c) => igual(c, q))) n++;
+  }
+  return n;
+}
+
+describe('onde a comida nasce', () => {
+  it('nunca do outro lado de uma parede feita pelo próprio corpo', () => {
+    // Corpo em parede vertical completa: esquerda 35 casas, direita 36. A
+    // direita é maior, mas a cabeça não lá chega — a comida tem de ficar na
+    // esquerda, que é o lado onde a serpente pode jogar.
+    const j = new Jogo({ lado: 9, aleatorio: semente(4) });
+    const corpo: Ponto[] = [{ x: 3, y: 8 }];
+    for (let y = 8; y >= 0; y--) corpo.push({ x: 4, y });
+    corpo.push({ x: 3, y: 0 });
+    j.corpo = corpo;
+    j.anterior = corpo.map((c) => ({ ...c }));
+    j.direcao = 'esquerda';
+    j.comida = { x: 2, y: 8 };
+    j.comecar();
+    const r = j.passo();
+    expect(r.comeu).toBe(true);
+    expect(j.comida.x, `comida em ${j.comida.x},${j.comida.y}`).toBeLessThan(4);
+    expect(alcancavel(j, j.comida)).toBe(true);
+  });
+
+  it('em partidas inteiras, a comida está sempre ao alcance da cabeça', () => {
+    const rng = semente(31337);
+    const j = new Jogo({ lado: 11, aleatorio: rng });
+    for (let partida = 0; partida < 12; partida++) {
+      j.reiniciar();
+      j.comecar();
+      expect(alcancavel(j, j.comida)).toBe(true);
+      let passos = 0;
+      while (j.estado === 'a-jogar' && passos++ < 500) {
+        // Come sempre que pode, para o corpo crescer e fechar regiões.
+        const v = vetor(j.direcao);
+        const frente = { x: j.corpo[0].x + v.x, y: j.corpo[0].y + v.y };
+        const dentro = frente.x >= 0 && frente.y >= 0 && frente.x < 11 && frente.y < 11;
+        if (dentro && !j.corpo.some((c) => igual(c, frente))) j.comida = frente;
+        else j.virar(DIRECCOES[Math.floor(rng() * 4)]);
+        j.passo();
+        if (j.estado === 'a-jogar') expect(alcancavel(j, j.comida)).toBe(true);
+      }
+    }
+  });
+
+  it('prefere o desafogo: a comida raramente nasce encostada ao corpo', () => {
+    const rng = semente(808);
+    const j = new Jogo({ lado: 9, aleatorio: rng });
+    // Corpo em serpentina, a deixar casas apertadas e casas abertas.
+    const corpo: Ponto[] = [];
+    for (let x = 1; x <= 7; x++) corpo.push({ x, y: 4 });
+    for (let y = 5; y <= 7; y++) corpo.push({ x: 7, y });
+    j.corpo = corpo;
+    j.anterior = corpo.map((c) => ({ ...c }));
+    j.direcao = 'esquerda';
+    j.comecar();
+
+    const livres = j.livres();
+    const mediaGeral = livres.reduce((a, p) => a + desafogo(j, p), 0) / livres.length;
+    const apertadasNaArena = livres.filter((p) => desafogo(j, p) <= 2).length / livres.length;
+
+    let soma = 0;
+    let apertadas = 0;
+    const amostras = 300;
+    for (let i = 0; i < amostras; i++) {
+      j.comida = { x: 0, y: 4 };
+      j.corpo = corpo.map((c) => ({ ...c }));
+      j.anterior = j.corpo.map((c) => ({ ...c }));
+      j.direcao = 'esquerda';
+      j.estado = 'a-jogar';
+      j.passo();
+      const espaco = desafogo(j, j.comida);
+      soma += espaco;
+      if (espaco <= 2) apertadas++;
+    }
+    // O sorteio pesado tem de bater o sorteio uniforme nas duas medidas: mais
+    // desafogo em média, e menos comida em casas apertadas do que a arena tem.
+    expect(soma / amostras).toBeGreaterThan(mediaGeral);
+    expect(apertadas / amostras).toBeLessThan(apertadasNaArena);
+  });
+
+  it('só declara vitória com a arena mesmo cheia', () => {
+    const rng = semente(2718);
+    const j = new Jogo({ lado: 7, aleatorio: rng });
+    for (let partida = 0; partida < 25; partida++) {
+      j.reiniciar();
+      j.comecar();
+      let passos = 0;
+      while (j.estado === 'a-jogar' && passos++ < 400) {
+        const v = vetor(j.direcao);
+        const frente = { x: j.corpo[0].x + v.x, y: j.corpo[0].y + v.y };
+        const dentro = frente.x >= 0 && frente.y >= 0 && frente.x < 7 && frente.y < 7;
+        if (dentro && !j.corpo.some((c) => igual(c, frente))) j.comida = frente;
+        else j.virar(DIRECCOES[Math.floor(rng() * 4)]);
+        j.passo();
+      }
+      if (j.estado === 'completo') expect(j.livres()).toHaveLength(0);
+    }
+  });
+});
