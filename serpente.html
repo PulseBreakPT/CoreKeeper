@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#05060c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="Serpente — o jogo da cobra, rápido, limpo e jogável em qualquer ecrã." />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <title>Serpente</title>
+  </head>
+  <body>
+    <main class="jogo">
+      <header class="hud" id="hud">
+        <div class="marcador" id="marcador-pontos">
+          <span class="rotulo">SCORE</span>
+          <span class="valor" id="pontos">0</span>
+        </div>
+
+        <button class="som" id="som" type="button" aria-pressed="true" aria-label="Desligar som">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor" stroke="none" />
+            <path class="onda" d="M15.5 8.5a5 5 0 0 1 0 7" />
+            <path class="onda" d="M18.5 5.5a9 9 0 0 1 0 13" />
+            <path class="risca" d="M16 9.5 21 14.5" />
+            <path class="risca" d="M21 9.5 16 14.5" />
+          </svg>
+        </button>
+
+        <div class="marcador direita">
+          <span class="rotulo">BEST</span>
+          <span class="valor" id="recorde">0</span>
+        </div>
+      </header>
+
+      <div class="palco" id="palco">
+        <div class="arena" id="arena">
+          <canvas id="tela" width="600" height="600"></canvas>
+          <p class="dica" id="dica">Setas ou WASD para começar</p>
+
+          <div class="fim" id="fim" hidden>
+            <h2 id="fim-titulo">FIM DE JOGO</h2>
+            <div class="fim-numeros">
+              <div class="marcador">
+                <span class="rotulo">SCORE</span>
+                <span class="valor" id="fim-pontos">0</span>
+              </div>
+              <div class="marcador">
+                <span class="rotulo">BEST</span>
+                <span class="valor" id="fim-recorde">0</span>
+              </div>
+            </div>
+            <p class="medalha" id="fim-medalha" hidden></p>
+            <button class="jogar" id="jogar" type="button">Jogar novamente</button>
+            <p class="atalho">Enter ou Espaço</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="/src/serpente/main.ts"></script>
+  </body>
+</html>

@@ -8,6 +8,7 @@ coverage/
 
 # Saídas de testes visuais e de desempenho
 .fumo/
+.fumo-serpente/
 
 # Artefactos de compilação Android
 android/.gradle/

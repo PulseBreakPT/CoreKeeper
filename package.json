@@ -6,11 +6,13 @@
   "description": "The Hollow Star — exploração e sobrevivência subterrânea, para telemóvel.",
   "scripts": {
     "dev": "vite",
+    "serpente": "vite --open /serpente.html",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "fumo": "node scripts/fumo.mjs",
+    "fumo:serpente": "node scripts/fumo-serpente.mjs",
     "perf": "node scripts/perf.mjs",
     "sprites": "node scripts/folha-sprites.mjs",
     "icones": "node scripts/gerar-icones.mjs",

@@ -1,0 +1,224 @@
+/**
+ * Lógica pura do jogo da serpente.
+ *
+ * Não toca em DOM, canvas nem relógio — recebe passos e devolve o que aconteceu.
+ * É aqui que vivem as regras todas (movimento, comida, colisões, ritmo), para
+ * poderem ser testadas sem browser.
+ */
+
+export type Direcao = 'cima' | 'baixo' | 'esquerda' | 'direita';
+export type Estado = 'pronto' | 'a-jogar' | 'morto' | 'completo';
+
+export interface Ponto {
+  x: number;
+  y: number;
+}
+
+/** Lado da arena em células. Quadrada e fixa, para o jogo ser igual em todos os ecrãs. */
+export const LADO = 21;
+/** Milissegundos por passo no início. */
+export const PASSO_INICIAL = 150;
+/** Milissegundos por passo no limite da velocidade. */
+export const PASSO_MINIMO = 74;
+/** Quanto do intervalo restante desaparece a cada comida (aceleração suave e com tecto). */
+export const DECAIMENTO = 0.972;
+/** De quantas comidas em quantas soa o marco de pontuação. */
+export const MARCO = 10;
+/** Quantas direcções ficam em fila à espera de passo (absorve rajadas de input). */
+export const FILA_MAXIMA = 2;
+/** Comprimento da serpente no arranque. */
+export const COMPRIMENTO_INICIAL = 3;
+
+const VETORES: Record<Direcao, Ponto> = {
+  cima: { x: 0, y: -1 },
+  baixo: { x: 0, y: 1 },
+  esquerda: { x: -1, y: 0 },
+  direita: { x: 1, y: 0 },
+};
+
+export function vetor(d: Direcao): Ponto {
+  return VETORES[d];
+}
+
+/** Duas direcções são opostas quando somadas dão parado. */
+export function opostas(a: Direcao, b: Direcao): boolean {
+  return VETORES[a].x + VETORES[b].x === 0 && VETORES[a].y + VETORES[b].y === 0;
+}
+
+export interface Resultado {
+  moveu: boolean;
+  comeu: boolean;
+  marco: boolean;
+  morreu: boolean;
+  completo: boolean;
+  cabeca: Ponto;
+}
+
+export interface OpcoesJogo {
+  lado?: number;
+  recorde?: number;
+  aleatorio?: () => number;
+}
+
+function vazio(cabeca: Ponto): Resultado {
+  return { moveu: false, comeu: false, marco: false, morreu: false, completo: false, cabeca };
+}
+
+export class Jogo {
+  readonly lado: number;
+  /** Células ocupadas, da cabeça para a cauda. */
+  corpo: Ponto[] = [];
+  /** Onde estava cada célula no passo anterior — usado para interpolar o desenho. */
+  anterior: Ponto[] = [];
+  comida: Ponto = { x: 0, y: 0 };
+  direcao: Direcao = 'direita';
+  estado: Estado = 'pronto';
+  pontos = 0;
+  comidas = 0;
+  recorde: number;
+
+  private fila: Direcao[] = [];
+  private readonly aleatorio: () => number;
+
+  constructor(opcoes: OpcoesJogo = {}) {
+    this.lado = opcoes.lado ?? LADO;
+    this.recorde = opcoes.recorde ?? 0;
+    this.aleatorio = opcoes.aleatorio ?? Math.random;
+    this.reiniciar();
+  }
+
+  /** Deita fora tudo o que havia e monta uma partida limpa. */
+  reiniciar(): void {
+    const meio = Math.floor(this.lado / 2);
+    // Em arenas pequenas (testes) a serpente encolhe para caber sem sair do tabuleiro.
+    const comprimento = Math.max(1, Math.min(COMPRIMENTO_INICIAL, meio + 1));
+    this.corpo = [];
+    for (let i = 0; i < comprimento; i++) this.corpo.push({ x: meio - i, y: meio });
+    this.anterior = this.corpo.map((p) => ({ ...p }));
+    this.direcao = 'direita';
+    this.fila = [];
+    this.estado = 'pronto';
+    this.pontos = 0;
+    this.comidas = 0;
+    this.novaComida();
+  }
+
+  /** Intervalo entre passos, em milissegundos, para a pontuação actual. */
+  passoMs(): number {
+    const extra = (PASSO_INICIAL - PASSO_MINIMO) * Math.pow(DECAIMENTO, this.comidas);
+    return PASSO_MINIMO + extra;
+  }
+
+  /** Última direcção com que já se contou — a da fila, ou a que está a ser andada. */
+  private referencia(): Direcao {
+    return this.fila.length > 0 ? this.fila[this.fila.length - 1] : this.direcao;
+  }
+
+  /**
+   * Pede uma mudança de direcção. Devolve `true` se foi aceite.
+   *
+   * Recusa inversões sobre o próprio corpo e repetições, mesmo quando chegam
+   * várias no mesmo passo: a comparação é sempre com a última já aceite.
+   */
+  virar(d: Direcao): boolean {
+    if (this.estado === 'morto' || this.estado === 'completo') return false;
+    const ref = this.referencia();
+    if (d === ref || opostas(d, ref)) return false;
+    if (this.fila.length >= FILA_MAXIMA) return false;
+    this.fila.push(d);
+    if (this.estado === 'pronto') this.estado = 'a-jogar';
+    return true;
+  }
+
+  /** Arranca sem mudar de direcção (por exemplo, ao tocar no ecrã). */
+  comecar(): boolean {
+    if (this.estado !== 'pronto') return false;
+    this.estado = 'a-jogar';
+    return true;
+  }
+
+  ocupada(x: number, y: number): boolean {
+    return this.corpo.some((p) => p.x === x && p.y === y);
+  }
+
+  /** Todas as células fora do corpo — a comida sai daqui, nunca de tentativa e erro. */
+  livres(): Ponto[] {
+    const ocupadas = new Set(this.corpo.map((p) => p.y * this.lado + p.x));
+    const saida: Ponto[] = [];
+    for (let y = 0; y < this.lado; y++) {
+      for (let x = 0; x < this.lado; x++) {
+        if (!ocupadas.has(y * this.lado + x)) saida.push({ x, y });
+      }
+    }
+    return saida;
+  }
+
+  /** Põe comida numa célula livre. Devolve `false` quando a arena está cheia. */
+  private novaComida(): boolean {
+    const livres = this.livres();
+    if (livres.length === 0) return false;
+    const i = Math.min(livres.length - 1, Math.floor(this.aleatorio() * livres.length));
+    this.comida = livres[i];
+    return true;
+  }
+
+  private marcarRecorde(): void {
+    if (this.pontos > this.recorde) this.recorde = this.pontos;
+  }
+
+  /** Avança um passo de jogo e conta o que aconteceu. */
+  passo(): Resultado {
+    const r = vazio(this.corpo[0]);
+    if (this.estado !== 'a-jogar') return r;
+
+    const proxima = this.fila.shift();
+    if (proxima) this.direcao = proxima;
+
+    this.anterior = this.corpo.map((p) => ({ ...p }));
+
+    const v = VETORES[this.direcao];
+    const cabeca: Ponto = { x: this.corpo[0].x + v.x, y: this.corpo[0].y + v.y };
+    r.cabeca = cabeca;
+
+    if (cabeca.x < 0 || cabeca.y < 0 || cabeca.x >= this.lado || cabeca.y >= this.lado) {
+      this.estado = 'morto';
+      this.marcarRecorde();
+      r.morreu = true;
+      return r;
+    }
+
+    const comeu = cabeca.x === this.comida.x && cabeca.y === this.comida.y;
+    // A cauda liberta a célula no mesmo passo, por isso entrar onde ela estava é legal.
+    const cauda = comeu ? undefined : this.corpo.pop();
+
+    if (this.ocupada(cabeca.x, cabeca.y)) {
+      if (cauda) this.corpo.push(cauda);
+      this.estado = 'morto';
+      this.marcarRecorde();
+      r.morreu = true;
+      return r;
+    }
+
+    this.corpo.unshift(cabeca);
+    // Alinhar os dois instantes: o segmento novo nasce parado em cima da cauda velha.
+    while (this.anterior.length < this.corpo.length) {
+      this.anterior.push({ ...this.anterior[this.anterior.length - 1] });
+    }
+
+    r.moveu = true;
+
+    if (comeu) {
+      this.comidas++;
+      this.pontos++;
+      this.marcarRecorde();
+      r.comeu = true;
+      r.marco = this.comidas % MARCO === 0;
+      if (!this.novaComida()) {
+        this.estado = 'completo';
+        r.completo = true;
+      }
+    }
+
+    return r;
+  }
+}

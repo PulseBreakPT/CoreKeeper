@@ -93,6 +93,38 @@ de nível de ferramenta. O Relé aponta-te o guardião vivo mais próximo.
 
 ---
 
+## Serpente — o segundo jogo
+
+No mesmo repositório vive um segundo jogo, independente do primeiro: **Serpente**, uma
+versão moderna do clássico jogo da cobra. Abre em `serpente.html`.
+
+```bash
+npm run serpente   # abre o jogo directamente no browser
+```
+
+Arena quadrada de 21×21, sempre igual em todos os ecrãs, que se ajusta ao espaço
+disponível mantendo as células quadradas. A serpente anda sozinha assim que dás a
+primeira ordem e acelera a cada comida — de 150 ms por passo até um tecto de 74 ms, com
+uma curva que decai devagar para o jogo continuar controlável quando está rápido.
+
+| Acção | Telemóvel | Teclado |
+|-------|-----------|---------|
+| Virar | Deslizar na arena | WASD / setas |
+| Começar | Tocar ou deslizar | Qualquer direcção |
+| Jogar de novo | Botão ou toque | Enter / Espaço |
+| Som | Botão do altifalante | — |
+
+O swipe é reancorado a cada 16 px, por isso encadeias curvas sem levantar o dedo, e
+só a arena trava o toque — o resto da página continua normal. A comida sai sempre de
+uma lista de células livres (nunca de tentativa e erro), as inversões sobre o próprio
+corpo são recusadas mesmo em rajadas de teclas, e entrar na célula que a cauda liberta
+no mesmo passo é legal, como no original. Encher o tabuleiro ganha a partida. O recorde
+fica em `localStorage`.
+
+Toda a lógica vive em `src/serpente/logica.ts`, sem DOM nem canvas, e é testada à parte.
+
+---
+
 ## Desenvolvimento
 
 ```bash
@@ -101,6 +133,7 @@ npm run dev        # servidor local com recarregamento
 npm run build      # verificação de tipos + build de produção para dist/
 npm test           # testes unitários (vitest)
 npm run fumo       # teste de fumo real num Chromium: joga, cria, luta e grava
+npm run fumo:serpente  # o mesmo para a Serpente: joga, come, morre, reinicia, desliza
 npm run perf       # mede FPS e milissegundos por quadro em cada nível de qualidade
 npm run sprites    # gera uma folha com todos os sprites, para rever a arte
 ```
@@ -118,6 +151,7 @@ src/
   game/      simulação, itens, inventário, receitas
   render/    paletas, sprites, auto-tiling, câmara, pipeline de desenho
   ui/         HUD, painéis, menus, fundo animado
+  serpente/  o segundo jogo: lógica pura, desenho, controlos, som
 ```
 
 ---

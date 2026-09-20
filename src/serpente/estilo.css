@@ -1,0 +1,358 @@
+/* Serpente — folha de estilo única do jogo. */
+
+:root {
+  --fundo: #05060c;
+  --fundo-alto: #0b1020;
+  --tinta: #e9f1ff;
+  --tinta-fraca: #7f8da8;
+  --verde: #4fe3ae;
+  --ambar: #ffc46b;
+  --vermelho: #ff6b7a;
+  --gap: clamp(10px, 2.2vmin, 20px);
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background:
+    radial-gradient(120% 90% at 50% -10%, #16213c 0%, transparent 60%),
+    radial-gradient(90% 70% at 50% 110%, #101a30 0%, transparent 55%),
+    var(--fundo);
+  color: var(--tinta);
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.jogo {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  /* HUD e arena viajam juntas e ficam centradas no ecrã, em qualquer formato. */
+  justify-content: center;
+  gap: var(--gap);
+  padding: var(--gap);
+  padding-top: max(var(--gap), env(safe-area-inset-top));
+  padding-bottom: max(var(--gap), env(safe-area-inset-bottom));
+}
+
+/* ---------- HUD ---------- */
+
+.hud {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  width: min(100%, var(--largura-arena, 560px));
+  margin: 0 auto;
+}
+
+.marcador {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 4.5em;
+}
+
+.marcador.direita {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.rotulo {
+  font-size: clamp(9px, 1.5vmin, 11px);
+  letter-spacing: 0.22em;
+  font-weight: 700;
+  color: var(--tinta-fraca);
+}
+
+.valor {
+  font-size: clamp(22px, 4.6vmin, 34px);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  display: inline-block;
+}
+
+#pontos.subiu {
+  animation: pulo 260ms cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+#marcador-pontos.marco .valor {
+  animation: brilho 700ms ease-out;
+}
+
+@keyframes pulo {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.28);
+    color: var(--verde);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes brilho {
+  0%,
+  100% {
+    color: var(--tinta);
+    text-shadow: none;
+  }
+  30% {
+    color: var(--ambar);
+    text-shadow: 0 0 18px rgba(255, 196, 107, 0.7);
+  }
+}
+
+.som {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(146, 180, 255, 0.18);
+  border-radius: 12px;
+  background: rgba(146, 180, 255, 0.06);
+  color: var(--tinta);
+  cursor: pointer;
+  transition: transform 120ms ease, background 160ms ease, color 160ms ease;
+}
+
+.som:hover {
+  background: rgba(146, 180, 255, 0.12);
+}
+
+.som:active {
+  transform: scale(0.92);
+}
+
+.som:focus-visible {
+  outline: 2px solid var(--verde);
+  outline-offset: 2px;
+}
+
+.som svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.som .risca {
+  display: none;
+}
+
+.som.mudo {
+  color: var(--tinta-fraca);
+}
+
+.som.mudo .onda {
+  display: none;
+}
+
+.som.mudo .risca {
+  display: block;
+}
+
+/* ---------- Arena ---------- */
+
+.palco {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 100%;
+}
+
+.arena {
+  position: relative;
+  touch-action: none;
+  border-radius: clamp(10px, 2vmin, 22px);
+  box-shadow:
+    0 0 0 1px rgba(124, 247, 196, 0.08),
+    0 30px 70px -30px rgba(79, 227, 174, 0.35),
+    0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+.arena canvas {
+  display: block;
+  border-radius: inherit;
+}
+
+.dica {
+  position: absolute;
+  left: 50%;
+  bottom: 8%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(5, 8, 16, 0.72);
+  border: 1px solid rgba(146, 180, 255, 0.14);
+  font-size: clamp(11px, 2vmin, 14px);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--tinta-fraca);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: respirar 2.4s ease-in-out infinite;
+}
+
+.dica[hidden] {
+  display: none;
+}
+
+@keyframes respirar {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ---------- Fim de partida ---------- */
+
+.fim {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 1.8vmin, 16px);
+  padding: 6%;
+  text-align: center;
+  border-radius: inherit;
+  background: rgba(5, 7, 14, 0.82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.fim[hidden] {
+  display: none;
+}
+
+.fim.entrar {
+  animation: surgir 260ms cubic-bezier(0.2, 1, 0.3, 1);
+}
+
+@keyframes surgir {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.fim h2 {
+  margin: 0;
+  font-size: clamp(18px, 4.4vmin, 30px);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--vermelho);
+}
+
+.fim-numeros {
+  display: flex;
+  gap: clamp(18px, 5vmin, 40px);
+}
+
+.fim-numeros .valor {
+  font-size: clamp(26px, 6vmin, 42px);
+}
+
+.medalha {
+  margin: 0;
+  font-size: clamp(11px, 2vmin, 14px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ambar);
+}
+
+.medalha[hidden] {
+  display: none;
+}
+
+.jogar {
+  margin-top: 2px;
+  padding: 12px 26px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: clamp(13px, 2.4vmin, 16px);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #04231a;
+  background: linear-gradient(160deg, #9cffd5, var(--verde));
+  box-shadow: 0 10px 30px -10px rgba(79, 227, 174, 0.8);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 160ms ease;
+}
+
+.jogar:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 34px -10px rgba(79, 227, 174, 0.9);
+}
+
+.jogar:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.jogar:focus-visible {
+  outline: 2px solid var(--ambar);
+  outline-offset: 3px;
+}
+
+.atalho {
+  margin: 0;
+  font-size: clamp(10px, 1.8vmin, 12px);
+  letter-spacing: 0.1em;
+  color: var(--tinta-fraca);
+}
+
+/* Telemóvel deitado: a HUD encolhe para a arena ficar com a altura toda. */
+@media (orientation: landscape) and (max-height: 500px) {
+  :root {
+    --gap: 8px;
+  }
+
+  .valor {
+    font-size: 20px;
+  }
+
+  .som {
+    width: 34px;
+    height: 34px;
+  }
+
+  .dica {
+    bottom: 4%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dica,
+  #pontos.subiu,
+  #marcador-pontos.marco .valor,
+  .fim.entrar {
+    animation: none;
+  }
+}
