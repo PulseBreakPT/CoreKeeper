@@ -14,6 +14,13 @@ const COR_MORTE = '#ff6b7a';
 
 const LETRA = '"Space Grotesk", ui-sans-serif, system-ui, sans-serif';
 
+/** Distância entre amostras do corpo, em células: mais fino, mais suave. */
+const ESPACAMENTO = 0.3;
+/** Tecto de amostras, para a serpente comprida não custar quadros. */
+const AMOSTRAS_MAXIMAS = 170;
+/** Quanto do caminho à frente conta para a inclinação da cabeça, em células. */
+const OLHAR = 0.65;
+
 interface Particula {
   x: number;
   y: number;
@@ -48,6 +55,26 @@ function lerp(a: number, b: number, t: number): number {
 
 function limitar(v: number, min: number, max: number): number {
   return v < min ? min : v > max ? max : v;
+}
+
+/**
+ * Arredonda os cantos rectos da grelha, puxando cada amostra na direcção das
+ * vizinhas. A cabeça e a cauda ficam presas, por isso o comprimento não muda.
+ */
+function suavizar(pontos: { x: number; y: number }[], passagens: number): void {
+  if (pontos.length < 3) return;
+  for (let p = 0; p < passagens; p++) {
+    let ax = pontos[0].x;
+    let ay = pontos[0].y;
+    for (let i = 1; i < pontos.length - 1; i++) {
+      const cx = pontos[i].x;
+      const cy = pontos[i].y;
+      pontos[i].x = ax * 0.25 + cx * 0.5 + pontos[i + 1].x * 0.25;
+      pontos[i].y = ay * 0.25 + cy * 0.5 + pontos[i + 1].y * 0.25;
+      ax = cx;
+      ay = cy;
+    }
+  }
 }
 
 /** Caminho de rectângulo arredondado, sem depender do `roundRect` do browser. */
@@ -441,52 +468,85 @@ export class Pintor {
 
   // ---------- Serpente ----------
 
+  /**
+   * Desenha a serpente por cima do caminho que ela percorreu mesmo.
+   *
+   * É aqui que mora a fluidez. Interpolar cada célula em linha recta entre onde
+   * estava e onde está faz o corpo cortar as esquinas e encolher a meio das
+   * curvas — lê-se como movimento aos saltos. Em vez disso andamos sobre a
+   * linha das células por onde a cabeça passou, medida em distância: a cabeça
+   * avança exactamente uma célula por passo, a cauda segue-lhe o rasto pelo
+   * mesmo sítio, e as curvas são dobradas em vez de cortadas.
+   */
   private serpente(jogo: Jogo, t: number, cel: number, tempo: number, matiz: number): void {
     const ctx = this.ctx;
     const corpo = jogo.corpo;
-    const anterior = jogo.anterior;
-    const restam =
-      this.desfazer >= 0 ? corpo.length - Math.floor(this.desfazer * corpo.length) : corpo.length;
-    if (restam <= 0) return;
+    const n = corpo.length;
+    if (n === 0 || this.desfazer >= 1) return;
 
+    // O caminho leva também a célula que a cauda acabou de largar: é onde ela
+    // ainda está no princípio do passo.
+    const solta = jogo.anterior[n - 1];
+    const derradeira = corpo[n - 1];
+    const caminho =
+      solta && (solta.x !== derradeira.x || solta.y !== derradeira.y)
+        ? [...corpo, solta]
+        : corpo;
+    const m = caminho.length - 1;
+
+    /** Posição, em píxeis, à distância `s` da célula da cabeça ao longo do caminho. */
+    const posicao = (s: number): { x: number; y: number } => {
+      const c = limitar(s, 0, m);
+      const i = m === 0 ? 0 : Math.min(m - 1, Math.floor(c));
+      const a = caminho[i];
+      const b = caminho[i + 1] ?? a;
+      const f = c - i;
+      return { x: (lerp(a.x, b.x, f) + 0.5) * cel, y: (lerp(a.y, b.y, f) + 0.5) * cel };
+    };
+
+    // A cabeça está a `1 - t` do fim do caminho; a cauda, um corpo atrás. O
+    // mínimo trata o passo em que a serpente cresce: aí a cauda fica parada.
+    const cabecaS = 1 - t;
+    const caudaCheia = Math.min(m, cabecaS + (n - 1));
+    const caudaS =
+      this.desfazer >= 0 ? cabecaS + (caudaCheia - cabecaS) * (1 - this.desfazer) : caudaCheia;
+    const comprimento = Math.max(0, caudaS - cabecaS);
+
+    const espacamento = Math.max(ESPACAMENTO, comprimento / AMOSTRAS_MAXIMAS);
+    const total = Math.max(2, Math.ceil(comprimento / espacamento) + 1);
     const pontos: { x: number; y: number }[] = [];
-    for (let i = 0; i < restam; i++) {
-      const p = corpo[i];
-      const a = anterior[i] ?? p;
-      pontos.push({ x: (lerp(a.x, p.x, t) + 0.5) * cel, y: (lerp(a.y, p.y, t) + 0.5) * cel });
+    for (let i = 0; i < total; i++) {
+      pontos.push(posicao(cabecaS + (comprimento * i) / (total - 1)));
     }
-    const n = pontos.length;
-    if (n === 0) return;
+    suavizar(pontos, 2);
 
-    // O corpo afina da cabeça para a cauda, em bandas que se sobrepõem.
+    // O corpo afina da cabeça para a cauda, em bandas que se sobrepõem. As
+    // bandas são baratas de traçar; o que dava bolhas era o halo, que agora
+    // leva uma passagem só, de largura constante.
     const larguraCabeca = cel * 0.78;
-    const larguraCauda = lerp(larguraCabeca, cel * 0.4, Math.min(1, restam / 8));
-    const bandas = limitar(Math.ceil(n / 2), 1, 9);
+    const larguraCauda = lerp(larguraCabeca, cel * 0.36, Math.min(1, comprimento / 7));
+    const bandas = limitar(Math.ceil(total / 4), 1, 16);
 
     ctx.save();
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
 
-    // As mesmas bandas servem as três passagens: halo, contorno e cor.
     const faixa = (k: number) => {
-      const i0 = Math.floor((k * (n - 1)) / bandas);
-      const i1 = Math.ceil(((k + 1) * (n - 1)) / bandas);
-      const f = (i0 + i1) / 2 / Math.max(1, n - 1);
+      const i0 = Math.floor((k * (total - 1)) / bandas);
+      const i1 = Math.ceil(((k + 1) * (total - 1)) / bandas);
+      const f = (i0 + i1) / 2 / Math.max(1, total - 1);
       return { i0, i1, f, largura: lerp(larguraCabeca, larguraCauda, f) };
     };
 
-    // Halo de movimento: abre à medida que a velocidade sobe.
-    const auréola = cel * (0.3 + this.intensidade * 0.3);
-    ctx.strokeStyle = `hsla(${matiz}, 90%, 62%, ${0.1 + this.intensidade * 0.12})`;
-    for (let k = 0; k < bandas; k++) {
-      const b = faixa(k);
-      ctx.lineWidth = b.largura + auréola;
-      this.traco(pontos, b.i0, b.i1);
-    }
+    // Halo de movimento: uma passagem inteira, senão as pontas redondas de cada
+    // banda desenham círculos uns por cima dos outros ao longo do corpo.
+    ctx.strokeStyle = `hsla(${matiz}, 90%, 62%, ${0.1 + this.intensidade * 0.1})`;
+    ctx.lineWidth = larguraCabeca + cel * (0.26 + this.intensidade * 0.28);
+    this.traco(pontos, 0, total - 1);
 
     // Contorno escuro: é o que separa o corpo do chão a qualquer velocidade.
     const contorno = Math.max(2, cel * 0.1);
-    ctx.strokeStyle = 'rgba(3, 14, 12, 0.85)';
+    ctx.strokeStyle = 'rgba(3, 14, 12, 0.88)';
     for (let k = 0; k < bandas; k++) {
       const b = faixa(k);
       ctx.lineWidth = b.largura + contorno;
@@ -496,45 +556,64 @@ export class Pintor {
     for (let k = 0; k < bandas; k++) {
       const b = faixa(k);
       ctx.lineWidth = b.largura;
-      ctx.strokeStyle = `hsl(${matiz + b.f * 8}, ${lerp(78, 64, b.f)}%, ${lerp(56, 33, b.f)}%)`;
+      ctx.strokeStyle = `hsl(${matiz + b.f * 8}, ${lerp(78, 64, b.f)}%, ${lerp(56, 34, b.f)}%)`;
       this.traco(pontos, b.i0, b.i1);
     }
 
     // Escamas: traços curtos perpendiculares, todos num só caminho.
-    if (n > 2) {
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.13)';
-      ctx.lineWidth = Math.max(1, cel * 0.07);
+    const salto = Math.max(2, Math.round(0.72 / espacamento));
+    if (total > salto * 2) {
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.11)';
+      ctx.lineWidth = Math.max(1, cel * 0.06);
       ctx.beginPath();
-      for (let i = 1; i < n - 1; i += 2) {
-        const f = i / (n - 1);
+      for (let i = salto; i < total - salto; i += salto) {
+        const f = i / (total - 1);
         const dx = pontos[i + 1].x - pontos[i - 1].x;
         const dy = pontos[i + 1].y - pontos[i - 1].y;
         const d = Math.hypot(dx, dy) || 1;
-        const meia = lerp(larguraCabeca, larguraCauda, f) * 0.34;
+        const meia = lerp(larguraCabeca, larguraCauda, f) * 0.3;
         ctx.moveTo(pontos[i].x - (dy / d) * meia, pontos[i].y + (dx / d) * meia);
         ctx.lineTo(pontos[i].x + (dy / d) * meia, pontos[i].y - (dx / d) * meia);
       }
       ctx.stroke();
     }
 
-    // Brilho de cima, que dá volume ao tubo.
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-    ctx.lineWidth = cel * 0.16;
+    // Brilho de cima: um fio claro deslocado, que dá volume ao tubo.
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.09)';
+    ctx.lineWidth = cel * 0.15;
     ctx.save();
-    ctx.translate(0, -cel * 0.14);
-    this.traco(pontos, 0, Math.max(0, n - 2));
+    ctx.translate(0, -cel * 0.15);
+    this.traco(pontos, 0, Math.max(0, total - 3));
     ctx.restore();
     ctx.restore();
 
-    this.cabeca(pontos[0], jogo, cel, tempo, matiz);
+    // A inclinação da cabeça sai do próprio caminho, por isso roda sozinha ao
+    // dobrar a esquina em vez de saltar 90 graus de um quadro para o outro.
+    const olhar = Math.min(total - 1, Math.max(1, Math.round(OLHAR / espacamento)));
+    const dx = pontos[0].x - pontos[olhar].x;
+    const dy = pontos[0].y - pontos[olhar].y;
+    const v = vetor(jogo.direcao);
+    const angulo = Math.hypot(dx, dy) > 0.01 ? Math.atan2(dy, dx) : Math.atan2(v.y, v.x);
+    this.cabeca(pontos[0], jogo, cel, tempo, matiz, angulo);
   }
 
+  /** Traça a fatia [i0, i1] passando suave por cima das amostras. */
   private traco(pontos: { x: number; y: number }[], i0: number, i1: number): void {
     const ctx = this.ctx;
     ctx.beginPath();
     ctx.moveTo(pontos[i0].x, pontos[i0].y);
-    for (let i = i0 + 1; i <= i1; i++) ctx.lineTo(pontos[i].x, pontos[i].y);
-    if (i1 <= i0) ctx.lineTo(pontos[i0].x + 0.01, pontos[i0].y);
+    if (i1 <= i0) {
+      ctx.lineTo(pontos[i0].x + 0.01, pontos[i0].y);
+      ctx.stroke();
+      return;
+    }
+    // Curvas quadráticas ancoradas nos pontos médios: sem cantos no traço.
+    for (let i = i0 + 1; i < i1; i++) {
+      const a = pontos[i];
+      const b = pontos[i + 1];
+      ctx.quadraticCurveTo(a.x, a.y, (a.x + b.x) / 2, (a.y + b.y) / 2);
+    }
+    ctx.lineTo(pontos[i1].x, pontos[i1].y);
     ctx.stroke();
   }
 
@@ -544,16 +623,16 @@ export class Pintor {
     cel: number,
     tempo: number,
     matiz: number,
+    angulo: number,
   ): void {
     const ctx = this.ctx;
-    const v = vetor(jogo.direcao);
     const escala = 1 + this.incho * 0.2;
-    const l = cel * 1.14 * escala;
+    const l = cel * 1.06 * escala;
     const vivo = jogo.estado !== 'morto';
 
     ctx.save();
     ctx.translate(p.x, p.y);
-    ctx.rotate(Math.atan2(v.y, v.x));
+    ctx.rotate(angulo);
 
     // Luz projectada à frente: lê-se a direcção mesmo de relance.
     if (vivo) {
@@ -568,10 +647,10 @@ export class Pintor {
 
     // Rebordo escuro primeiro: separa a cabeça do corpo mesmo a alta velocidade.
     caminhoRedondo(ctx, -l / 2, -l / 2, l, l, l * 0.36);
-    ctx.fillStyle = 'rgba(2, 20, 16, 0.9)';
+    ctx.fillStyle = 'rgba(3, 14, 12, 0.88)';
     ctx.fill();
 
-    const m = l - Math.max(2, cel * 0.13);
+    const m = l - Math.max(2, cel * 0.1);
     caminhoRedondo(ctx, -m / 2, -m / 2, m, m, m * 0.34);
     const brilho = ctx.createLinearGradient(0, -m / 2, 0, m / 2);
     brilho.addColorStop(0, '#ffffff');
