@@ -109,10 +109,12 @@ describe('direcções', () => {
 
   it('a fila tem tecto e não engole ordens a mais', () => {
     const j = new Jogo();
+    // Três curvas antecipadas, como o próprio jogo anuncia ao jogador.
     expect(j.virar('cima')).toBe(true);
     expect(j.virar('esquerda')).toBe(true);
-    expect(j.virar('baixo')).toBe(false);
-    expect(FILA_MAXIMA).toBe(2);
+    expect(j.virar('baixo')).toBe(true);
+    expect(j.virar('direita')).toBe(false);
+    expect(FILA_MAXIMA).toBe(3);
   });
 
   it('não aceita ordens depois de morrer', () => {
