@@ -31,8 +31,8 @@ export const PASSO_MINIMO = 74;
 export const DECAIMENTO = 0.972;
 /** De quantas comidas em quantas soa o marco de pontuação. */
 export const MARCO = 10;
-/** Quantas direcções ficam em fila à espera de passo (absorve rajadas de input). */
-export const FILA_MAXIMA = 2;
+/** Três intenções absorvem sequências rápidas sem transformar um gesto numa curva automática. */
+export const FILA_MAXIMA = 3;
 /** Comprimento da serpente no arranque. */
 export const COMPRIMENTO_INICIAL = 3;
 /**
@@ -74,6 +74,8 @@ export interface Resultado {
   ganhos: number;
   tipoComida: TipoComida | null;
   cortou: boolean;
+  comboQuebrou: boolean;
+  eficiente: boolean;
 }
 
 export interface OpcoesJogo {
@@ -95,6 +97,8 @@ function vazio(cabeca: Ponto): Resultado {
     ganhos: 0,
     tipoComida: null,
     cortou: false,
+    comboQuebrou: false,
+    eficiente: false,
   };
 }
 
@@ -121,6 +125,9 @@ export class Jogo {
   private readonly aleatorio: () => number;
   private passosDesdeComida = 999;
   private crescimentoPendente = 0;
+  private limiteCombo = 0;
+  private distanciaComida = 0;
+  private estadoAleatorio = 1;
 
   constructor(opcoes: OpcoesJogo = {}) {
     this.lado = opcoes.lado ?? LADO;
@@ -149,6 +156,9 @@ export class Jogo {
     this.melhorCombo = 0;
     this.passosDesdeComida = 999;
     this.crescimentoPendente = 0;
+    this.limiteCombo = 0;
+    this.distanciaComida = 0;
+    this.estadoAleatorio = ((this.dia + 1) * 0x9e3779b1) >>> 0 || 1;
     this.criarObstaculos();
     this.novaComida();
   }
@@ -156,6 +166,29 @@ export class Jogo {
   /** O desafio diário alterna regras previsíveis sem depender de uma ligação à rede. */
   private varianteDiaria(): number {
     return Math.abs(this.dia * 17 + 11) % 4;
+  }
+
+  /** Sorteio reproduzível no desafio diário; nos restantes modos mantém variedade total. */
+  private sortear(): number {
+    if (this.modo !== 'diario') return this.aleatorio();
+    let x = this.estadoAleatorio;
+    x ^= x << 13;
+    x ^= x >>> 17;
+    x ^= x << 5;
+    this.estadoAleatorio = x >>> 0;
+    return this.estadoAleatorio / 0x1_0000_0000;
+  }
+
+  private vizinho(x: number, y: number, d: Direcao): Ponto | null {
+    const v = VETORES[d];
+    let nx = x + v.x;
+    let ny = y + v.y;
+    if (this.atravessaParedes()) {
+      nx = (nx + this.lado) % this.lado;
+      ny = (ny + this.lado) % this.lado;
+      return { x: nx, y: ny };
+    }
+    return nx < 0 || ny < 0 || nx >= this.lado || ny >= this.lado ? null : { x: nx, y: ny };
   }
 
   atravessaParedes(): boolean {
@@ -181,15 +214,44 @@ export class Jogo {
     const desejados = Math.max(5, Math.floor(this.lado * 0.58));
     let tentativas = desejados * 15;
     while (this.obstaculos.length < desejados && tentativas-- > 0) {
-      const x = 2 + Math.floor(this.aleatorio() * Math.max(1, this.lado - 4));
-      const y = 2 + Math.floor(this.aleatorio() * Math.max(1, this.lado - 4));
+      const x = 2 + Math.floor(this.sortear() * Math.max(1, this.lado - 4));
+      const y = 2 + Math.floor(this.sortear() * Math.max(1, this.lado - 4));
       if (Math.abs(x - meio) <= 3 && Math.abs(y - meio) <= 2) continue;
       if (this.obstaculos.some((p) => p.x === x && p.y === y)) continue;
       // Evita muros compactos: cada bloco nasce com, no máximo, um vizinho directo.
       const vizinhos = this.obstaculos.filter((p) => Math.abs(p.x - x) + Math.abs(p.y - y) === 1).length;
       if (vizinhos > 1) continue;
       this.obstaculos.push({ x, y });
+      if (!this.espacoLigado()) this.obstaculos.pop();
     }
+  }
+
+  /** Garante que nenhum conjunto de blocos divide a arena em zonas impossíveis. */
+  private espacoLigado(): boolean {
+    const n = this.lado * this.lado;
+    const bloqueados = new Uint8Array(n);
+    for (const p of this.obstaculos) bloqueados[p.y * this.lado + p.x] = 1;
+    const inicio = this.corpo[0].y * this.lado + this.corpo[0].x;
+    const vistos = new Uint8Array(n);
+    const fila = new Int32Array(n);
+    let leitura = 0;
+    let escrita = 1;
+    let visitados = 0;
+    fila[0] = inicio;
+    vistos[inicio] = 1;
+    while (leitura < escrita) {
+      const c = fila[leitura++];
+      visitados++;
+      const x = c % this.lado;
+      const y = (c - x) / this.lado;
+      for (const d of DIRECCOES) {
+        const p = this.vizinho(x, y, d);
+        if (!p) continue;
+        const i = p.y * this.lado + p.x;
+        if (!bloqueados[i] && !vistos[i]) { vistos[i] = 1; fila[escrita++] = i; }
+      }
+    }
+    return visitados === n - this.obstaculos.length;
   }
 
   /** Intervalo entre passos, em milissegundos, para a pontuação actual. */
@@ -301,26 +363,50 @@ export class Jogo {
         tamanho++;
         const x = c % this.lado;
         const y = (c - x) / this.lado;
-        if (x > 0) {
-          const v = c - 1;
-          if (!bloqueada[v] && de[v] < 0) { de[v] = regiao; fila[escrita++] = v; }
-        }
-        if (x < this.lado - 1) {
-          const v = c + 1;
-          if (!bloqueada[v] && de[v] < 0) { de[v] = regiao; fila[escrita++] = v; }
-        }
-        if (y > 0) {
-          const v = c - this.lado;
-          if (!bloqueada[v] && de[v] < 0) { de[v] = regiao; fila[escrita++] = v; }
-        }
-        if (y < this.lado - 1) {
-          const v = c + this.lado;
+        for (const d of DIRECCOES) {
+          const p = this.vizinho(x, y, d);
+          if (!p) continue;
+          const v = p.y * this.lado + p.x;
           if (!bloqueada[v] && de[v] < 0) { de[v] = regiao; fila[escrita++] = v; }
         }
       }
       tamanhos.push(tamanho);
     }
     return { de, tamanhos };
+  }
+
+  /** Distância mínima real da cabeça a cada célula, incluindo portais e blocos. */
+  private mapaDistancias(): Int16Array {
+    const n = this.lado * this.lado;
+    const distancias = new Int16Array(n).fill(-1);
+    const bloqueadas = new Uint8Array(n);
+    // A cabeça é a origem e a cauda liberta-se; apenas o miolo bloqueia a rota.
+    for (let i = 1; i < this.corpo.length - 1; i++) {
+      const p = this.corpo[i];
+      bloqueadas[p.y * this.lado + p.x] = 1;
+    }
+    for (const p of this.obstaculos) bloqueadas[p.y * this.lado + p.x] = 1;
+    const origem = this.corpo[0].y * this.lado + this.corpo[0].x;
+    const fila = new Int32Array(n);
+    let leitura = 0;
+    let escrita = 1;
+    fila[0] = origem;
+    distancias[origem] = 0;
+    while (leitura < escrita) {
+      const c = fila[leitura++];
+      const x = c % this.lado;
+      const y = (c - x) / this.lado;
+      for (const d of DIRECCOES) {
+        const p = this.vizinho(x, y, d);
+        if (!p) continue;
+        const i = p.y * this.lado + p.x;
+        if (!bloqueadas[i] && distancias[i] < 0) {
+          distancias[i] = distancias[c] + 1;
+          fila[escrita++] = i;
+        }
+      }
+    }
+    return distancias;
   }
 
   /**
@@ -346,15 +432,14 @@ export class Jogo {
 
     const { de, tamanhos } = this.regioes();
     const cabeca = this.corpo[0];
+    const distancias = this.mapaDistancias();
 
     // Regiões onde a cabeça pode entrar: as que tocam uma casa vizinha dela.
     const alcancaveis = new Set<number>();
     for (const d of DIRECCOES) {
-      const v = VETORES[d];
-      const x = cabeca.x + v.x;
-      const y = cabeca.y + v.y;
-      if (x < 0 || y < 0 || x >= this.lado || y >= this.lado) continue;
-      const r = de[y * this.lado + x];
+      const p = this.vizinho(cabeca.x, cabeca.y, d);
+      if (!p) continue;
+      const r = de[p.y * this.lado + p.x];
       if (r >= 0) alcancaveis.add(r);
     }
 
@@ -374,31 +459,48 @@ export class Jogo {
 
     // Sorteio pesado: uma célula com quatro vizinhos livres vale cinco vezes
     // mais do que uma encurralada com um só.
-    const alvos = livres.filter((p) => de[p.y * this.lado + p.x] === melhor);
+    const naRegiao = livres.filter((p) => de[p.y * this.lado + p.x] === melhor);
+    const alcancaveisPorRota = naRegiao.filter((p) => distancias[p.y * this.lado + p.x] >= 0);
+    const alvos = alcancaveisPorRota.length > 0 ? alcancaveisPorRota : naRegiao;
+    const distanciaDesejada = 4 + Math.min(10, Math.floor(this.comidas / 3));
     let total = 0;
     const pesos = alvos.map((p) => {
-      const peso = 1 + this.vizinhasLivres(p, de, melhor);
+      const distancia = distancias[p.y * this.lado + p.x];
+      const proximidadeIdeal = distancia < 0 ? 0 : Math.max(0, 6 - Math.abs(distancia - distanciaDesejada));
+      const peso = 1 + this.vizinhasLivres(p, de, melhor) + proximidadeIdeal;
       total += peso;
       return peso;
     });
-    let sorte = this.aleatorio() * total;
+    let sorte = this.sortear() * total;
     for (let i = 0; i < alvos.length; i++) {
       sorte -= pesos[i];
       if (sorte <= 0) {
-        this.comida = { ...alvos[i], tipo: this.sortearTipoComida() };
+        this.definirComida(alvos[i], distancias[alvos[i].y * this.lado + alvos[i].x]);
         return true;
       }
     }
-    this.comida = { ...alvos[alvos.length - 1], tipo: this.sortearTipoComida() };
+    const ultimo = alvos[alvos.length - 1];
+    this.definirComida(ultimo, distancias[ultimo.y * this.lado + ultimo.x]);
     return true;
+  }
+
+  private definirComida(p: Ponto, distancia: number): void {
+    this.distanciaComida = Math.max(1, distancia);
+    this.limiteCombo = Math.max(6, Math.ceil(this.distanciaComida * 1.45) + 2);
+    this.passosDesdeComida = 0;
+    this.comida = { ...p, tipo: this.sortearTipoComida() };
   }
 
   private sortearTipoComida(): TipoComida {
     // A primeira luz é sempre normal; depois, cerca de uma em quatro altera a estratégia.
     if (this.comidas === 0) return 'normal';
-    const n = this.aleatorio();
-    if (n < 0.1) return 'ouro';
-    if (n < 0.18) return 'leve';
+    const n = this.sortear();
+    const longa = this.corpo.length >= 12;
+    const curta = this.corpo.length <= 6;
+    if (n < 0.09) return 'ouro';
+    if (longa && n < 0.2) return 'leve';
+    if (curta && n < 0.22) return 'gigante';
+    if (n < 0.17) return 'leve';
     if (n < 0.26) return 'gigante';
     return 'normal';
   }
@@ -407,11 +509,8 @@ export class Jogo {
   private vizinhasLivres(p: Ponto, de: Int16Array, regiao: number): number {
     let n = 0;
     for (const d of DIRECCOES) {
-      const v = VETORES[d];
-      const x = p.x + v.x;
-      const y = p.y + v.y;
-      if (x < 0 || y < 0 || x >= this.lado || y >= this.lado) continue;
-      if (de[y * this.lado + x] === regiao) n++;
+      const vizinha = this.vizinho(p.x, p.y, d);
+      if (vizinha && de[vizinha.y * this.lado + vizinha.x] === regiao) n++;
     }
     return n;
   }
@@ -481,14 +580,18 @@ export class Jogo {
 
     r.moveu = true;
     this.passosDesdeComida++;
+    if (!comeu && this.combo > 0 && this.passosDesdeComida > this.limiteCombo) {
+      this.combo = 0;
+      r.comboQuebrou = true;
+    }
 
     if (comeu) {
       const tipo = this.comida.tipo;
       this.comidas++;
       if (tipo !== 'normal') this.especiais++;
-      this.combo = this.passosDesdeComida <= 22 ? Math.min(5, this.combo + 1) : 1;
+      r.eficiente = this.passosDesdeComida <= this.limiteCombo;
+      this.combo = r.eficiente ? Math.min(5, this.combo + 1) : 1;
       this.melhorCombo = Math.max(this.melhorCombo, this.combo);
-      this.passosDesdeComida = 0;
       const base = tipo === 'ouro' ? 3 : tipo === 'gigante' ? 2 : 1;
       const risco = this.modo === 'uma-vida' ? 2 : 1;
       const ganhos = base * this.combo * risco;

@@ -435,6 +435,7 @@ function aplicar(): void {
     vibrar(18);
     actualizarHud();
   }
+  if (r.comboQuebrou) actualizarHud();
   if (r.completo) {
     pintor.vitoria(jogo.corpo[0]);
     som.vitoria();

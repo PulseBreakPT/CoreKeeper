@@ -276,7 +276,18 @@ export class Pintor {
     this.arrancada(L, matiz);
     this.comida(jogo.comida, cel, tempo, jogo.estado);
     this.obstaculos(jogo, cel, tempo);
-    this.serpente(jogo, t, cel, tempo, matiz);
+    const saltaX = jogo.atravessaParedes() && jogo.corpo.some((p, i) => i > 0 && Math.abs(p.x - jogo.corpo[i - 1].x) > jogo.lado / 2);
+    const saltaY = jogo.atravessaParedes() && jogo.corpo.some((p, i) => i > 0 && Math.abs(p.y - jogo.corpo[i - 1].y) > jogo.lado / 2);
+    const deslocamentosX = saltaX ? [-L, 0, L] : [0];
+    const deslocamentosY = saltaY ? [-L, 0, L] : [0];
+    for (const dx of deslocamentosX) {
+      for (const dy of deslocamentosY) {
+        ctx.save();
+        ctx.translate(dx, dy);
+        this.serpente(jogo, t, cel, tempo, matiz);
+        ctx.restore();
+      }
+    }
     this.efeitos(cel, jogo.lado);
     if (jogo.arenaEscura() && jogo.estado !== 'pronto') this.escuridao(jogo, cel);
 
@@ -666,10 +677,23 @@ export class Pintor {
     // ainda está no princípio do passo.
     const solta = jogo.anterior[n - 1];
     const derradeira = corpo[n - 1];
-    const caminho =
+    const base =
       solta && (solta.x !== derradeira.x || solta.y !== derradeira.y)
         ? [...corpo, solta]
         : corpo;
+    const caminho = jogo.atravessaParedes() ? base.reduce<Ponto[]>((pontos, actual, i) => {
+      if (i === 0) { pontos.push({ ...actual }); return pontos; }
+      const anteriorReal = base[i - 1];
+      const anteriorLivre = pontos[i - 1];
+      let dx = actual.x - anteriorReal.x;
+      let dy = actual.y - anteriorReal.y;
+      if (dx > jogo.lado / 2) dx -= jogo.lado;
+      if (dx < -jogo.lado / 2) dx += jogo.lado;
+      if (dy > jogo.lado / 2) dy -= jogo.lado;
+      if (dy < -jogo.lado / 2) dy += jogo.lado;
+      pontos.push({ x: anteriorLivre.x + dx, y: anteriorLivre.y + dy });
+      return pontos;
+    }, []) : base;
     const m = caminho.length - 1;
 
     /** Posição, em píxeis, à distância `s` da célula da cabeça ao longo do caminho. */
