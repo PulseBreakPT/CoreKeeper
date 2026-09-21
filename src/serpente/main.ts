@@ -332,6 +332,7 @@ function sincronizarEstado(): void {
   const chave = `${jogo.estado}:${jogo.direcao}:${pausado}:${arranque >= 0}`;
   if (chave === estadoAplicado) return;
   estadoAplicado = chave;
+  document.documentElement.dataset.estadoJogo = pausado ? 'pausa' : jogo.estado;
   inicio.hidden = jogo.estado !== 'pronto';
   pausa.hidden = !pausado;
   botaoPausar.disabled = jogo.estado !== 'a-jogar';
