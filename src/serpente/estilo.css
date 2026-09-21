@@ -992,3 +992,180 @@ html[data-estado-jogo='terminado'] .hud { filter: saturate(.65); }
 
 /* O multiplicador vive no fundo do Canvas; abaixo da arena fica apenas a missão. */
 .partida-info .combo { display: none !important; }
+
+/* MOBILE HOME 3.4 — navegação e seletores desenhados para polegares. */
+.menu-conteudo {
+  width: min(100%, 480px);
+  gap: 10px;
+  padding-inline: max(16px, env(safe-area-inset-left));
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+.menu-topo { flex: 0 0 44px; }
+.menu-topo::after {
+  left: max(16px, env(safe-area-inset-left));
+  right: max(16px, env(safe-area-inset-right));
+}
+.menu-topo .marca span { font-size: 11px; }
+.versao { padding-block: 7px; font-size: 7px; }
+
+.menu-hero {
+  flex: 0 0 152px;
+  padding: 18px 12px;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.menu-hero::before {
+  inset: 5px 4px;
+  opacity: 1;
+  border: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 74% 48%, hsla(var(--tema), 90%, 62%, .2), transparent 29%),
+    radial-gradient(ellipse at 74% 52%, hsla(var(--tema), 80%, 50%, .1), transparent 53%);
+}
+.menu-hero::after {
+  content: '';
+  width: 116px;
+  height: 116px;
+  right: 16px;
+  bottom: 17px;
+  border: 1px solid hsla(var(--tema), 80%, 75%, .11);
+  border-radius: 50%;
+  box-shadow: 0 0 0 17px hsla(var(--tema), 70%, 65%, .025), 0 0 0 35px hsla(var(--tema), 70%, 65%, .012);
+}
+.menu-hero > div { align-self: flex-end; z-index: 3; padding-bottom: 9px; }
+.menu-hero h1 { max-width: 270px; margin-top: 6px; font-size: clamp(30px, 8.6vw, 39px); line-height: .91; }
+.menu-indice { font-size: 6px; }
+.cobra-preview {
+  position: absolute;
+  z-index: 2;
+  width: 48%;
+  max-width: 195px;
+  max-height: 138px;
+  right: -2px;
+  top: 2px;
+  transform-origin: 70% 50%;
+}
+
+.menu-opcoes { gap: 9px; }
+.menu-categorias {
+  order: 2;
+  flex: 0 0 64px;
+  width: 100%;
+  gap: 4px;
+  margin-top: auto;
+  padding: 5px;
+  border-radius: 20px;
+  background: hsla(var(--tema), 30%, 7%, .9);
+  box-shadow: 0 15px 38px rgba(0, 0, 0, .28), inset 0 1px hsla(var(--tema), 70%, 90%, .035);
+}
+.menu-categorias button {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 7px;
+  letter-spacing: .65px;
+}
+.menu-categorias button svg { width: 19px; height: 19px; color: hsl(var(--tema), 12%, 48%); }
+.menu-categorias button.activo svg { color: var(--acento-forte); filter: drop-shadow(0 0 7px var(--brilho)); }
+.menu-categorias button.activo::after { left: 38%; right: 38%; }
+.menu-painel { order: 1; }
+.menu-painel.activo { gap: 11px; }
+
+/* Modos como carrossel horizontal: um padrão nativo de jogos mobile. */
+.modos-menu { flex: 0 0 auto; overflow: hidden; }
+.cartoes-modo {
+  display: flex;
+  grid-template-columns: none;
+  gap: 9px;
+  padding: 2px 18% 10px 2px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 2px;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+}
+.cartoes-modo::-webkit-scrollbar { display: none; }
+.cartoes-modo button {
+  flex: 0 0 76%;
+  min-height: 86px;
+  grid-template-columns: 42px 1fr 13px;
+  gap: 11px;
+  padding: 13px 14px;
+  scroll-snap-align: start;
+  border-radius: 19px;
+}
+.cartoes-modo button > svg { width: 38px; height: 38px; padding: 8px; border-radius: 12px; }
+.cartoes-modo strong { font-size: 13px; }
+.cartoes-modo small { max-width: 20em; font-size: 8px; line-height: 1.35; }
+.cartoes-modo button > i { width: 11px; height: 11px; }
+.desafio-diario { min-height: 66px; margin-top: 1px; border-radius: 18px; }
+
+/* Personalização: amostras táteis leves, sem uma grelha de cartões desktop. */
+.menu-painel[data-menu-painel='visual'] { padding-inline: 1px; }
+.menu-painel[data-menu-painel='visual'] .escolha { flex: 0 0 auto; }
+.menu-painel[data-menu-painel='visual'] .paleta { gap: 6px; }
+.menu-painel[data-menu-painel='visual'] .amostra {
+  min-height: 52px;
+  padding: 5px 2px;
+  gap: 4px;
+  background: transparent;
+  border-color: transparent;
+  border-radius: 14px;
+  box-shadow: none;
+}
+.menu-painel[data-menu-painel='visual'] .amostra i { width: 26px; height: 26px; }
+.menu-painel[data-menu-painel='visual'] .amostra.seleccionada {
+  background: hsla(var(--tema), 50%, 18%, .42);
+  border-color: hsla(var(--tema), 86%, 72%, .52);
+  box-shadow: inset 0 0 18px hsla(var(--tema), 80%, 55%, .06);
+}
+.menu-painel[data-menu-painel='visual'] .idiomas .amostra {
+  min-height: 48px;
+  background: hsla(var(--tema), 28%, 8%, .62);
+  border-color: hsla(var(--tema), 35%, 35%, .2);
+}
+.menu-painel[data-menu-painel='visual'] .idiomas .amostra.seleccionada {
+  background: hsla(var(--tema), 55%, 19%, .65);
+  border-color: var(--acento);
+}
+.idiomas .amostra b { font-size: 10px; }
+.idiomas .amostra span { font-size: 6px; }
+
+.menu-painel[data-menu-painel='carreira'] { justify-content: center; }
+.carreira-resumo { padding: 20px; border-radius: 22px; }
+.carreira > button { min-height: 64px; border-radius: 18px; }
+.carreira-destaques span { min-height: 82px; border-radius: 18px; }
+
+.entrar {
+  flex: 0 0 62px;
+  min-height: 62px;
+  margin-top: 0;
+  border-radius: 20px;
+  font-size: 11px;
+}
+.entrar span:last-child { width: 34px; height: 34px; }
+
+@media (max-height: 760px) {
+  .menu-conteudo { gap: 7px; }
+  .menu-hero { flex-basis: 94px; min-height: 94px; padding-block: 7px; }
+  .menu-hero h1 { font-size: 25px; }
+  .cobra-preview { width: 35%; max-height: 90px; right: 8px; }
+  .menu-hero::after { width: 76px; height: 76px; right: 15px; bottom: 9px; }
+  .cartoes-modo button { min-height: 72px; }
+  .menu-categorias { flex-basis: 56px; }
+  .menu-categorias button svg { width: 17px; height: 17px; }
+  .entrar { flex-basis: 54px; min-height: 54px; }
+}
+
+@media (max-height: 650px) {
+  .menu-hero { display: none; }
+  .cartoes-modo button { flex-basis: 70%; min-height: 68px; }
+}
