@@ -1,6 +1,6 @@
 /** Desenho da arena, da serpente e dos efeitos, em Canvas 2D. */
 
-import { PASSO_INICIAL, PASSO_MINIMO, vetor, type Jogo, type Ponto } from './logica';
+import { PASSO_INICIAL, PASSO_MINIMO, vetor, type Jogo, type Ponto, type TipoComida } from './logica';
 
 /** A cor só aquece a sério na parte final da curva de velocidade. */
 const CURVA_MATIZ = 1.8;
@@ -8,6 +8,12 @@ const CURVA_MATIZ = 1.8;
 const COR_COMIDA = '#f8bd91';
 const COR_COMIDA_BORDA = '#ed956d';
 const COR_MORTE = '#ff6b7a';
+const CORES_COMIDA: Record<TipoComida, [string, string]> = {
+  normal: [COR_COMIDA, COR_COMIDA_BORDA],
+  ouro: ['#ffe79a', '#ffb52e'],
+  leve: ['#9ef4ff', '#41b8e8'],
+  gigante: ['#e3a7ff', '#a95ee8'],
+};
 
 const LETRA = '"Space Grotesk", ui-sans-serif, system-ui, sans-serif';
 
@@ -109,6 +115,9 @@ export class Pintor {
   /** Cores escolhidas no menu; a cobra varia só ligeiramente com a velocidade. */
   private matizBase = 83;
   private matizArena = 83;
+  private pele: 'aurora' | 'pulso' | 'prisma' | 'brasa' = 'aurora';
+  private rastoActivo = true;
+  private relogioRasto = 0;
   /** Fracção do relógio que resta (1 a 0), ou `null` no modo clássico. */
   relogio: number | null = null;
   /** Segundos inteiros que faltam, para a contagem grande dos últimos tempos. */
@@ -148,6 +157,11 @@ export class Pintor {
     this.chao = null;
   }
 
+  definirPele(pele: 'aurora' | 'pulso' | 'prisma' | 'brasa', rasto = true): void {
+    this.pele = pele;
+    this.rastoActivo = rasto;
+  }
+
   /** Ajusta a tela a um quadrado de `ladoCss` píxeis CSS, com nitidez de retina. */
   redimensionar(ladoCss: number): void {
     const dpr = Math.min(2.5, window.devicePixelRatio || 1);
@@ -183,7 +197,7 @@ export class Pintor {
     this.flutuantes.push({
       x: p.x + 0.5,
       y: p.y + 0.35,
-      texto: marco ? String(pontos) : '+1',
+      texto: `+${pontos}`,
       vida: 1,
       cor: marco ? '#ffe9a8' : '#cfe9ff',
       escala: marco ? 1.7 : 0.8,
@@ -223,6 +237,7 @@ export class Pintor {
     this.clarao = 0;
     this.moldura = 0;
     this.incho = 0;
+    this.relogioRasto = 0;
     this.desfazer = -1;
     this.desfeitos = 0;
   }
@@ -239,7 +254,12 @@ export class Pintor {
       0,
       1,
     );
-    const matiz = this.matizBase + 10 * Math.pow(this.intensidade, CURVA_MATIZ);
+    const animacao = this.pele === 'prisma' ? (tempo / 45) % 360
+      : this.pele === 'pulso' ? Math.sin(tempo / 180) * 9
+      : this.pele === 'brasa' ? 12 + Math.sin(tempo / 260) * 5
+      : 0;
+    const matiz = (this.pele === 'prisma' ? animacao : this.matizBase + animacao)
+      + 10 * Math.pow(this.intensidade, CURVA_MATIZ);
     this.matiz = matiz;
 
     this.avancarEfeitos(s, jogo, cel);
@@ -255,8 +275,10 @@ export class Pintor {
     // A contagem fica por trás de tudo: é pano de fundo, a serpente é o assunto.
     this.arrancada(L, matiz);
     this.comida(jogo.comida, cel, tempo, jogo.estado);
+    this.obstaculos(jogo, cel, tempo);
     this.serpente(jogo, t, cel, tempo, matiz);
     this.efeitos(cel, jogo.lado);
+    if (jogo.arenaEscura() && jogo.estado !== 'pronto') this.escuridao(jogo, cel);
 
     if (this.clarao > 0.002) {
       // Clarão pelas bordas, como um golpe — o centro fica limpo para se ver o jogo.
@@ -276,6 +298,22 @@ export class Pintor {
     this.clarao = Math.max(0, this.clarao - s * 5);
     this.moldura = Math.max(0, this.moldura - s * 2.2);
     this.incho = Math.max(0, this.incho - s * 5);
+
+    this.relogioRasto += s;
+    if (this.rastoActivo && jogo.estado === 'a-jogar' && this.relogioRasto >= 0.055 && jogo.corpo.length > 1) {
+      this.relogioRasto = 0;
+      const cauda = jogo.corpo[jogo.corpo.length - 1];
+      this.particulas.push({
+        x: cauda.x + 0.5,
+        y: cauda.y + 0.5,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
+        vida: 0.34,
+        total: 0.34,
+        raio: 0.045 + this.intensidade * 0.035,
+        cor: `hsl(${this.matiz}, 85%, 67%)`,
+      });
+    }
 
     if (this.desfazer >= 0 && this.desfazer < 1) {
       this.desfazer = Math.min(1, this.desfazer + s * 1.7);
@@ -511,13 +549,15 @@ export class Pintor {
 
   // ---------- Comida ----------
 
-  private comida(c: Ponto, cel: number, tempo: number, estado: string): void {
+  private comida(c: Ponto & { tipo?: TipoComida }, cel: number, tempo: number, estado: string): void {
     if (estado === 'completo') return;
     const ctx = this.ctx;
     const cx = (c.x + 0.5) * cel;
     const cy = (c.y + 0.5) * cel;
     const pulso = 0.5 + 0.5 * Math.sin(tempo / 260);
-    const raio = cel * (0.32 + 0.04 * pulso);
+    const tipo = c.tipo ?? 'normal';
+    const [cor, borda] = CORES_COMIDA[tipo];
+    const raio = cel * ((tipo === 'gigante' ? 0.4 : tipo === 'leve' ? 0.27 : 0.32) + 0.04 * pulso);
 
     ctx.save();
     ctx.translate(cx, cy);
@@ -544,7 +584,7 @@ export class Pintor {
     ctx.fill();
     ctx.rotate(-tempo / 1600);
 
-    ctx.strokeStyle = COR_COMIDA_BORDA;
+    ctx.strokeStyle = borda;
     ctx.globalAlpha = 0.28 + 0.2 * pulso;
     ctx.lineWidth = Math.max(1.2, cel * 0.06);
     ctx.beginPath();
@@ -552,17 +592,56 @@ export class Pintor {
     ctx.stroke();
     ctx.globalAlpha = 1;
 
-    ctx.shadowColor = COR_COMIDA_BORDA;
+    ctx.shadowColor = borda;
     ctx.shadowBlur = cel * 0.8;
     const g = ctx.createRadialGradient(-raio * 0.3, -raio * 0.35, raio * 0.1, 0, 0, raio);
     g.addColorStop(0, '#fffaf0');
-    g.addColorStop(0.5, COR_COMIDA);
-    g.addColorStop(1, COR_COMIDA_BORDA);
+    g.addColorStop(0.5, cor);
+    g.addColorStop(1, borda);
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.arc(0, 0, raio, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
+  }
+
+  private obstaculos(jogo: Jogo, cel: number, tempo: number): void {
+    if (jogo.obstaculos.length === 0) return;
+    const ctx = this.ctx;
+    const pulso = 0.5 + Math.sin(tempo / 430) * 0.5;
+    for (const p of jogo.obstaculos) {
+      const margem = cel * 0.14;
+      const x = p.x * cel + margem;
+      const y = p.y * cel + margem;
+      const lado = cel - margem * 2;
+      ctx.save();
+      ctx.shadowColor = `hsla(${this.matizArena}, 80%, 62%, ${0.15 + pulso * 0.12})`;
+      ctx.shadowBlur = cel * 0.35;
+      caminhoRedondo(ctx, x, y, lado, lado, cel * 0.2);
+      const g = ctx.createLinearGradient(x, y, x + lado, y + lado);
+      g.addColorStop(0, `hsl(${this.matizArena}, 24%, 31%)`);
+      g.addColorStop(1, `hsl(${this.matizArena}, 25%, 15%)`);
+      ctx.fillStyle = g;
+      ctx.fill();
+      ctx.strokeStyle = `hsla(${this.matizArena}, 75%, 72%, .42)`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  private escuridao(jogo: Jogo, cel: number): void {
+    const ctx = this.ctx;
+    const p = jogo.corpo[0];
+    const x = (p.x + 0.5) * cel;
+    const y = (p.y + 0.5) * cel;
+    const raio = cel * 4.1;
+    const mascara = ctx.createRadialGradient(x, y, cel * 1.2, x, y, raio);
+    mascara.addColorStop(0, 'rgba(2, 4, 3, 0)');
+    mascara.addColorStop(0.56, 'rgba(2, 4, 3, .22)');
+    mascara.addColorStop(1, 'rgba(2, 4, 3, .94)');
+    ctx.fillStyle = mascara;
+    ctx.fillRect(0, 0, this.ladoCss, this.ladoCss);
   }
 
   // ---------- Serpente ----------

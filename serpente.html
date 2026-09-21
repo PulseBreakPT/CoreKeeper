@@ -19,7 +19,7 @@
             <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M23 7H12a5 5 0 0 0 0 10h8a5 5 0 0 1 0 10H8" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><circle cx="24" cy="6" r="1.5" fill="currentColor" class="olho-logo"/></svg>
             <span>SERPENTE</span>
           </div>
-          <span class="versao">MOBILE / 1.4</span>
+          <span class="versao">MOBILE / 2.0</span>
         </header>
 
         <div class="menu-hero">
@@ -67,8 +67,50 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg>
                 <span><strong>Contra o tempo</strong><small>10 segundos por luz.</small></span><i></i>
               </button>
+              <button type="button" data-escolha-modo="portais">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 4h5v16H5M19 4h-5v16h5"/><path d="m8 12 3-3m-3 3 3 3m5-3-3-3m3 3-3 3"/></svg>
+                <span><strong>Portais</strong><small>Atravessa as margens.</small></span><i></i>
+              </button>
+              <button type="button" data-escolha-modo="zen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 21c5-3 8-7 8-12-4 0-7 1-8 4-1-3-4-4-8-4 0 5 3 9 8 12Z"/><path d="M12 13v8"/></svg>
+                <span><strong>Zen</strong><small>Sem derrota. Só fluxo.</small></span><i></i>
+              </button>
+              <button type="button" data-escolha-modo="escuro">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 15.5A8 8 0 1 1 8.5 4 7 7 0 0 0 20 15.5Z"/></svg>
+                <span><strong>Eclipse</strong><small>Visão limitada à cabeça.</small></span><i></i>
+              </button>
+              <button type="button" data-escolha-modo="obstaculos">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/><path d="M17 4v6M4 17h6"/></svg>
+                <span><strong>Labirinto</strong><small>Blocos em cada arena.</small></span><i></i>
+              </button>
+              <button type="button" data-escolha-modo="uma-vida">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 8c0 6-8 11-8 11S4 14 4 8a4 4 0 0 1 7-2.6L12 7l1-1.6A4 4 0 0 1 20 8Z"/><path d="M12 9v5"/></svg>
+                <span><strong>Uma vida</strong><small>Mais rápido. Pontos ×2.</small></span><i></i>
+              </button>
             </div>
           </fieldset>
+
+          <fieldset class="escolha">
+            <legend><span>04</span> PELE ANIMADA</legend>
+            <div class="paleta peles" id="paleta-pele">
+              <button class="amostra pele-aurora" type="button" data-pele="aurora"><i></i><span>Aurora</span></button>
+              <button class="amostra pele-pulso" type="button" data-pele="pulso"><i></i><span>Pulso</span></button>
+              <button class="amostra pele-prisma" type="button" data-pele="prisma"><i></i><span>Prisma</span></button>
+              <button class="amostra pele-brasa" type="button" data-pele="brasa"><i></i><span>Brasa</span></button>
+            </div>
+          </fieldset>
+
+          <button class="desafio-diario" id="desafio-diario" type="button" data-escolha-modo="diario">
+            <span><small>DESAFIO DO DIA</small><strong id="diario-titulo">A regra muda todos os dias</strong></span>
+            <b id="diario-recorde">0</b><i>→</i>
+          </button>
+
+          <section class="carreira" aria-label="Carreira">
+            <button type="button" id="abrir-carreira">
+              <span><small>CARREIRA</small><strong><b id="stat-partidas">0</b> partidas · <b id="stat-comidas">0</b> luzes</strong></span>
+              <span class="nivel"><small>NÍVEL</small><b id="stat-nivel">1</b></span>
+            </button>
+          </section>
         </div>
 
         <button class="entrar" id="entrar" type="button"><span>ENTRAR NA ARENA</span><span aria-hidden="true">→</span></button>
@@ -110,6 +152,8 @@
         <div class="palco" id="palco">
           <div class="arena" id="arena">
             <canvas id="tela" width="600" height="600" aria-label="Tabuleiro. Desliza para mudar de direcção."></canvas>
+            <div class="missao-partida" id="missao-partida"><small>MISSÃO</small><span id="missao-texto">Recolhe 8 luzes</span><b id="missao-progresso">0/8</b></div>
+            <div class="combo" id="combo" hidden><span>COMBO</span><b id="combo-valor">×2</b></div>
             <div class="inicio" id="inicio">
               <div class="inicio-marca">
                 <span class="etiqueta">ARCADE / 01</span>
@@ -141,6 +185,7 @@
               </div>
               <p class="medalha" id="fim-medalha" hidden></p>
               <button class="jogar" id="jogar" type="button">JOGAR OUTRA VEZ <span aria-hidden="true">↻</span></button>
+              <button class="partilhar" id="partilhar" type="button">PARTILHAR RESULTADO <span aria-hidden="true">↗</span></button>
               <p class="atalho">Toca para voltar à arena.</p>
             </div>
           </div>
@@ -156,28 +201,21 @@
         </div>
       </section>
 
-      <nav class="controlos" aria-label="Opções do jogo">
-        <div class="painel-modo">
-          <span class="comando-titulo">A TUA PARTIDA</span>
-          <button class="modo" id="modo" type="button" aria-pressed="false" aria-label="Modo clássico. Tocar liga o modo relógio">
-            <span class="modo-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg></span>
-            <span><small>MODO</small><strong id="modo-nome">Clássico</strong></span>
-            <span class="trocar" aria-hidden="true">↔</span>
-          </button>
-          <p id="modo-dica">O original. Sem limites de tempo.</p>
-        </div>
-        <div class="comando">
-          <span class="comando-titulo">TOCA OU DESLIZA</span>
-          <div class="dpad" aria-label="Controlos direcionais">
-            <button class="direcao cima" type="button" data-direcao="cima" aria-label="Virar para cima"><span>↑</span></button>
-            <button class="direcao esquerda" type="button" data-direcao="esquerda" aria-label="Virar para a esquerda"><span>←</span></button>
-            <span class="nucleo" aria-hidden="true"><i></i></span>
-            <button class="direcao direita" type="button" data-direcao="direita" aria-label="Virar para a direita"><span>→</span></button>
-            <button class="direcao baixo" type="button" data-direcao="baixo" aria-label="Virar para baixo"><span>↓</span></button>
-          </div>
-        </div>
-      </nav>
+      <div class="gesto-dica" aria-hidden="true">
+        <svg viewBox="0 0 44 44" fill="none"><path d="M22 4v36M4 22h36M22 4l-4 4m4-4 4 4M40 22l-4-4m4 4-4 4M22 40l-4-4m4 4 4-4M4 22l4-4m-4 4 4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <span>DESLIZA NA ARENA<small>uma direção por gesto</small></span>
+      </div>
     </main>
+    <section class="folha" id="folha-carreira" hidden aria-labelledby="carreira-titulo">
+      <button class="folha-fundo" id="fechar-carreira" type="button" aria-label="Fechar carreira"></button>
+      <div class="folha-painel">
+        <div class="folha-puxador"></div>
+        <header><span><small>PERFIL LOCAL</small><h2 id="carreira-titulo">A tua carreira</h2></span><button type="button" id="fechar-carreira-x" aria-label="Fechar">×</button></header>
+        <div class="estatisticas" id="estatisticas"></div>
+        <h3>CONQUISTAS</h3>
+        <div class="conquistas" id="conquistas"></div>
+      </div>
+    </section>
     <script type="module" src="/src/serpente/main.ts"></script>
   </body>
 </html>

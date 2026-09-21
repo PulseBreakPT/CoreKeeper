@@ -9,11 +9,16 @@
 export type Direcao = 'cima' | 'baixo' | 'esquerda' | 'direita';
 export type Estado = 'pronto' | 'a-jogar' | 'morto' | 'completo';
 /** Clássico: só as paredes e o próprio corpo matam. Relógio: o tempo também. */
-export type Modo = 'classico' | 'relogio';
+export type Modo = 'classico' | 'relogio' | 'portais' | 'zen' | 'escuro' | 'obstaculos' | 'uma-vida' | 'diario';
+export type TipoComida = 'normal' | 'ouro' | 'leve' | 'gigante';
 
 export interface Ponto {
   x: number;
   y: number;
+}
+
+export interface Comida extends Ponto {
+  tipo: TipoComida;
 }
 
 /** Lado da arena em células. Quadrada e fixa, para o jogo ser igual em todos os ecrãs. */
@@ -66,6 +71,9 @@ export interface Resultado {
   morreu: boolean;
   completo: boolean;
   cabeca: Ponto;
+  ganhos: number;
+  tipoComida: TipoComida | null;
+  cortou: boolean;
 }
 
 export interface OpcoesJogo {
@@ -73,10 +81,21 @@ export interface OpcoesJogo {
   recorde?: number;
   modo?: Modo;
   aleatorio?: () => number;
+  dia?: number;
 }
 
 function vazio(cabeca: Ponto): Resultado {
-  return { moveu: false, comeu: false, marco: false, morreu: false, completo: false, cabeca };
+  return {
+    moveu: false,
+    comeu: false,
+    marco: false,
+    morreu: false,
+    completo: false,
+    cabeca,
+    ganhos: 0,
+    tipoComida: null,
+    cortou: false,
+  };
 }
 
 export class Jogo {
@@ -85,21 +104,29 @@ export class Jogo {
   corpo: Ponto[] = [];
   /** Onde estava cada célula no passo anterior — usado para interpolar o desenho. */
   anterior: Ponto[] = [];
-  comida: Ponto = { x: 0, y: 0 };
+  comida: Comida = { x: 0, y: 0, tipo: 'normal' };
+  obstaculos: Ponto[] = [];
   direcao: Direcao = 'direita';
   estado: Estado = 'pronto';
   pontos = 0;
   comidas = 0;
+  especiais = 0;
+  combo = 0;
+  melhorCombo = 0;
   recorde: number;
   modo: Modo;
+  readonly dia: number;
 
   private fila: Direcao[] = [];
   private readonly aleatorio: () => number;
+  private passosDesdeComida = 999;
+  private crescimentoPendente = 0;
 
   constructor(opcoes: OpcoesJogo = {}) {
     this.lado = opcoes.lado ?? LADO;
     this.recorde = opcoes.recorde ?? 0;
     this.modo = opcoes.modo ?? 'classico';
+    this.dia = opcoes.dia ?? Math.floor(Date.now() / 86_400_000);
     this.aleatorio = opcoes.aleatorio ?? Math.random;
     this.reiniciar();
   }
@@ -117,13 +144,62 @@ export class Jogo {
     this.estado = 'pronto';
     this.pontos = 0;
     this.comidas = 0;
+    this.especiais = 0;
+    this.combo = 0;
+    this.melhorCombo = 0;
+    this.passosDesdeComida = 999;
+    this.crescimentoPendente = 0;
+    this.criarObstaculos();
     this.novaComida();
+  }
+
+  /** O desafio diário alterna regras previsíveis sem depender de uma ligação à rede. */
+  private varianteDiaria(): number {
+    return Math.abs(this.dia * 17 + 11) % 4;
+  }
+
+  atravessaParedes(): boolean {
+    return this.modo === 'portais' || this.modo === 'zen' || (this.modo === 'diario' && this.varianteDiaria() === 0);
+  }
+
+  arenaEscura(): boolean {
+    return this.modo === 'escuro' || (this.modo === 'diario' && this.varianteDiaria() === 1);
+  }
+
+  temObstaculos(): boolean {
+    return this.modo === 'obstaculos' || (this.modo === 'diario' && this.varianteDiaria() === 2);
+  }
+
+  semDerrota(): boolean {
+    return this.modo === 'zen';
+  }
+
+  private criarObstaculos(): void {
+    this.obstaculos = [];
+    if (!this.temObstaculos()) return;
+    const meio = Math.floor(this.lado / 2);
+    const desejados = Math.max(5, Math.floor(this.lado * 0.58));
+    let tentativas = desejados * 15;
+    while (this.obstaculos.length < desejados && tentativas-- > 0) {
+      const x = 2 + Math.floor(this.aleatorio() * Math.max(1, this.lado - 4));
+      const y = 2 + Math.floor(this.aleatorio() * Math.max(1, this.lado - 4));
+      if (Math.abs(x - meio) <= 3 && Math.abs(y - meio) <= 2) continue;
+      if (this.obstaculos.some((p) => p.x === x && p.y === y)) continue;
+      // Evita muros compactos: cada bloco nasce com, no máximo, um vizinho directo.
+      const vizinhos = this.obstaculos.filter((p) => Math.abs(p.x - x) + Math.abs(p.y - y) === 1).length;
+      if (vizinhos > 1) continue;
+      this.obstaculos.push({ x, y });
+    }
   }
 
   /** Intervalo entre passos, em milissegundos, para a pontuação actual. */
   passoMs(): number {
-    const extra = (PASSO_INICIAL - PASSO_MINIMO) * Math.pow(DECAIMENTO, this.comidas);
-    return PASSO_MINIMO + extra;
+    const diarioRapido = this.modo === 'diario' && this.varianteDiaria() === 3;
+    const inicial = this.modo === 'uma-vida' ? 128 : diarioRapido ? 138 : PASSO_INICIAL;
+    const minimo = this.modo === 'zen' ? 88 : PASSO_MINIMO;
+    const progresso = this.comidas + Math.floor(this.pontos / 8);
+    const extra = (inicial - minimo) * Math.pow(DECAIMENTO, progresso);
+    return minimo + extra;
   }
 
   /** Última direcção com que já se contou — a da fila, ou a que está a ser andada. */
@@ -173,9 +249,16 @@ export class Jogo {
     return this.corpo.some((p) => p.x === x && p.y === y);
   }
 
+  bloqueada(x: number, y: number): boolean {
+    return this.obstaculos.some((p) => p.x === x && p.y === y);
+  }
+
   /** Todas as células fora do corpo — a comida sai daqui, nunca de tentativa e erro. */
   livres(): Ponto[] {
-    const ocupadas = new Set(this.corpo.map((p) => p.y * this.lado + p.x));
+    const ocupadas = new Set([
+      ...this.corpo.map((p) => p.y * this.lado + p.x),
+      ...this.obstaculos.map((p) => p.y * this.lado + p.x),
+    ]);
     const saida: Ponto[] = [];
     for (let y = 0; y < this.lado; y++) {
       for (let x = 0; x < this.lado; x++) {
@@ -201,6 +284,7 @@ export class Jogo {
       const p = this.corpo[i];
       bloqueada[p.y * this.lado + p.x] = 1;
     }
+    for (const p of this.obstaculos) bloqueada[p.y * this.lado + p.x] = 1;
     const tamanhos: number[] = [];
     const fila = new Int32Array(n);
 
@@ -301,12 +385,22 @@ export class Jogo {
     for (let i = 0; i < alvos.length; i++) {
       sorte -= pesos[i];
       if (sorte <= 0) {
-        this.comida = alvos[i];
+        this.comida = { ...alvos[i], tipo: this.sortearTipoComida() };
         return true;
       }
     }
-    this.comida = alvos[alvos.length - 1];
+    this.comida = { ...alvos[alvos.length - 1], tipo: this.sortearTipoComida() };
     return true;
+  }
+
+  private sortearTipoComida(): TipoComida {
+    // A primeira luz é sempre normal; depois, cerca de uma em quatro altera a estratégia.
+    if (this.comidas === 0) return 'normal';
+    const n = this.aleatorio();
+    if (n < 0.1) return 'ouro';
+    if (n < 0.18) return 'leve';
+    if (n < 0.26) return 'gigante';
+    return 'normal';
   }
 
   /** Quantos dos quatro vizinhos pertencem à mesma região livre. */
@@ -337,42 +431,74 @@ export class Jogo {
     this.anterior = this.corpo.map((p) => ({ ...p }));
 
     const v = VETORES[this.direcao];
-    const cabeca: Ponto = { x: this.corpo[0].x + v.x, y: this.corpo[0].y + v.y };
+    let cabeca: Ponto = { x: this.corpo[0].x + v.x, y: this.corpo[0].y + v.y };
     r.cabeca = cabeca;
 
     if (cabeca.x < 0 || cabeca.y < 0 || cabeca.x >= this.lado || cabeca.y >= this.lado) {
-      this.estado = 'morto';
-      this.marcarRecorde();
-      r.morreu = true;
-      return r;
+      if (this.atravessaParedes()) {
+        cabeca = { x: (cabeca.x + this.lado) % this.lado, y: (cabeca.y + this.lado) % this.lado };
+        r.cabeca = cabeca;
+      } else {
+        this.estado = 'morto';
+        this.marcarRecorde();
+        r.morreu = true;
+        return r;
+      }
     }
 
     const comeu = cabeca.x === this.comida.x && cabeca.y === this.comida.y;
-    // A cauda liberta a célula no mesmo passo, por isso entrar onde ela estava é legal.
-    const cauda = comeu ? undefined : this.corpo.pop();
+    let remover = 0;
+    if (comeu && this.comida.tipo === 'leve') remover = Math.min(2, Math.max(0, this.corpo.length - 2));
+    else if (!comeu && this.crescimentoPendente > 0) this.crescimentoPendente--;
+    else if (!comeu) remover = 1;
+    let restante = remover > 0 ? this.corpo.slice(0, -remover) : [...this.corpo];
 
-    if (this.ocupada(cabeca.x, cabeca.y)) {
-      if (cauda) this.corpo.push(cauda);
+    if (this.bloqueada(cabeca.x, cabeca.y)) {
       this.estado = 'morto';
       this.marcarRecorde();
       r.morreu = true;
       return r;
     }
 
-    this.corpo.unshift(cabeca);
+    const colisaoCorpo = restante.findIndex((p) => p.x === cabeca.x && p.y === cabeca.y);
+    if (colisaoCorpo >= 0) {
+      if (this.semDerrota()) {
+        restante = restante.slice(0, colisaoCorpo);
+        r.cortou = true;
+      } else {
+        this.estado = 'morto';
+        this.marcarRecorde();
+        r.morreu = true;
+        return r;
+      }
+    }
+
+    this.corpo = [cabeca, ...restante];
     // Alinhar os dois instantes: o segmento novo nasce parado em cima da cauda velha.
     while (this.anterior.length < this.corpo.length) {
       this.anterior.push({ ...this.anterior[this.anterior.length - 1] });
     }
 
     r.moveu = true;
+    this.passosDesdeComida++;
 
     if (comeu) {
+      const tipo = this.comida.tipo;
       this.comidas++;
-      this.pontos++;
+      if (tipo !== 'normal') this.especiais++;
+      this.combo = this.passosDesdeComida <= 22 ? Math.min(5, this.combo + 1) : 1;
+      this.melhorCombo = Math.max(this.melhorCombo, this.combo);
+      this.passosDesdeComida = 0;
+      const base = tipo === 'ouro' ? 3 : tipo === 'gigante' ? 2 : 1;
+      const risco = this.modo === 'uma-vida' ? 2 : 1;
+      const ganhos = base * this.combo * risco;
+      this.pontos += ganhos;
+      if (tipo === 'gigante') this.crescimentoPendente += 2;
       this.marcarRecorde();
       r.comeu = true;
-      r.marco = this.comidas % MARCO === 0;
+      r.ganhos = ganhos;
+      r.tipoComida = tipo;
+      r.marco = Math.floor((this.pontos - ganhos) / MARCO) !== Math.floor(this.pontos / MARCO);
       if (!this.novaComida()) {
         this.estado = 'completo';
         r.completo = true;

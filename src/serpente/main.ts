@@ -5,19 +5,41 @@ import { Jogo, LADO, SEGUNDOS_RELOGIO, type Direcao, type Modo } from './logica'
 import { Pintor } from './pintura';
 import { Som } from './audio';
 import { ligarControlos } from './controlos';
+import {
+  CONQUISTAS,
+  Carreira,
+  criarMissao,
+  nomeDesafioDiario,
+  partilharResultado,
+  valorMissao,
+  type Missao,
+} from './progressao';
 
 /** Cada modo tem o seu recorde: as pontuações não são comparáveis entre eles. */
 const CHAVE_RECORDE: Record<Modo, string> = {
   classico: 'serpente:recorde:v1',
   relogio: 'serpente:recorde:relogio:v1',
+  portais: 'serpente:recorde:portais:v1',
+  zen: 'serpente:recorde:zen:v1',
+  escuro: 'serpente:recorde:escuro:v1',
+  obstaculos: 'serpente:recorde:obstaculos:v1',
+  'uma-vida': 'serpente:recorde:uma-vida:v1',
+  diario: 'serpente:recorde:diario:v1',
 };
 const CHAVE_MODO = 'serpente:modo:v1';
 const CHAVE_TEMA = 'serpente:tema:v1';
 const CHAVE_COBRA = 'serpente:cobra:v1';
+const CHAVE_PELE = 'serpente:pele:v1';
 
 type Tema = 'floresta' | 'oceano' | 'violeta' | 'brasa';
 const TEMAS: Record<Tema, number> = { floresta: 83, oceano: 188, violeta: 274, brasa: 19 };
 const CORES_COBRA = [83, 188, 330, 42] as const;
+type Pele = 'aurora' | 'pulso' | 'prisma' | 'brasa';
+const PELES: Pele[] = ['aurora', 'pulso', 'prisma', 'brasa'];
+const NOMES_MODO: Record<Modo, string> = {
+  classico: 'CLÁSSICO', relogio: 'CONTRA O TEMPO', portais: 'PORTAIS', zen: 'ZEN',
+  escuro: 'ECLIPSE', obstaculos: 'LABIRINTO', 'uma-vida': 'UMA VIDA', diario: 'DESAFIO DIÁRIO',
+};
 /** Tempo entre a morte e o cartão de fim — dá espaço ao impacto. */
 const ESPERA_FIM = 440;
 const RELOGIO_MS = SEGUNDOS_RELOGIO * 1000;
@@ -37,7 +59,8 @@ function elemento<T extends HTMLElement>(id: string): T {
 
 function lerRecorde(modo: Modo): number {
   try {
-    const n = Number(localStorage.getItem(CHAVE_RECORDE[modo]));
+    const chave = modo === 'diario' ? `${CHAVE_RECORDE.diario}:${Math.floor(Date.now() / 86_400_000)}` : CHAVE_RECORDE[modo];
+    const n = Number(localStorage.getItem(chave));
     return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
   } catch {
     return 0;
@@ -46,7 +69,8 @@ function lerRecorde(modo: Modo): number {
 
 function gravarRecorde(modo: Modo, n: number): void {
   try {
-    localStorage.setItem(CHAVE_RECORDE[modo], String(n));
+    const chave = modo === 'diario' ? `${CHAVE_RECORDE.diario}:${Math.floor(Date.now() / 86_400_000)}` : CHAVE_RECORDE[modo];
+    localStorage.setItem(chave, String(n));
   } catch {
     /* sem armazenamento, o recorde vive só nesta sessão */
   }
@@ -54,10 +78,18 @@ function gravarRecorde(modo: Modo, n: number): void {
 
 function lerModo(): Modo {
   try {
-    return localStorage.getItem(CHAVE_MODO) === 'relogio' ? 'relogio' : 'classico';
+    const modo = localStorage.getItem(CHAVE_MODO) as Modo | null;
+    return modo && modo in CHAVE_RECORDE ? modo : 'classico';
   } catch {
     return 'classico';
   }
+}
+
+function lerPele(): Pele {
+  try {
+    const pele = localStorage.getItem(CHAVE_PELE) as Pele | null;
+    return pele && PELES.includes(pele) ? pele : 'aurora';
+  } catch { return 'aurora'; }
 }
 
 function lerTema(): Tema {
@@ -93,7 +125,6 @@ const fimRecorde = elemento<HTMLSpanElement>('fim-recorde');
 const fimMedalha = elemento<HTMLParagraphElement>('fim-medalha');
 const botaoJogar = elemento<HTMLButtonElement>('jogar');
 const botaoSom = elemento<HTMLButtonElement>('som');
-const botaoModo = elemento<HTMLButtonElement>('modo');
 const botaoPausar = elemento<HTMLButtonElement>('pausar');
 const inicio = elemento<HTMLDivElement>('inicio');
 const pausa = elemento<HTMLDivElement>('pausa');
@@ -103,16 +134,26 @@ const progresso = elemento<HTMLProgressElement>('progresso');
 const menuPrincipal = elemento<HTMLElement>('menu-principal');
 const botaoEntrar = elemento<HTMLButtonElement>('entrar');
 const botaoAbrirMenu = elemento<HTMLButtonElement>('abrir-menu');
+const combo = elemento<HTMLDivElement>('combo');
+const comboValor = elemento<HTMLElement>('combo-valor');
+const missaoPartida = elemento<HTMLDivElement>('missao-partida');
+const missaoTexto = elemento<HTMLElement>('missao-texto');
+const missaoProgresso = elemento<HTMLElement>('missao-progresso');
+const botaoPartilhar = elemento<HTMLButtonElement>('partilhar');
+const folhaCarreira = elemento<HTMLElement>('folha-carreira');
 let pausado = false;
 let estadoAplicado = '';
 let temaEscolhido = lerTema();
 let cobraEscolhida = lerCobra();
+let peleEscolhida = lerPele();
 
 const modoInicial = lerModo();
 const jogo = new Jogo({ lado: LADO, recorde: lerRecorde(modoInicial), modo: modoInicial });
 const pintor = new Pintor(tela);
 const som = new Som();
+const carreira = new Carreira();
 pintor.definirCores(cobraEscolhida, TEMAS[temaEscolhido]);
+pintor.definirPele(peleEscolhida);
 document.documentElement.dataset.tema = temaEscolhido;
 document.documentElement.style.setProperty('--cobra', String(cobraEscolhida));
 
@@ -128,9 +169,14 @@ let porTempo = false;
 /** Milissegundos decorridos da contagem de arranque, ou -1 quando não há. */
 let arranque = -1;
 let arranqueAnunciado = -1;
+let duracaoPartida = 0;
+let numeroPartida = carreira.dados.partidas;
+let missao: Missao = criarMissao(numeroPartida, modoInicial);
+let missaoCumprida = false;
+let novasConquistas = '';
 
 const semRato = window.matchMedia('(hover: none)').matches;
-dica.textContent = semRato ? 'Desliza ou toca nas setas' : 'Setas ou WASD para começar';
+dica.textContent = semRato ? 'Desliza para começar' : 'Setas ou WASD para começar';
 
 /** Resposta tátil curta: acrescenta confirmação sem competir com o som. */
 function vibrar(padrao: number | number[]): void {
@@ -170,6 +216,30 @@ function actualizarEscolhasMenu(): void {
     botao.classList.toggle('seleccionado', seleccionado);
     botao.setAttribute('aria-pressed', String(seleccionado));
   });
+  document.querySelectorAll<HTMLButtonElement>('[data-pele]').forEach((botao) => {
+    const seleccionado = botao.dataset.pele === peleEscolhida;
+    botao.classList.toggle('seleccionada', seleccionado);
+    botao.setAttribute('aria-pressed', String(seleccionado));
+  });
+}
+
+function actualizarCarreira(): void {
+  const d = carreira.dados;
+  elemento('stat-partidas').textContent = String(d.partidas);
+  elemento('stat-comidas').textContent = String(d.comidas);
+  elemento('stat-nivel').textContent = String(carreira.nivel());
+  elemento('diario-titulo').textContent = nomeDesafioDiario();
+  elemento('diario-recorde').textContent = String(lerRecorde('diario'));
+  const minutos = Math.floor(d.tempoMs / 60_000);
+  elemento('estatisticas').innerHTML = [
+    ['PARTIDAS', d.partidas], ['PONTOS', d.pontos], ['LUZES', d.comidas],
+    ['ESPECIAIS', d.especiais], ['MELHOR COMBO', `×${d.melhorCombo}`],
+    ['MAIOR COBRA', d.maiorComprimento], ['MISSÕES', d.missoes], ['MINUTOS', minutos],
+  ].map(([rotulo, valor]) => `<div><small>${rotulo}</small><strong>${valor}</strong></div>`).join('');
+  elemento('conquistas').innerHTML = CONQUISTAS.map((c) => {
+    const feita = d.conquistas.includes(c.id);
+    return `<article class="${feita ? 'feita' : ''}"><b>${c.icone}</b><span><strong>${c.nome}</strong><small>${c.descricao}</small></span><i>${feita ? '✓' : '·'}</i></article>`;
+  }).join('');
 }
 
 function escolherTema(tema: Tema): void {
@@ -191,6 +261,14 @@ function escolherCobra(matiz: number): void {
   vibrar(8);
 }
 
+function escolherPele(pele: Pele): void {
+  peleEscolhida = pele;
+  pintor.definirPele(pele);
+  try { localStorage.setItem(CHAVE_PELE, pele); } catch { /* preferência desta sessão */ }
+  actualizarEscolhasMenu();
+  vibrar(8);
+}
+
 function escolherModo(modo: Modo): void {
   if (jogo.modo === modo) return;
   jogo.modo = modo;
@@ -202,6 +280,22 @@ function escolherModo(modo: Modo): void {
   vibrar(8);
 }
 
+function actualizarMissao(): void {
+  const valor = Math.min(missao.alvo, valorMissao(missao, jogo));
+  missaoTexto.textContent = missao.texto;
+  missaoProgresso.textContent = `${valor}/${missao.alvo}`;
+  missaoPartida.classList.toggle('cumprida', missaoCumprida);
+  if (!missaoCumprida && valor >= missao.alvo) {
+    missaoCumprida = true;
+    missaoPartida.classList.add('cumprida');
+    missaoTexto.textContent = 'Missão cumprida';
+    missaoProgresso.textContent = '✓';
+    animar(missaoPartida, 'celebrar');
+    som.marco();
+    vibrar([16, 22, 28]);
+  }
+}
+
 function actualizarHud(): void {
   alvoPontos.textContent = String(jogo.pontos);
   alvoRecorde.textContent = String(jogo.recorde);
@@ -211,6 +305,9 @@ function actualizarHud(): void {
   progresso.value = jogo.pontos % 10;
   elemento('comprimento').textContent = String(jogo.corpo.length);
   elemento('velocidade').textContent = `${(150 / jogo.passoMs()).toFixed(2)}× RITMO`;
+  combo.hidden = jogo.combo < 2;
+  comboValor.textContent = `×${jogo.combo}`;
+  actualizarMissao();
 }
 
 function medirArena(): void {
@@ -239,9 +336,6 @@ function sincronizarEstado(): void {
   estado.textContent = pausado ? 'EM PAUSA' : jogo.estado === 'pronto' ? 'À TUA ESPERA'
     : jogo.estado === 'a-jogar' ? (arranque >= 0 ? 'PREPARA-TE' : 'NO FLOW')
     : jogo.estado === 'completo' ? 'ARENA CONQUISTADA' : 'MAIS UMA?';
-  document.querySelectorAll<HTMLButtonElement>('[data-direcao]').forEach((botao) => {
-    botao.classList.toggle('activa', jogo.estado === 'a-jogar' && botao.dataset.direcao === jogo.direcao);
-  });
 }
 
 function alternarPausa(): void {
@@ -262,6 +356,8 @@ function mostrarFim(): void {
   if (ganhou) fimMedalha.textContent = 'Encheste o tabuleiro. Não há mais sítio para crescer.';
   else if (jogo.pontos > 0 && jogo.pontos === jogo.recorde) fimMedalha.textContent = 'Recorde novo!';
   else fimMedalha.textContent = '';
+  if (novasConquistas) fimMedalha.textContent = `${fimMedalha.textContent ? `${fimMedalha.textContent} · ` : ''}Conquista: ${novasConquistas}.`;
+  if (missaoCumprida) fimMedalha.textContent = `${fimMedalha.textContent ? `${fimMedalha.textContent} · ` : ''}Missão cumprida.`;
   fimMedalha.hidden = fimMedalha.textContent === '';
   cartao.hidden = false;
   animar(cartao, 'entrar');
@@ -269,6 +365,9 @@ function mostrarFim(): void {
 
 function terminar(): void {
   gravarRecorde(jogo.modo, jogo.recorde);
+  const novas = carreira.registar(jogo, duracaoPartida, missaoCumprida);
+  novasConquistas = novas.map((c) => c.nome).join(', ');
+  actualizarCarreira();
   actualizarHud();
   dica.hidden = true;
   podeReiniciar = false;
@@ -289,9 +388,15 @@ function reiniciar(): void {
   cartao.hidden = true;
   fimMedalha.hidden = true;
   dica.hidden = false;
-  dica.textContent = semRato ? 'Desliza ou toca nas setas' : 'Setas ou WASD para começar';
+  dica.textContent = semRato ? 'Desliza para começar' : 'Setas ou WASD para começar';
   pintor.limpar();
   jogo.reiniciar();
+  numeroPartida++;
+  missao = criarMissao(numeroPartida, jogo.modo);
+  missaoCumprida = false;
+  duracaoPartida = 0;
+  novasConquistas = '';
+  missaoPartida.classList.remove('cumprida');
   acumulado = 0;
   ultimo = performance.now();
   reporRelogio();
@@ -310,7 +415,7 @@ function reporRelogio(): void {
 function aplicar(): void {
   const r = jogo.passo();
   if (r.comeu) {
-    pintor.explodir(jogo.corpo[0], jogo.pontos, r.marco);
+    pintor.explodir(jogo.corpo[0], r.ganhos, r.marco);
     som.comer(jogo.comidas);
     vibrar(r.marco ? [18, 28, 18] : 12);
     restante = RELOGIO_MS;
@@ -321,6 +426,10 @@ function aplicar(): void {
       som.marco();
       animar(marcadorPontos, 'marco');
     }
+  }
+  if (r.cortou) {
+    vibrar(18);
+    actualizarHud();
   }
   if (r.completo) {
     pintor.vitoria(jogo.corpo[0]);
@@ -368,6 +477,7 @@ function quadro(agora: number): void {
 
   // Durante a contagem o jogo já está "a jogar", mas ainda não se mexe.
   const aCorrer = jogo.estado === 'a-jogar' && arranque < 0 && !pausado;
+  if (aCorrer) duracaoPartida += dt;
 
   if (aCorrer && jogo.modo === 'relogio') {
     restante -= dt;
@@ -405,15 +515,17 @@ function quadro(agora: number): void {
   requestAnimationFrame(quadro);
 }
 
-function virar(d: Direcao): void {
-  if (pausado) return;
+function virar(d: Direcao): boolean {
+  if (pausado) return false;
   const arrancava = jogo.estado === 'pronto';
   // Se a direcção for recusada (inversão), a dica fica — o jogo ainda não arrancou.
-  if (!jogo.virar(d)) return;
+  if (!jogo.virar(d)) return false;
   vibrar(7);
+  animar(arena, 'virou');
   dica.hidden = true;
   // A primeira ordem não põe a serpente a andar: põe a contagem a andar.
   if (arrancava) comecarContagem();
+  return true;
 }
 
 /** Arranca o 3, 2, 1, VAI. A serpente fica quieta até ele acabar. */
@@ -436,23 +548,7 @@ function confirmar(): void {
 }
 
 function sincronizarBotaoModo(): void {
-  const relogio = jogo.modo === 'relogio';
-  botaoModo.classList.toggle('activo', relogio);
-  botaoModo.setAttribute('aria-pressed', String(relogio));
-  const etiqueta = relogio
-    ? `Modo relógio: ${SEGUNDOS_RELOGIO} segundos para comer. Tocar volta ao clássico`
-    : 'Modo clássico. Tocar liga o modo relógio';
-  botaoModo.setAttribute('aria-label', etiqueta);
-  botaoModo.title = etiqueta;
-  elemento('modo-nome').textContent = relogio ? 'Relógio' : 'Clássico';
-  hudModo.textContent = relogio ? 'CONTRA O TEMPO' : 'CLÁSSICO';
-  elemento('modo-dica').textContent = relogio
-    ? `${SEGUNDOS_RELOGIO} segundos para comer. Cada luz renova o tempo.`
-    : 'O original. Sem limites de tempo.';
-}
-
-function trocarModo(): void {
-  escolherModo(jogo.modo === 'relogio' ? 'classico' : 'relogio');
+  hudModo.textContent = NOMES_MODO[jogo.modo];
 }
 
 function sincronizarBotaoSom(): void {
@@ -469,8 +565,29 @@ document.querySelectorAll<HTMLButtonElement>('[data-tema]').forEach((botao) => {
 document.querySelectorAll<HTMLButtonElement>('[data-cobra]').forEach((botao) => {
   botao.addEventListener('click', () => escolherCobra(Number(botao.dataset.cobra)));
 });
+document.querySelectorAll<HTMLButtonElement>('[data-pele]').forEach((botao) => {
+  botao.addEventListener('click', () => escolherPele(botao.dataset.pele as Pele));
+});
 document.querySelectorAll<HTMLButtonElement>('[data-escolha-modo]').forEach((botao) => {
   botao.addEventListener('click', () => escolherModo(botao.dataset.escolhaModo as Modo));
+});
+
+const fecharCarreira = (): void => { folhaCarreira.hidden = true; };
+elemento('abrir-carreira').addEventListener('click', () => {
+  actualizarCarreira();
+  folhaCarreira.hidden = false;
+  vibrar(8);
+});
+elemento('fechar-carreira').addEventListener('click', fecharCarreira);
+elemento('fechar-carreira-x').addEventListener('click', fecharCarreira);
+
+botaoPartilhar.addEventListener('click', async () => {
+  const modo = NOMES_MODO[jogo.modo].toLocaleLowerCase('pt-PT');
+  const texto = `Marquei ${jogo.pontos} pontos e cheguei a ${jogo.corpo.length} segmentos no modo ${modo} de Serpente. Consegues superar?`;
+  try {
+    const resultado = await partilharResultado(texto);
+    if (resultado === 'copiado') botaoPartilhar.firstChild!.textContent = 'RESULTADO COPIADO ';
+  } catch { /* o jogador fechou o menu nativo */ }
 });
 botaoEntrar.addEventListener('click', () => {
   som.garantir();
@@ -486,14 +603,6 @@ botaoAbrirMenu.addEventListener('click', () => {
   menuPrincipal.classList.remove('fechado');
   vibrar(10);
 });
-document.querySelectorAll<HTMLButtonElement>('[data-direcao]').forEach((botao) => {
-  botao.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    som.garantir();
-    virar(botao.dataset.direcao as Direcao);
-    botao.blur();
-  });
-});
 elemento('comecar').addEventListener('click', () => { elemento('comecar').blur(); som.garantir(); confirmar(); });
 elemento('continuar').addEventListener('click', () => { elemento('continuar').blur(); alternarPausa(); });
 botaoPausar.addEventListener('click', () => { botaoPausar.blur(); alternarPausa(); });
@@ -507,12 +616,6 @@ botaoJogar.addEventListener('click', () => {
   som.garantir();
   botaoJogar.blur();
   if (podeReiniciar) reiniciar();
-});
-
-botaoModo.addEventListener('click', () => {
-  som.garantir();
-  trocarModo();
-  botaoModo.blur();
 });
 
 botaoSom.addEventListener('click', () => {
@@ -551,6 +654,7 @@ window.serpente = { jogo, som, reiniciar, restante: () => restante };
 sincronizarBotaoSom();
 sincronizarBotaoModo();
 actualizarEscolhasMenu();
+actualizarCarreira();
 reporRelogio();
 sincronizarMatiz();
 actualizarHud();
