@@ -1,6 +1,6 @@
 /** Desenho da arena, da serpente e dos efeitos, em Canvas 2D. */
 
-import { PASSO_INICIAL, PASSO_MINIMO, vetor, type Jogo, type Ponto, type TipoComida } from './logica';
+import { PASSO_INICIAL, PASSO_MINIMO, vetor, type Jogo, type Ponto, type TipoComida, type TipoItem } from './logica';
 
 /** A cor só aquece a sério na parte final da curva de velocidade. */
 const CURVA_MATIZ = 1.8;
@@ -13,6 +13,12 @@ const CORES_COMIDA: Record<TipoComida, [string, string]> = {
   ouro: ['#ffe79a', '#ffb52e'],
   leve: ['#9ef4ff', '#41b8e8'],
   gigante: ['#e3a7ff', '#a95ee8'],
+};
+const CORES_ITEM: Record<TipoItem, [string, string, string]> = {
+  vida: ['#ff7f9c', '#ff386e', '+'], escudo: ['#86c9ff', '#328de8', '◆'],
+  ima: ['#ff8cdd', '#d83caa', 'U'], lento: ['#9ff3ff', '#36b8cf', '◷'],
+  dobro: ['#ffe685', '#efa928', '×2'], veneno: ['#b68cff', '#7136c9', '!'],
+  inversao: ['#ff9f78', '#e75038', '↺'],
 };
 
 const LETRA = '"Space Grotesk", ui-sans-serif, system-ui, sans-serif';
@@ -281,11 +287,23 @@ export class Pintor {
     }
 
     this.arena(L, cel, jogo.lado, this.matizArena);
+    if (jogo.modo === 'mini') this.arenaMini(L, cel, this.matizArena);
+    if (jogo.modo === 'portais') this.portaisMoveis(L, cel, jogo.portalOffset, matiz, tempo);
     this.contagem(L, tempo, jogo.estado);
     // A contagem fica por trás de tudo: é pano de fundo, a serpente é o assunto.
     this.arrancada(L, matiz);
     this.comboFundo(L, jogo.combo, tempo, matiz);
+    this.orientadorComida(jogo, cel, matiz);
     this.comida(jogo.comida, cel, tempo, jogo.estado);
+    if (jogo.item) this.itemArena(jogo.item, cel, tempo);
+    if (jogo.modo === 'dupla') {
+      ctx.save();
+      ctx.translate(L, L);
+      ctx.scale(-1, -1);
+      this.comida(jogo.comida, cel, tempo, jogo.estado);
+      if (jogo.item) this.itemArena(jogo.item, cel, tempo);
+      ctx.restore();
+    }
     this.obstaculos(jogo, cel, tempo);
     const saltaX = jogo.atravessaParedes() && jogo.corpo.some((p, i) => i > 0 && Math.abs(p.x - jogo.corpo[i - 1].x) > jogo.lado / 2);
     const saltaY = jogo.atravessaParedes() && jogo.corpo.some((p, i) => i > 0 && Math.abs(p.y - jogo.corpo[i - 1].y) > jogo.lado / 2);
@@ -298,6 +316,13 @@ export class Pintor {
         this.serpente(jogo, t, cel, tempo, matiz);
         ctx.restore();
       }
+    }
+    if (jogo.modo === 'dupla') {
+      ctx.save();
+      ctx.translate(L, L);
+      ctx.scale(-1, -1);
+      this.serpente(jogo, t, cel, tempo, (matiz + 165) % 360);
+      ctx.restore();
     }
     this.efeitos(cel, jogo.lado);
     if (jogo.arenaEscura() && jogo.estado !== 'pronto') this.escuridao(jogo, cel);
@@ -561,6 +586,41 @@ export class Pintor {
     ctx.lineCap = 'butt';
   }
 
+  private arenaMini(L: number, cel: number, matiz: number): void {
+    const ctx = this.ctx;
+    const margem = cel * 4;
+    ctx.save();
+    ctx.fillStyle = 'rgba(0, 0, 0, .7)';
+    ctx.fillRect(0, 0, L, margem);
+    ctx.fillRect(0, L - margem, L, margem);
+    ctx.fillRect(0, margem, margem, L - margem * 2);
+    ctx.fillRect(L - margem, margem, margem, L - margem * 2);
+    ctx.strokeStyle = `hsla(${matiz}, 88%, 72%, .55)`;
+    ctx.lineWidth = 2;
+    ctx.shadowColor = `hsl(${matiz}, 90%, 65%)`;
+    ctx.shadowBlur = cel * .45;
+    ctx.strokeRect(margem, margem, L - margem * 2, L - margem * 2);
+    ctx.restore();
+  }
+
+  private portaisMoveis(L: number, cel: number, offset: number, matiz: number, tempo: number): void {
+    const ctx = this.ctx;
+    const p = ((offset + tempo / 1800) % 21) * cel;
+    const pulso = .55 + Math.sin(tempo / 170) * .2;
+    ctx.save();
+    ctx.strokeStyle = `hsla(${matiz}, 95%, 76%, ${pulso})`;
+    ctx.lineWidth = Math.max(2, cel * .14);
+    ctx.shadowColor = `hsl(${matiz}, 95%, 65%)`;
+    ctx.shadowBlur = cel * .7;
+    for (const [x, y, vertical] of [[2, p, true], [L - 2, L - p, true], [p, 2, false], [L - p, L - 2, false]] as const) {
+      ctx.beginPath();
+      if (vertical) ctx.moveTo(x, y - cel * .65), ctx.lineTo(x, y + cel * .65);
+      else ctx.moveTo(x - cel * .65, y), ctx.lineTo(x + cel * .65, y);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   /** Os últimos segundos aparecem em grande no meio da arena, a pulsar. */
   private contagem(L: number, tempo: number, estado: string): void {
     if (this.relogio === null || estado !== 'a-jogar') return;
@@ -662,6 +722,58 @@ export class Pintor {
   }
 
   // ---------- Comida ----------
+
+  private orientadorComida(jogo: Jogo, cel: number, matiz: number): void {
+    const a = jogo.corpo[0];
+    const dx = jogo.comida.x - a.x;
+    const dy = jogo.comida.y - a.y;
+    if (Math.abs(dx) + Math.abs(dy) < 7) return;
+    const ctx = this.ctx;
+    const x = (a.x + .5) * cel;
+    const y = (a.y + .5) * cel;
+    const angulo = Math.atan2(dy, dx);
+    ctx.save();
+    ctx.translate(x + Math.cos(angulo) * cel * 1.25, y + Math.sin(angulo) * cel * 1.25);
+    ctx.rotate(angulo);
+    ctx.fillStyle = `hsla(${matiz}, 92%, 78%, .25)`;
+    ctx.beginPath();
+    ctx.moveTo(cel * .25, 0);
+    ctx.lineTo(-cel * .18, -cel * .14);
+    ctx.lineTo(-cel * .12, 0);
+    ctx.lineTo(-cel * .18, cel * .14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  private itemArena(item: Ponto & { tipo: TipoItem }, cel: number, tempo: number): void {
+    const ctx = this.ctx;
+    const [cor, borda, simbolo] = CORES_ITEM[item.tipo];
+    const x = (item.x + .5) * cel;
+    const y = (item.y + .5) * cel;
+    const pulso = .5 + Math.sin(tempo / 180) * .5;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.sin(tempo / 600) * .12);
+    ctx.shadowColor = borda;
+    ctx.shadowBlur = cel * (.55 + pulso * .35);
+    caminhoRedondo(ctx, -cel * .33, -cel * .33, cel * .66, cel * .66, cel * .18);
+    const g = ctx.createLinearGradient(-cel * .3, -cel * .3, cel * .3, cel * .3);
+    g.addColorStop(0, cor);
+    g.addColorStop(1, borda);
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(255,255,255,.65)';
+    ctx.lineWidth = Math.max(1, cel * .04);
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.font = `700 ${cel * (simbolo.length > 1 ? .28 : .38)}px ${LETRA}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(simbolo, 0, cel * .015);
+    ctx.restore();
+  }
 
   private comida(c: Ponto & { tipo?: TipoComida }, cel: number, tempo: number, estado: string): void {
     if (estado === 'completo') return;

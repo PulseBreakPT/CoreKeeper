@@ -14,6 +14,10 @@ export interface Estatisticas {
   vitorias: number;
   modos: Partial<Record<Modo, number>>;
   conquistas: string[];
+  moedas: number;
+  xp: number;
+  compras: string[];
+  historico: { modo: Modo; pontos: number; comprimento: number; data: number }[];
 }
 
 export interface Missao {
@@ -42,6 +46,10 @@ const VAZIO: Estatisticas = {
   vitorias: 0,
   modos: {},
   conquistas: [],
+  moedas: 0,
+  xp: 0,
+  compras: [],
+  historico: [],
 };
 
 export const CONQUISTAS: Conquista[] = [
@@ -55,12 +63,15 @@ export const CONQUISTAS: Conquista[] = [
   { id: 'objectivo', nome: 'Objectivo', descricao: 'Cumpre uma missão de partida.', icone: '✓', feita: (d) => d.missoes >= 1 },
   { id: 'veterano', nome: 'Veterano', descricao: 'Joga 25 partidas.', icone: '25', feita: (d) => d.partidas >= 25 },
   { id: 'conquista', nome: 'Conquista', descricao: 'Enche completamente uma arena.', icone: '★', feita: (d) => d.vitorias >= 1 },
+  { id: 'secreto-veloz', nome: 'Relâmpago', descricao: 'Supera 30 pontos no modo extremo.', icone: 'ϟ', feita: (d) => (d.modos.extremo ?? 0) >= 1 && d.pontos >= 30 },
+  { id: 'secreto-duplo', nome: 'Gémeas', descricao: 'Domina uma partida com duas cobras.', icone: 'Ⅱ', feita: (d) => (d.modos.dupla ?? 0) >= 1 },
+  { id: 'secreto-cofre', nome: 'Cofre', descricao: 'Acumula 250 moedas.', icone: '¤', feita: (d) => d.moedas >= 250 },
 ];
 
 function ler(): Estatisticas {
   try {
     const valor = JSON.parse(localStorage.getItem(CHAVE) ?? '{}') as Partial<Estatisticas>;
-    return { ...VAZIO, ...valor, modos: valor.modos ?? {}, conquistas: valor.conquistas ?? [] };
+    return { ...VAZIO, ...valor, modos: valor.modos ?? {}, conquistas: valor.conquistas ?? [], compras: valor.compras ?? [], historico: valor.historico ?? [] };
   } catch {
     return { ...VAZIO, modos: {}, conquistas: [] };
   }
@@ -74,7 +85,7 @@ export class Carreira {
   dados = ler();
 
   nivel(): number {
-    return 1 + Math.floor((this.dados.comidas + this.dados.missoes * 8) / 25);
+    return 1 + Math.floor(Math.sqrt(this.dados.xp / 40));
   }
 
   registar(jogo: Jogo, duracaoMs: number, missaoCumprida: boolean): Conquista[] {
@@ -89,10 +100,39 @@ export class Carreira {
     d.missoes += missaoCumprida ? 1 : 0;
     d.vitorias += jogo.estado === 'completo' ? 1 : 0;
     d.modos[jogo.modo] = (d.modos[jogo.modo] ?? 0) + 1;
+    const ganhoMoedas = Math.max(1, Math.floor(jogo.pontos / 2) + jogo.especiais * 2 + (missaoCumprida ? 5 : 0));
+    d.moedas += ganhoMoedas;
+    d.xp += jogo.pontos + jogo.comidas * 2 + (missaoCumprida ? 15 : 0);
+    d.historico.unshift({ modo: jogo.modo, pontos: jogo.pontos, comprimento: jogo.corpo.length, data: Date.now() });
+    d.historico = d.historico.slice(0, 20);
     const novas = CONQUISTAS.filter((c) => !d.conquistas.includes(c.id) && c.feita(d));
     d.conquistas.push(...novas.map((c) => c.id));
     gravar(d);
     return novas;
+  }
+
+  gastar(valor: number): boolean {
+    if (this.dados.moedas < valor) return false;
+    this.dados.moedas -= valor;
+    gravar(this.dados);
+    return true;
+  }
+
+  comprar(id: string, custo: number): boolean {
+    if (this.dados.compras.includes(id)) return true;
+    if (!this.gastar(custo)) return false;
+    this.dados.compras.push(id);
+    gravar(this.dados);
+    return true;
+  }
+
+  ranking(modo?: Modo): { modo: Modo; pontos: number; comprimento: number; data: number }[] {
+    return this.dados.historico.filter((r) => !modo || r.modo === modo).sort((a, b) => b.pontos - a.pontos).slice(0, 5);
+  }
+
+  restaurar(dados: Estatisticas): void {
+    this.dados = structuredClone(dados);
+    gravar(this.dados);
   }
 }
 

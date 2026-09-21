@@ -12,6 +12,7 @@ import {
   partilharResultado,
   valorMissao,
   type Missao,
+  type Estatisticas,
 } from './progressao';
 import {
   definirIdioma,
@@ -35,17 +36,29 @@ const CHAVE_RECORDE: Record<Modo, string> = {
   obstaculos: 'serpente:recorde:obstaculos:v1',
   'uma-vida': 'serpente:recorde:uma-vida:v1',
   diario: 'serpente:recorde:diario:v1',
+  extremo: 'serpente:recorde:extremo:v1',
+  mini: 'serpente:recorde:mini:v1',
+  dupla: 'serpente:recorde:dupla:v1',
 };
 const CHAVE_MODO = 'serpente:modo:v1';
 const CHAVE_TEMA = 'serpente:tema:v1';
 const CHAVE_COBRA = 'serpente:cobra:v1';
 const CHAVE_PELE = 'serpente:pele:v1';
+const CHAVE_DEFINICOES = 'serpente:definicoes:v1';
+const CHAVE_TUTORIAL = 'serpente:tutorial:v1';
 
 type Tema = 'floresta' | 'oceano' | 'violeta' | 'brasa';
 const TEMAS: Record<Tema, number> = { floresta: 83, oceano: 188, violeta: 274, brasa: 19 };
 const CORES_COBRA = [83, 188, 330, 42] as const;
 type Pele = 'aurora' | 'pulso' | 'prisma' | 'brasa';
 const PELES: Pele[] = ['aurora', 'pulso', 'prisma', 'brasa'];
+interface Definicoes { sensibilidade: number; esquerdino: boolean; reduzirMovimento: boolean; daltonico: boolean; temaAutomatico: boolean; rasto: boolean }
+const DEFINICOES_BASE: Definicoes = { sensibilidade: 11, esquerdino: false, reduzirMovimento: false, daltonico: false, temaAutomatico: false, rasto: true };
+
+function lerDefinicoes(): Definicoes {
+  try { return { ...DEFINICOES_BASE, ...JSON.parse(localStorage.getItem(CHAVE_DEFINICOES) ?? '{}') }; }
+  catch { return { ...DEFINICOES_BASE }; }
+}
 /** Tempo entre a morte e o cartão de fim — dá espaço ao impacto. */
 const ESPERA_FIM = 440;
 const RELOGIO_MS = SEGUNDOS_RELOGIO * 1000;
@@ -147,12 +160,20 @@ const missaoTexto = elemento<HTMLElement>('missao-texto');
 const missaoProgresso = elemento<HTMLElement>('missao-progresso');
 const botaoPartilhar = elemento<HTMLButtonElement>('partilhar');
 const folhaCarreira = elemento<HTMLElement>('folha-carreira');
+const folhaSistema = elemento<HTMLElement>('folha-sistema');
+const sistemaTitulo = elemento<HTMLElement>('sistema-titulo');
+const sistemaEtiqueta = elemento<HTMLElement>('sistema-etiqueta');
+const sistemaConteudo = elemento<HTMLElement>('sistema-conteudo');
+const poderesActivos = elemento<HTMLElement>('poderes-ativos');
+const botaoReviver = elemento<HTMLButtonElement>('reviver');
+const tutorial = elemento<HTMLElement>('tutorial');
 let pausado = false;
 let estadoAplicado = '';
 let temaEscolhido = lerTema();
 let cobraEscolhida = lerCobra();
 let peleEscolhida = lerPele();
 let idiomaEscolhido = idiomaActual();
+let definicoes = lerDefinicoes();
 definirIdioma(idiomaEscolhido);
 
 const modoInicial = lerModo();
@@ -161,10 +182,11 @@ const pintor = new Pintor(tela);
 const som = new Som();
 const carreira = new Carreira();
 pintor.definirCores(cobraEscolhida, TEMAS[temaEscolhido]);
-pintor.definirPele(peleEscolhida);
+pintor.definirPele(peleEscolhida, definicoes.rasto);
 document.documentElement.dataset.tema = temaEscolhido;
 document.documentElement.style.setProperty('--cobra', String(cobraEscolhida));
-document.documentElement.style.setProperty('--tema', String(cobraEscolhida));
+document.documentElement.style.setProperty('--tema', String(TEMAS[temaEscolhido]));
+aplicarDefinicoes();
 
 let temporizadorFim: number | null = null;
 let podeReiniciar = false;
@@ -183,6 +205,9 @@ let numeroPartida = carreira.dados.partidas;
 let missao: Missao = criarMissao(numeroPartida, modoInicial);
 let missaoCumprida = false;
 let novasConquistas = '';
+let jaRegistada = false;
+let carreiraAntesDoFim: Estatisticas | null = null;
+let comboAnterior = 0;
 
 const semRato = window.matchMedia('(hover: none)').matches;
 dica.textContent = semRato ? 'Desliza para começar' : 'Setas ou WASD para começar';
@@ -197,6 +222,24 @@ function animar(alvo: HTMLElement, classe: string): void {
   // Forçar refluxo reinicia a animação mesmo quando dispara duas vezes seguidas.
   void alvo.offsetWidth;
   alvo.classList.add(classe);
+}
+
+function guardarDefinicoes(): void {
+  try { localStorage.setItem(CHAVE_DEFINICOES, JSON.stringify(definicoes)); } catch { /* sessão privada */ }
+}
+
+function aplicarDefinicoes(): void {
+  document.documentElement.classList.toggle('esquerdino', definicoes.esquerdino);
+  document.documentElement.classList.toggle('reduzir-movimento', definicoes.reduzirMovimento);
+  document.documentElement.classList.toggle('modo-daltonico', definicoes.daltonico);
+  document.documentElement.classList.toggle('rasto-neon', carreira?.dados.compras.includes('rasto-neon') ?? false);
+  document.documentElement.classList.toggle('impacto-prisma', carreira?.dados.compras.includes('impacto-prisma') ?? false);
+  document.documentElement.classList.toggle('aura-coroa', carreira?.dados.compras.includes('aura-coroa') ?? false);
+  pintor?.definirPele(peleEscolhida, definicoes.rasto);
+  if (definicoes.temaAutomatico) {
+    const hora = new Date().getHours();
+    escolherTema(hora < 7 || hora >= 20 ? 'violeta' : hora < 12 ? 'oceano' : hora < 18 ? 'floresta' : 'brasa', false);
+  }
 }
 
 let matizAplicada = -1;
@@ -271,6 +314,8 @@ function actualizarCarreira(): void {
   elemento('diario-recorde').textContent = String(lerRecorde('diario'));
   elemento('menu-recorde').textContent = String(jogo.recorde);
   elemento('menu-conquistas').textContent = `${d.conquistas.length}/${CONQUISTAS.length}`;
+  elemento('menu-moedas').textContent = String(d.moedas);
+  elemento('menu-xp').textContent = String(d.xp);
   const minutos = Math.floor(d.tempoMs / 60_000);
   elemento('carreira-contagem').innerHTML = `<b id="stat-partidas">${d.partidas}</b> ${t('partidas')} · <b id="stat-comidas">${d.comidas}</b> ${t('luzes')}`;
   elemento('estatisticas').innerHTML = [
@@ -283,13 +328,18 @@ function actualizarCarreira(): void {
     const texto = textoConquista(c.id);
     return `<article class="${feita ? 'feita' : ''}"><b>${c.icone}</b><span><strong>${texto.nome}</strong><small>${texto.descricao}</small></span><i>${feita ? '✓' : '·'}</i></article>`;
   }).join('');
+  const hoje = new Date().toDateString();
+  const partidasHoje = d.historico.filter((r) => new Date(r.data).toDateString() === hoje);
+  const pontosHoje = partidasHoje.reduce((s, r) => s + r.pontos, 0);
+  elemento('objetivos-diarios').innerHTML = `<small>${t('objetivosHoje')}</small><div><span class="${partidasHoje.length >= 3 ? 'feito' : ''}"><b>${Math.min(3, partidasHoje.length)}/3</b> Partidas</span><span class="${pontosHoje >= 50 ? 'feito' : ''}"><b>${Math.min(50, pontosHoje)}/50</b> ${t('pontos')}</span></div>`;
 }
 
-function escolherTema(tema: Tema): void {
+function escolherTema(tema: Tema, guardar = true): void {
   temaEscolhido = tema;
   document.documentElement.dataset.tema = tema;
+  document.documentElement.style.setProperty('--tema', String(TEMAS[tema]));
   pintor.definirCores(cobraEscolhida, TEMAS[tema]);
-  try { localStorage.setItem(CHAVE_TEMA, tema); } catch { /* preferência desta sessão */ }
+  if (guardar) try { localStorage.setItem(CHAVE_TEMA, tema); } catch { /* preferência desta sessão */ }
   actualizarEscolhasMenu();
   vibrar(8);
 }
@@ -297,7 +347,6 @@ function escolherTema(tema: Tema): void {
 function escolherCobra(matiz: number): void {
   cobraEscolhida = matiz;
   document.documentElement.style.setProperty('--cobra', String(matiz));
-  document.documentElement.style.setProperty('--tema', String(matiz));
   matizAplicada = matiz;
   pintor.definirCores(matiz, TEMAS[temaEscolhido]);
   try { localStorage.setItem(CHAVE_COBRA, String(matiz)); } catch { /* preferência desta sessão */ }
@@ -357,6 +406,12 @@ function actualizarHud(): void {
   elemento('velocidade').textContent = `${(150 / jogo.passoMs()).toFixed(2)}× ${t('ritmo')}`;
   combo.hidden = jogo.combo < 2;
   comboValor.textContent = `×${jogo.combo}`;
+  const poderes: [string, number][] = [
+    [t('vidas'), jogo.vidas], [t('escudo'), jogo.escudo], [t('ima'), jogo.ima], [t('lento'), jogo.lento],
+    [t('dobro'), jogo.dobro], [t('inversao'), jogo.inversao], [t('veneno'), jogo.sequencia],
+  ].filter(([, valor]) => valor > 0);
+  poderesActivos.hidden = poderes.length === 0;
+  poderesActivos.innerHTML = poderes.map(([nome, valor]) => `<span><b>${nome}</b><i>${valor}</i></span>`).join('');
   actualizarMissao();
 }
 
@@ -411,13 +466,18 @@ function mostrarFim(): void {
   if (missaoCumprida) fimMedalha.textContent = `${fimMedalha.textContent ? `${fimMedalha.textContent} · ` : ''}${t('missaoCumprida')}`;
   fimMedalha.hidden = fimMedalha.textContent === '';
   cartao.hidden = false;
+  botaoReviver.hidden = ganhou || jogo.modo === 'uma-vida' || carreira.dados.moedas < 25;
   animar(cartao, 'aparecer-fim');
 }
 
 function terminar(): void {
   gravarRecorde(jogo.modo, jogo.recorde);
-  const novas = carreira.registar(jogo, duracaoPartida, missaoCumprida);
-  novasConquistas = novas.map((c) => textoConquista(c.id).nome).join(', ');
+  if (!jaRegistada) {
+    carreiraAntesDoFim = structuredClone(carreira.dados);
+    const novas = carreira.registar(jogo, duracaoPartida, missaoCumprida);
+    novasConquistas = novas.map((c) => textoConquista(c.id).nome).join(', ');
+    jaRegistada = true;
+  }
   actualizarCarreira();
   actualizarHud();
   dica.hidden = true;
@@ -447,6 +507,9 @@ function reiniciar(): void {
   missaoCumprida = false;
   duracaoPartida = 0;
   novasConquistas = '';
+  jaRegistada = false;
+  carreiraAntesDoFim = null;
+  comboAnterior = 0;
   missaoPartida.classList.remove('cumprida');
   acumulado = 0;
   ultimo = performance.now();
@@ -467,7 +530,7 @@ function aplicar(): void {
   const r = jogo.passo();
   if (r.comeu) {
     pintor.explodir(jogo.corpo[0], r.ganhos, r.marco);
-    som.comer(jogo.comidas);
+    som.comer(jogo.comidas, r.tipoComida ?? 'normal');
     vibrar(r.marco ? [18, 28, 18] : 12);
     restante = RELOGIO_MS;
     ultimoTique = 0;
@@ -477,6 +540,18 @@ function aplicar(): void {
       som.marco();
       animar(marcadorPontos, 'marco');
     }
+    if (jogo.combo > comboAnterior && jogo.combo >= 2) animar(combo, 'novo-combo');
+    comboAnterior = jogo.combo;
+  }
+  if (r.item) {
+    som.item(r.item);
+    vibrar(r.item === 'veneno' || r.item === 'inversao' ? [30, 18, 30] : [12, 18, 26]);
+    actualizarHud();
+    animar(poderesActivos, 'celebrar');
+  }
+  if (r.protegido || r.ressuscitou) {
+    vibrar([35, 20, 12]);
+    actualizarHud();
   }
   if (r.cortou) {
     vibrar(18);
@@ -562,6 +637,7 @@ function quadro(agora: number): void {
 
   const progressoPasso = jogo.estado === 'a-jogar' && arranque < 0 ? Math.min(1, acumulado / jogo.passoMs()) : 1;
   pintor.desenhar(jogo, progressoPasso, dt, agora);
+  som.ritmo(pintor.intensidade, aCorrer);
   sincronizarMatiz();
   sincronizarEstado();
   requestAnimationFrame(quadro);
@@ -610,7 +686,80 @@ function sincronizarBotaoSom(): void {
   botaoSom.title = som.ligado ? t('somDesligar') : t('somLigar');
 }
 
-ligarControlos(arena, { virar, confirmar, interacao: () => som.garantir() });
+function abrirSistema(titulo: string, etiqueta: string, conteudo: string): void {
+  sistemaTitulo.textContent = titulo;
+  sistemaEtiqueta.textContent = etiqueta;
+  sistemaConteudo.innerHTML = conteudo;
+  folhaSistema.hidden = false;
+  vibrar(8);
+}
+
+function abrirLoja(): void {
+  const produtos = [
+    { id: 'rasto-neon', nome: 'Rasto Neon', desc: 'Uma assinatura luminosa em cada curva.', custo: 60, icone: '〰' },
+    { id: 'impacto-prisma', nome: 'Impacto Prisma', desc: 'Explosão cromática ao terminar.', custo: 90, icone: '✦' },
+    { id: 'aura-coroa', nome: 'Aura de Recorde', desc: 'Brilho exclusivo durante novos recordes.', custo: 120, icone: '♛' },
+  ];
+  abrirSistema(t('loja'), `${carreira.dados.moedas} ◇`, `<div class="loja-lista">${produtos.map((p) => {
+    const comprado = carreira.dados.compras.includes(p.id);
+    return `<article><i>${p.icone}</i><span><b>${p.nome}</b><small>${p.desc}</small></span><button data-comprar="${p.id}" data-custo="${p.custo}" ${comprado ? 'disabled' : ''}>${comprado ? t('adquirido') : `${p.custo} ◇`}</button></article>`;
+  }).join('')}</div><div class="loja-lista"><article><i>≈</i><span><b>Rasto da cobra</b><small>Ativa ou desativa partículas para máxima nitidez.</small></span><button data-rasto>${definicoes.rasto ? 'ON' : 'OFF'}</button></article></div>`);
+}
+
+function abrirRanking(): void {
+  const ranking = carreira.ranking();
+  const modos = Object.entries(carreira.dados.modos).sort((a, b) => b[1]! - a[1]!);
+  abrirSistema(t('ranking'), t('historico'), `<div class="ranking-lista">${ranking.length ? ranking.map((r, i) => `<article><b>${i + 1}</b><span><strong>${r.pontos} ${t('pontos').toLocaleLowerCase()}</strong><small>${nomeModo(r.modo)} · ${r.comprimento} ${t('segmentos').toLocaleLowerCase()}</small></span><time>${new Date(r.data).toLocaleDateString(idiomaEscolhido)}</time></article>`).join('') : '<p class="vazio">Joga uma partida para inaugurar o ranking.</p>'}</div><h3>MODOS</h3><div class="chips-modos">${modos.map(([modo, n]) => `<span>${nomeModo(modo as Modo)} <b>${n}</b></span>`).join('')}</div>`);
+}
+
+function abrirDefinicoes(): void {
+  const alternador = (chave: keyof Definicoes, rotulo: string) => `<label class="definicao"><span>${rotulo}</span><input type="checkbox" data-definicao="${chave}" ${definicoes[chave] ? 'checked' : ''}><i></i></label>`;
+  abrirSistema(t('definicoes'), 'ACESSIBILIDADE', `<label class="sensibilidade"><span>${t('sensibilidade')} <b>${definicoes.sensibilidade}</b></span><input type="range" min="6" max="22" step="1" value="${definicoes.sensibilidade}" data-sensibilidade></label>${alternador('esquerdino', t('canhoto'))}${alternador('reduzirMovimento', t('movimentoReduzido'))}${alternador('daltonico', t('daltonico'))}${alternador('temaAutomatico', t('temaAutomatico'))}`);
+}
+
+function mostrarTutorial(): void {
+  try { if (localStorage.getItem(CHAVE_TUTORIAL)) return; } catch { /* mostrar */ }
+  const passos = [
+    ['Desliza para virar', 'Um gesto curto guarda a próxima direção. Podes antecipar até três curvas.'],
+    ['Lê a arena', 'A seta aponta para a comida. Itens dão poderes, mas veneno e inversão são armadilhas.'],
+    ['Constrói o combo', 'Chega depressa à luz para subir o multiplicador até ×5. Boa sorte.'],
+  ];
+  let indice = 0;
+  const desenhar = () => {
+    elemento('tutorial-passo').textContent = `0${indice + 1} / 03`;
+    elemento('tutorial-titulo').textContent = passos[indice][0];
+    elemento('tutorial-texto').textContent = passos[indice][1];
+    elemento('tutorial-seguinte').textContent = indice === 2 ? t('entrar') : 'SEGUINTE';
+  };
+  const fechar = () => { tutorial.hidden = true; try { localStorage.setItem(CHAVE_TUTORIAL, 'ok'); } catch { /* sessão */ } };
+  elemento('tutorial-seguinte').onclick = () => { if (indice === 2) fechar(); else { indice++; desenhar(); } };
+  elemento('tutorial-saltar').onclick = fechar;
+  desenhar();
+  tutorial.hidden = false;
+}
+
+async function partilharCartao(texto: string): Promise<boolean> {
+  if (!navigator.share || !navigator.canShare) return false;
+  const c = document.createElement('canvas'); c.width = 1080; c.height = 1080;
+  const ctx = c.getContext('2d'); if (!ctx) return false;
+  const gradiente = ctx.createRadialGradient(820, 160, 10, 540, 540, 920);
+  gradiente.addColorStop(0, `hsl(${cobraEscolhida} 48% 20%)`); gradiente.addColorStop(1, `hsl(${cobraEscolhida} 30% 4%)`);
+  ctx.fillStyle = gradiente; ctx.fillRect(0, 0, 1080, 1080);
+  ctx.strokeStyle = `hsl(${cobraEscolhida} 80% 68%)`; ctx.lineWidth = 4; ctx.strokeRect(70, 70, 940, 940);
+  ctx.fillStyle = `hsl(${cobraEscolhida} 80% 72%)`; ctx.font = '700 38px sans-serif'; ctx.fillText('SERPENTE', 110, 160);
+  ctx.fillStyle = '#f4f6ef'; ctx.font = '700 280px sans-serif'; ctx.fillText(String(jogo.pontos), 100, 530);
+  ctx.fillStyle = `hsl(${cobraEscolhida} 30% 72%)`; ctx.font = '500 34px sans-serif'; ctx.fillText(t('pontos'), 115, 590);
+  ctx.font = '600 48px sans-serif'; ctx.fillText(nomeModo(jogo.modo), 115, 730);
+  ctx.font = '400 32px sans-serif'; ctx.fillText(`${jogo.corpo.length} ${t('segmentos')}  ·  COMBO ×${jogo.melhorCombo}`, 115, 800);
+  const blob = await new Promise<Blob | null>((resolver) => c.toBlob(resolver, 'image/png'));
+  if (!blob) return false;
+  const ficheiro = new File([blob], 'serpente-resultado.png', { type: 'image/png' });
+  if (!navigator.canShare({ files: [ficheiro] })) return false;
+  await navigator.share({ title: 'Serpente', text: texto, files: [ficheiro] });
+  return true;
+}
+
+ligarControlos(arena, { virar, confirmar, interacao: () => som.garantir(), limiar: () => definicoes.sensibilidade });
 document.querySelectorAll<HTMLButtonElement>('[data-tema]').forEach((botao) => {
   botao.addEventListener('click', () => escolherTema(botao.dataset.tema as Tema));
 });
@@ -644,10 +793,52 @@ elemento('abrir-carreira').addEventListener('click', () => {
 elemento('fechar-carreira').addEventListener('click', fecharCarreira);
 elemento('fechar-carreira-x').addEventListener('click', fecharCarreira);
 
+const fecharSistema = (): void => { folhaSistema.hidden = true; };
+elemento('fechar-sistema').addEventListener('click', fecharSistema);
+elemento('fechar-sistema-x').addEventListener('click', fecharSistema);
+elemento('abrir-loja').addEventListener('click', abrirLoja);
+elemento('abrir-ranking').addEventListener('click', abrirRanking);
+elemento('abrir-definicoes').addEventListener('click', abrirDefinicoes);
+sistemaConteudo.addEventListener('click', (e) => {
+  const alvo = (e.target as Element).closest<HTMLElement>('[data-comprar], [data-rasto]');
+  if (!alvo) return;
+  if (alvo.dataset.comprar) {
+    if (carreira.comprar(alvo.dataset.comprar, Number(alvo.dataset.custo))) { vibrar([10, 18, 24]); aplicarDefinicoes(); actualizarCarreira(); abrirLoja(); }
+    else { alvo.textContent = t('saldoInsuficiente'); animar(alvo, 'abanar'); }
+  } else {
+    definicoes.rasto = !definicoes.rasto; guardarDefinicoes(); aplicarDefinicoes(); abrirLoja();
+  }
+});
+sistemaConteudo.addEventListener('input', (e) => {
+  const alvo = e.target as HTMLInputElement;
+  if (alvo.matches('[data-sensibilidade]')) {
+    definicoes.sensibilidade = Number(alvo.value);
+    alvo.closest('label')?.querySelector('b')?.replaceChildren(alvo.value);
+  } else if (alvo.dataset.definicao) {
+    (definicoes as unknown as Record<string, boolean>)[alvo.dataset.definicao] = alvo.checked;
+  }
+  guardarDefinicoes(); aplicarDefinicoes();
+});
+
+botaoReviver.addEventListener('click', () => {
+  if (!carreiraAntesDoFim) return;
+  carreira.restaurar(carreiraAntesDoFim);
+  if (!carreira.gastar(25) || !jogo.reviver()) return;
+  carreiraAntesDoFim = null;
+  jaRegistada = false;
+  cartao.hidden = true;
+  podeReiniciar = false;
+  acumulado = 0;
+  ultimo = performance.now();
+  actualizarCarreira(); actualizarHud(); sincronizarEstado();
+  vibrar([20, 30, 45]);
+});
+
 botaoPartilhar.addEventListener('click', async () => {
   const modo = nomeModo(jogo.modo).toLocaleLowerCase(idiomaEscolhido);
   const texto = t('partilhaTexto', { pontos: jogo.pontos, segmentos: jogo.corpo.length, modo });
   try {
+    if (await partilharCartao(texto)) return;
     const resultado = await partilharResultado(texto);
     if (resultado === 'copiado') botaoPartilhar.querySelector('span')!.textContent = t('copiado');
   } catch { /* o jogador fechou o menu nativo */ }
@@ -661,7 +852,7 @@ botaoEntrar.addEventListener('click', () => {
 botaoAbrirMenu.addEventListener('click', () => {
   reiniciar();
   document.documentElement.style.setProperty('--cobra', String(cobraEscolhida));
-  document.documentElement.style.setProperty('--tema', String(cobraEscolhida));
+  document.documentElement.style.setProperty('--tema', String(TEMAS[temaEscolhido]));
   matizAplicada = cobraEscolhida;
   actualizarEscolhasMenu();
   menuPrincipal.classList.remove('fechado');
@@ -719,4 +910,5 @@ aplicarIdioma(idiomaEscolhido);
 reporRelogio();
 sincronizarMatiz();
 medirArena();
+mostrarTutorial();
 requestAnimationFrame(quadro);

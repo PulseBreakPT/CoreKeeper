@@ -19,7 +19,7 @@
             <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M23 7H12a5 5 0 0 0 0 10h8a5 5 0 0 1 0 10H8" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><circle cx="24" cy="6" r="1.5" fill="currentColor" class="olho-logo"/></svg>
             <span>SERPENTE</span>
           </div>
-          <span class="versao">MOBILE / 3.4</span>
+          <span class="versao">MOBILE / 4.0</span>
         </header>
 
         <div class="menu-hero">
@@ -115,6 +115,18 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 8c0 6-8 11-8 11S4 14 4 8a4 4 0 0 1 7-2.6L12 7l1-1.6A4 4 0 0 1 20 8Z"/><path d="M12 9v5"/></svg>
                 <span><strong data-i18n="umaVida">Uma vida</strong><small data-i18n="umaVidaDesc">Mais rápido. Pontos ×2.</small></span><i></i>
               </button>
+              <button type="button" data-escolha-modo="extremo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m13 2-8 12h7l-1 8 8-12h-7l1-8Z"/></svg>
+                <span><strong data-i18n="extremo">Extremo</strong><small data-i18n="extremoDesc">Velocidade sem piedade.</small></span><i></i>
+              </button>
+              <button type="button" data-escolha-modo="mini">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M8 21H3v-5m13 5h5v-5"/><path d="m3 3 6 6m12-6-6 6M3 21l6-6m12 6-6-6"/></svg>
+                <span><strong data-i18n="mini">Arena mini</strong><small data-i18n="miniDesc">13 × 13. Espaço mínimo.</small></span><i></i>
+              </button>
+              <button type="button" data-escolha-modo="dupla">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h7a3 3 0 0 1 0 6H8a3 3 0 0 0 0 6h5M20 17h-7a3 3 0 0 1 0-6h3a3 3 0 0 0 0-6h-5"/></svg>
+                <span><strong data-i18n="dupla">Duas cobras</strong><small data-i18n="duplaDesc">Controla duas em espelho.</small></span><i></i>
+              </button>
             </div>
           </fieldset>
 
@@ -136,6 +148,13 @@
             <span><b id="menu-recorde">0</b><small data-i18n="recordeAtual">RECORDE ATUAL</small></span>
             <span><b id="menu-conquistas">0/10</b><small data-i18n="conquistas">CONQUISTAS</small></span>
           </div>
+          <div class="carreira-saldo"><span><b id="menu-moedas">0</b><small data-i18n="moedas">MOEDAS</small></span><span><b id="menu-xp">0</b><small>XP</small></span></div>
+          <div class="carreira-acoes">
+            <button type="button" id="abrir-loja"><span>◇</span><b data-i18n="loja">Loja</b></button>
+            <button type="button" id="abrir-ranking"><span>♜</span><b data-i18n="ranking">Ranking</b></button>
+            <button type="button" id="abrir-definicoes"><span>⚙</span><b data-i18n="definicoes">Definições</b></button>
+          </div>
+          <div class="objetivos-diarios" id="objetivos-diarios"></div>
           </section>
         </div>
 
@@ -210,6 +229,7 @@
               <p class="medalha" id="fim-medalha" hidden></p>
               <button class="jogar" id="jogar" type="button"><span data-i18n="jogarOutra">JOGAR OUTRA VEZ</span> <span aria-hidden="true">↻</span></button>
               <button class="partilhar" id="partilhar" type="button"><span data-i18n="partilhar">PARTILHAR RESULTADO</span> <span aria-hidden="true">↗</span></button>
+              <button class="partilhar reviver" id="reviver" type="button" hidden><span data-i18n="segundaOportunidade">SEGUNDA OPORTUNIDADE · 25 ◇</span></button>
               <p class="atalho" data-i18n="voltar">Toca para voltar à arena.</p>
             </div>
           </div>
@@ -218,6 +238,7 @@
           <div class="missao-partida" id="missao-partida"><small data-i18n="missao">MISSÃO</small><span id="missao-texto">Recolhe 8 luzes</span><b id="missao-progresso">0/8</b></div>
           <div class="combo" id="combo" hidden><span>COMBO</span><b id="combo-valor">×2</b></div>
         </div>
+        <div class="poderes-ativos" id="poderes-ativos" hidden aria-live="polite"></div>
         <div class="telemetria">
           <span><i></i><b id="comprimento">3</b> <span data-i18n="segmentos">SEGMENTOS</span></span>
           <span id="velocidade">1.00× RITMO</span>
@@ -243,6 +264,17 @@
         <h3 data-i18n="conquistas">CONQUISTAS</h3>
         <div class="conquistas" id="conquistas"></div>
       </div>
+    </section>
+    <section class="folha" id="folha-sistema" hidden aria-labelledby="sistema-titulo">
+      <button class="folha-fundo" id="fechar-sistema" type="button" aria-label="Fechar"></button>
+      <div class="folha-painel sistema-painel">
+        <div class="folha-puxador"></div>
+        <header><span><small id="sistema-etiqueta">SERPENTE</small><h2 id="sistema-titulo">Sistema</h2></span><button type="button" id="fechar-sistema-x" aria-label="Fechar">×</button></header>
+        <div id="sistema-conteudo"></div>
+      </div>
+    </section>
+    <section class="tutorial" id="tutorial" hidden aria-live="polite">
+      <div class="tutorial-cartao"><small id="tutorial-passo">01 / 03</small><h2 id="tutorial-titulo">Desliza para virar</h2><p id="tutorial-texto">Cada gesto guarda uma direção.</p><button type="button" id="tutorial-seguinte">SEGUINTE</button><button type="button" id="tutorial-saltar">SALTAR</button></div>
     </section>
     <script type="module" src="/src/serpente/main.ts"></script>
   </body>

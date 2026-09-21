@@ -1,5 +1,7 @@
 /** Som do jogo da serpente — sintetizado, sem ficheiros nem downloads. */
 
+import type { TipoComida, TipoItem } from './logica';
+
 const CHAVE_SOM = 'serpente:som:v1';
 
 /** Escala pentatónica em semitons, para a comida subir de tom sem desafinar. */
@@ -18,6 +20,8 @@ export class Som {
 
   private ctx: AudioContext | null = null;
   private mestre: GainNode | null = null;
+  private pulso: OscillatorNode | null = null;
+  private pulsoGanho: GainNode | null = null;
 
   /** O contexto só pode nascer depois de um gesto do utilizador. */
   garantir(): void {
@@ -34,6 +38,14 @@ export class Som {
       this.mestre = this.ctx.createGain();
       this.mestre.gain.value = 0.25;
       this.mestre.connect(this.ctx.destination);
+      this.pulso = this.ctx.createOscillator();
+      this.pulso.type = 'sine';
+      this.pulso.frequency.value = 55;
+      this.pulsoGanho = this.ctx.createGain();
+      this.pulsoGanho.gain.value = 0;
+      this.pulso.connect(this.pulsoGanho);
+      this.pulsoGanho.connect(this.mestre);
+      this.pulso.start();
     } catch {
       this.ctx = null;
       this.mestre = null;
@@ -97,14 +109,30 @@ export class Som {
   }
 
   /** Estalido curto que sobe de tom conforme a serpente cresce. */
-  comer(comidas: number): void {
+  comer(comidas: number, tipo: TipoComida = 'normal'): void {
     if (!this.ligado) return;
     this.garantir();
     const grau = Math.max(0, comidas - 1);
     const semitons = ESCALA[grau % ESCALA.length] + 12 * Math.min(2, Math.floor(grau / ESCALA.length));
-    const freq = 440 * Math.pow(2, semitons / 12);
-    this.tom(freq, 0, 0.09, 0.3, 'triangle');
+    const factor = tipo === 'ouro' ? 1.5 : tipo === 'leve' ? 1.18 : tipo === 'gigante' ? .72 : 1;
+    const freq = 440 * Math.pow(2, semitons / 12) * factor;
+    this.tom(freq, 0, tipo === 'gigante' ? .16 : 0.09, 0.3, tipo === 'ouro' ? 'sine' : tipo === 'gigante' ? 'square' : 'triangle');
     this.tom(freq * 2, 0.01, 0.06, 0.12, 'sine');
+  }
+
+  item(tipo: TipoItem): void {
+    if (!this.ligado) return;
+    this.garantir();
+    const base = tipo === 'veneno' || tipo === 'inversao' ? 180 : tipo === 'vida' ? 660 : 520;
+    this.tom(base, 0, .16, .22, tipo === 'veneno' ? 'sawtooth' : 'triangle', tipo === 'veneno' ? 90 : base * 1.5);
+    this.tom(base * 1.5, .06, .18, .13, 'sine');
+  }
+
+  ritmo(intensidade: number, activo: boolean): void {
+    if (!this.ctx || !this.pulso || !this.pulsoGanho) return;
+    const agora = this.ctx.currentTime;
+    this.pulso.frequency.setTargetAtTime(48 + intensidade * 42, agora, .08);
+    this.pulsoGanho.gain.setTargetAtTime(this.ligado && activo ? .018 + intensidade * .025 : 0, agora, .12);
   }
 
   /** Arpejo de marco, quando a pontuação passa uma dezena. */

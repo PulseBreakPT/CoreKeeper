@@ -9,8 +9,9 @@
 export type Direcao = 'cima' | 'baixo' | 'esquerda' | 'direita';
 export type Estado = 'pronto' | 'a-jogar' | 'morto' | 'completo';
 /** Clássico: só as paredes e o próprio corpo matam. Relógio: o tempo também. */
-export type Modo = 'classico' | 'relogio' | 'portais' | 'zen' | 'escuro' | 'obstaculos' | 'uma-vida' | 'diario';
+export type Modo = 'classico' | 'relogio' | 'portais' | 'zen' | 'escuro' | 'obstaculos' | 'uma-vida' | 'diario' | 'extremo' | 'mini' | 'dupla';
 export type TipoComida = 'normal' | 'ouro' | 'leve' | 'gigante';
+export type TipoItem = 'vida' | 'escudo' | 'ima' | 'lento' | 'dobro' | 'veneno' | 'inversao';
 
 export interface Ponto {
   x: number;
@@ -19,6 +20,11 @@ export interface Ponto {
 
 export interface Comida extends Ponto {
   tipo: TipoComida;
+}
+
+export interface ItemArena extends Ponto {
+  tipo: TipoItem;
+  expira: number;
 }
 
 /** Lado da arena em células. Quadrada e fixa, para o jogo ser igual em todos os ecrãs. */
@@ -76,6 +82,9 @@ export interface Resultado {
   cortou: boolean;
   comboQuebrou: boolean;
   eficiente: boolean;
+  item: TipoItem | null;
+  protegido: boolean;
+  ressuscitou: boolean;
 }
 
 export interface OpcoesJogo {
@@ -99,6 +108,9 @@ function vazio(cabeca: Ponto): Resultado {
     cortou: false,
     comboQuebrou: false,
     eficiente: false,
+    item: null,
+    protegido: false,
+    ressuscitou: false,
   };
 }
 
@@ -109,6 +121,7 @@ export class Jogo {
   /** Onde estava cada célula no passo anterior — usado para interpolar o desenho. */
   anterior: Ponto[] = [];
   comida: Comida = { x: 0, y: 0, tipo: 'normal' };
+  item: ItemArena | null = null;
   obstaculos: Ponto[] = [];
   direcao: Direcao = 'direita';
   estado: Estado = 'pronto';
@@ -117,6 +130,14 @@ export class Jogo {
   especiais = 0;
   combo = 0;
   melhorCombo = 0;
+  vidas = 0;
+  escudo = 0;
+  ima = 0;
+  lento = 0;
+  dobro = 0;
+  inversao = 0;
+  sequencia = 0;
+  portalOffset = 0;
   recorde: number;
   modo: Modo;
   readonly dia: number;
@@ -128,6 +149,7 @@ export class Jogo {
   private limiteCombo = 0;
   private distanciaComida = 0;
   private estadoAleatorio = 1;
+  private passosTotais = 0;
 
   constructor(opcoes: OpcoesJogo = {}) {
     this.lado = opcoes.lado ?? LADO;
@@ -154,6 +176,16 @@ export class Jogo {
     this.especiais = 0;
     this.combo = 0;
     this.melhorCombo = 0;
+    this.vidas = 0;
+    this.escudo = 0;
+    this.ima = 0;
+    this.lento = 0;
+    this.dobro = 0;
+    this.inversao = 0;
+    this.sequencia = 0;
+    this.portalOffset = 0;
+    this.item = null;
+    this.passosTotais = 0;
     this.passosDesdeComida = 999;
     this.crescimentoPendente = 0;
     this.limiteCombo = 0;
@@ -183,6 +215,7 @@ export class Jogo {
     const v = VETORES[d];
     let nx = x + v.x;
     let ny = y + v.y;
+    if (this.modo === 'mini') return this.foraDaArena(nx, ny) ? null : { x: nx, y: ny };
     if (this.atravessaParedes()) {
       nx = (nx + this.lado) % this.lado;
       ny = (ny + this.lado) % this.lado;
@@ -193,6 +226,15 @@ export class Jogo {
 
   atravessaParedes(): boolean {
     return this.modo === 'portais' || this.modo === 'zen' || (this.modo === 'diario' && this.varianteDiaria() === 0);
+  }
+
+  private limites(): { min: number; max: number } {
+    return this.modo === 'mini' ? { min: 4, max: this.lado - 5 } : { min: 0, max: this.lado - 1 };
+  }
+
+  private foraDaArena(x: number, y: number): boolean {
+    const { min, max } = this.limites();
+    return x < min || y < min || x > max || y > max;
   }
 
   arenaEscura(): boolean {
@@ -257,11 +299,11 @@ export class Jogo {
   /** Intervalo entre passos, em milissegundos, para a pontuação actual. */
   passoMs(): number {
     const diarioRapido = this.modo === 'diario' && this.varianteDiaria() === 3;
-    const inicial = this.modo === 'uma-vida' ? 128 : diarioRapido ? 138 : PASSO_INICIAL;
-    const minimo = this.modo === 'zen' ? 88 : PASSO_MINIMO;
+    const inicial = this.modo === 'extremo' ? 96 : this.modo === 'uma-vida' ? 128 : diarioRapido ? 138 : PASSO_INICIAL;
+    const minimo = this.modo === 'extremo' ? 48 : this.modo === 'zen' ? 88 : PASSO_MINIMO;
     const progresso = this.comidas + Math.floor(this.pontos / 8);
     const extra = (inicial - minimo) * Math.pow(DECAIMENTO, progresso);
-    return minimo + extra;
+    return (minimo + extra) * (this.lento > 0 ? 1.38 : 1);
   }
 
   /** Última direcção com que já se contou — a da fila, ou a que está a ser andada. */
@@ -277,10 +319,11 @@ export class Jogo {
    */
   virar(d: Direcao): boolean {
     if (this.estado === 'morto' || this.estado === 'completo') return false;
+    const entrada = this.inversao > 0 ? ({ cima: 'baixo', baixo: 'cima', esquerda: 'direita', direita: 'esquerda' } as Record<Direcao, Direcao>)[d] : d;
     const ref = this.referencia();
-    if (d === ref || opostas(d, ref)) return false;
+    if (entrada === ref || opostas(entrada, ref)) return false;
     if (this.fila.length >= FILA_MAXIMA) return false;
-    this.fila.push(d);
+    this.fila.push(entrada);
     if (this.estado === 'pronto') this.estado = 'a-jogar';
     return true;
   }
@@ -320,11 +363,12 @@ export class Jogo {
     const ocupadas = new Set([
       ...this.corpo.map((p) => p.y * this.lado + p.x),
       ...this.obstaculos.map((p) => p.y * this.lado + p.x),
+      ...(this.item ? [this.item.y * this.lado + this.item.x] : []),
     ]);
     const saida: Ponto[] = [];
     for (let y = 0; y < this.lado; y++) {
       for (let x = 0; x < this.lado; x++) {
-        if (!ocupadas.has(y * this.lado + x)) saida.push({ x, y });
+        if (!this.foraDaArena(x, y) && !ocupadas.has(y * this.lado + x)) saida.push({ x, y });
       }
     }
     return saida;
@@ -341,6 +385,11 @@ export class Jogo {
     const n = this.lado * this.lado;
     const de = new Int16Array(n).fill(-1);
     const bloqueada = new Uint8Array(n);
+    if (this.modo === 'mini') {
+      for (let y = 0; y < this.lado; y++) for (let x = 0; x < this.lado; x++) {
+        if (this.foraDaArena(x, y)) bloqueada[y * this.lado + x] = 1;
+      }
+    }
     // A cauda não conta como parede: liberta a célula no passo seguinte.
     for (let i = 0; i < this.corpo.length - 1; i++) {
       const p = this.corpo[i];
@@ -380,6 +429,11 @@ export class Jogo {
     const n = this.lado * this.lado;
     const distancias = new Int16Array(n).fill(-1);
     const bloqueadas = new Uint8Array(n);
+    if (this.modo === 'mini') {
+      for (let y = 0; y < this.lado; y++) for (let x = 0; x < this.lado; x++) {
+        if (this.foraDaArena(x, y)) bloqueadas[y * this.lado + x] = 1;
+      }
+    }
     // A cabeça é a origem e a cauda liberta-se; apenas o miolo bloqueia a rota.
     for (let i = 1; i < this.corpo.length - 1; i++) {
       const p = this.corpo[i];
@@ -505,6 +559,114 @@ export class Jogo {
     return 'normal';
   }
 
+  private gerarItem(): void {
+    if (this.item || this.comidas === 0 || this.sortear() > 0.34) return;
+    const cabeca = this.corpo[0];
+    const vagas = this.livres().filter((p) =>
+      (p.x !== this.comida.x || p.y !== this.comida.y)
+      && Math.abs(p.x - cabeca.x) + Math.abs(p.y - cabeca.y) >= 4,
+    );
+    if (vagas.length === 0) return;
+    const n = this.sortear();
+    const tipo: TipoItem = this.vidas === 0 && n < .1 ? 'vida'
+      : this.escudo === 0 && n < .24 ? 'escudo'
+      : n < .39 ? 'ima'
+      : n < .54 ? 'lento'
+      : n < .69 ? 'dobro'
+      : n < .84 ? 'veneno' : 'inversao';
+    const p = vagas[Math.floor(this.sortear() * vagas.length)];
+    this.item = { ...p, tipo, expira: 72 };
+  }
+
+  private aplicarItem(tipo: TipoItem): void {
+    if (tipo === 'vida') this.vidas = Math.min(2, this.vidas + 1);
+    else if (tipo === 'escudo') this.escudo = 1;
+    else if (tipo === 'ima') this.ima = 42;
+    else if (tipo === 'lento') this.lento = 38;
+    else if (tipo === 'dobro') this.dobro = 42;
+    else if (tipo === 'inversao') this.inversao = 24;
+    else {
+      this.pontos = Math.max(0, this.pontos - 3);
+      this.combo = 0;
+      this.corpo.splice(Math.max(2, this.corpo.length - 2));
+    }
+  }
+
+  private moverComida(atrair: boolean): void {
+    const cabeca = this.corpo[0];
+    const ocupadas = new Set([
+      ...this.corpo.map((p) => p.y * this.lado + p.x),
+      ...this.obstaculos.map((p) => p.y * this.lado + p.x),
+      ...(this.item ? [this.item.y * this.lado + this.item.x] : []),
+    ]);
+    const opcoes = DIRECCOES.map((d) => this.vizinho(this.comida.x, this.comida.y, d))
+      .filter((p): p is Ponto => Boolean(p) && !ocupadas.has(p!.y * this.lado + p!.x));
+    if (opcoes.length === 0) return;
+    opcoes.sort((a, b) => {
+      const da = Math.abs(a.x - cabeca.x) + Math.abs(a.y - cabeca.y);
+      const db = Math.abs(b.x - cabeca.x) + Math.abs(b.y - cabeca.y);
+      return atrair ? da - db : db - da;
+    });
+    this.comida = { ...opcoes[0], tipo: this.comida.tipo };
+  }
+
+  private moverObstaculo(): void {
+    if (!this.temObstaculos() || this.obstaculos.length === 0) return;
+    const indice = Math.floor(this.sortear() * this.obstaculos.length);
+    const actual = this.obstaculos[indice];
+    const ocupadas = new Set(this.corpo.map((p) => p.y * this.lado + p.x));
+    const opcoes = DIRECCOES.map((d) => this.vizinho(actual.x, actual.y, d))
+      .filter((p): p is Ponto => Boolean(p)
+        && !ocupadas.has(p!.y * this.lado + p!.x)
+        && (p!.x !== this.comida.x || p!.y !== this.comida.y)
+        && !this.obstaculos.some((o, i) => i !== indice && o.x === p!.x && o.y === p!.y));
+    if (opcoes.length === 0) return;
+    const anterior = this.obstaculos[indice];
+    this.obstaculos[indice] = opcoes[Math.floor(this.sortear() * opcoes.length)];
+    if (!this.espacoLigado()) this.obstaculos[indice] = anterior;
+  }
+
+  private direcaoSegura(): Direcao {
+    const cabeca = this.corpo[0];
+    return DIRECCOES.find((d) => {
+      const p = this.vizinho(cabeca.x, cabeca.y, d);
+      return p && !this.bloqueada(p.x, p.y) && !this.corpo.slice(0, -1).some((c) => c.x === p.x && c.y === p.y);
+    }) ?? this.direcao;
+  }
+
+  private salvarColisao(r: Resultado): boolean {
+    if (this.escudo > 0) {
+      this.escudo = 0;
+      this.fila = [];
+      this.direcao = this.direcaoSegura();
+      r.protegido = true;
+      return true;
+    }
+    if (this.vidas > 0) {
+      this.vidas--;
+      this.reposicionar();
+      r.ressuscitou = true;
+      return true;
+    }
+    return false;
+  }
+
+  private reposicionar(): void {
+    const meio = Math.floor(this.lado / 2);
+    this.corpo = [{ x: meio, y: meio }, { x: meio - 1, y: meio }, { x: meio - 2, y: meio }];
+    this.anterior = this.corpo.map((p) => ({ ...p }));
+    this.direcao = 'direita';
+    this.fila = [];
+  }
+
+  reviver(): boolean {
+    if (this.estado !== 'morto') return false;
+    this.reposicionar();
+    this.estado = 'a-jogar';
+    this.escudo = 1;
+    return true;
+  }
+
   /** Quantos dos quatro vizinhos pertencem à mesma região livre. */
   private vizinhasLivres(p: Ponto, de: Int16Array, regiao: number): number {
     let n = 0;
@@ -528,16 +690,31 @@ export class Jogo {
     if (proxima) this.direcao = proxima;
 
     this.anterior = this.corpo.map((p) => ({ ...p }));
+    this.passosTotais++;
+    this.ima = Math.max(0, this.ima - 1);
+    this.lento = Math.max(0, this.lento - 1);
+    this.dobro = Math.max(0, this.dobro - 1);
+    this.inversao = Math.max(0, this.inversao - 1);
+    if (this.item && --this.item.expira <= 0) this.item = null;
+    if (this.passosTotais % (this.ima > 0 ? 2 : 7) === 0) this.moverComida(this.ima > 0);
+    if (this.passosTotais % 28 === 0) this.moverObstaculo();
+    if (this.modo === 'portais' && this.passosTotais % 24 === 0) this.portalOffset = (this.portalOffset + 3) % this.lado;
 
     const v = VETORES[this.direcao];
     let cabeca: Ponto = { x: this.corpo[0].x + v.x, y: this.corpo[0].y + v.y };
     r.cabeca = cabeca;
 
-    if (cabeca.x < 0 || cabeca.y < 0 || cabeca.x >= this.lado || cabeca.y >= this.lado) {
+    if (this.foraDaArena(cabeca.x, cabeca.y)) {
       if (this.atravessaParedes()) {
+        const saiuX = cabeca.x < 0 || cabeca.x >= this.lado;
         cabeca = { x: (cabeca.x + this.lado) % this.lado, y: (cabeca.y + this.lado) % this.lado };
+        if (this.modo === 'portais' && this.portalOffset > 0) {
+          if (saiuX) cabeca.y = (cabeca.y + this.portalOffset) % this.lado;
+          else cabeca.x = (cabeca.x + this.portalOffset) % this.lado;
+        }
         r.cabeca = cabeca;
       } else {
+        if (this.salvarColisao(r)) return r;
         this.estado = 'morto';
         this.marcarRecorde();
         r.morreu = true;
@@ -553,6 +730,7 @@ export class Jogo {
     let restante = remover > 0 ? this.corpo.slice(0, -remover) : [...this.corpo];
 
     if (this.bloqueada(cabeca.x, cabeca.y)) {
+      if (this.salvarColisao(r)) return r;
       this.estado = 'morto';
       this.marcarRecorde();
       r.morreu = true;
@@ -565,6 +743,7 @@ export class Jogo {
         restante = restante.slice(0, colisaoCorpo);
         r.cortou = true;
       } else {
+        if (this.salvarColisao(r)) return r;
         this.estado = 'morto';
         this.marcarRecorde();
         r.morreu = true;
@@ -579,6 +758,25 @@ export class Jogo {
     }
 
     r.moveu = true;
+
+    if (this.modo === 'dupla') {
+      const espelho = { x: this.lado - 1 - cabeca.x, y: this.lado - 1 - cabeca.y };
+      const choque = this.corpo.some((p, i) => i > 1 && p.x === espelho.x && p.y === espelho.y);
+      if (choque) {
+        if (this.salvarColisao(r)) return r;
+        this.estado = 'morto';
+        this.marcarRecorde();
+        r.morreu = true;
+        return r;
+      }
+    }
+
+    if (this.item && cabeca.x === this.item.x && cabeca.y === this.item.y) {
+      r.item = this.item.tipo;
+      this.aplicarItem(this.item.tipo);
+      this.item = null;
+      this.gerarItem();
+    }
     this.passosDesdeComida++;
     if (!comeu && this.combo > 0 && this.passosDesdeComida > this.limiteCombo) {
       this.combo = 0;
@@ -594,7 +792,10 @@ export class Jogo {
       this.melhorCombo = Math.max(this.melhorCombo, this.combo);
       const base = tipo === 'ouro' ? 3 : tipo === 'gigante' ? 2 : 1;
       const risco = this.modo === 'uma-vida' ? 2 : 1;
-      const ganhos = base * this.combo * risco;
+      if (this.comidas % 5 === 0) this.sequencia = 3;
+      const bonusSequencia = this.sequencia > 0 ? 1 : 0;
+      if (this.sequencia > 0) this.sequencia--;
+      const ganhos = (base * this.combo * risco + bonusSequencia) * (this.dobro > 0 ? 2 : 1);
       this.pontos += ganhos;
       if (tipo === 'gigante') this.crescimentoPendente += 2;
       this.marcarRecorde();
@@ -606,6 +807,7 @@ export class Jogo {
         this.estado = 'completo';
         r.completo = true;
       }
+      this.gerarItem();
     }
 
     return r;

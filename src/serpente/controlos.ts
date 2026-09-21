@@ -22,6 +22,8 @@ export interface Ouvintes {
   confirmar(): void;
   /** Qualquer interacção — serve para acordar o áudio. */
   interacao(): void;
+  /** Permite ajustar a distância do gesto em tempo real nas definições. */
+  limiar?: () => number;
 }
 
 export function ligarControlos(alvo: HTMLElement, ouvintes: Ouvintes): () => void {
@@ -47,7 +49,7 @@ export function ligarControlos(alvo: HTMLElement, ouvintes: Ouvintes): () => voi
   };
 
   const emitir = (dx: number, dy: number): boolean => {
-    if (Math.hypot(dx, dy) < LIMIAR) return false;
+    if (Math.hypot(dx, dy) < (ouvintes.limiar?.() ?? LIMIAR)) return false;
     const direcao: Direcao =
       Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'direita' : 'esquerda') : dy > 0 ? 'baixo' : 'cima';
     ouvintes.virar(direcao);
