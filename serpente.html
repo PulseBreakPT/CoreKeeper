@@ -19,7 +19,7 @@
             <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M23 7H12a5 5 0 0 0 0 10h8a5 5 0 0 1 0 10H8" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><circle cx="24" cy="6" r="1.5" fill="currentColor" class="olho-logo"/></svg>
             <span>NEXUS ARCADE</span>
           </div>
-          <span class="versao">MOBILE / 5.1</span>
+          <span class="versao">MOBILE / 6.0</span>
         </header>
 
         <div class="menu-hero">
@@ -89,6 +89,7 @@
             <div class="jogos-hub">
               <button type="button" data-jogo="serpente" class="seleccionado"><i class="icone-serpente">S</i><span><strong>Serpente</strong><small>Instinto · estratégia · velocidade</small></span><b>01</b></button>
               <button type="button" data-jogo="tetris"><i class="icone-blocos">▦</i><span><strong data-i18n="tetrisNome">Blocos</strong><small data-i18n="tetrisDesc">Encaixa · limpa · domina</small></span><b>02</b></button>
+              <button type="button" data-jogo="maze"><i class="icone-maze">◉</i><span><strong data-i18n="mazeNome">Labirinto</strong><small data-i18n="mazeDesc">Explora · engana · conquista</small></span><b>03</b></button>
             </div>
           </fieldset>
           <div id="config-serpente">
@@ -146,6 +147,10 @@
           <section class="config-tetris" id="config-tetris" hidden>
             <div class="tetris-destaque"><i>▦</i><span><small>ARCADE / 02</small><h2 data-i18n="tetrisNome">Blocos</h2><p data-i18n="tetrisFrase">Sete peças. Dez colunas. Decisões infinitas.</p></span></div>
             <div class="tetris-recursos"><span><b>7-BAG</b><small data-i18n="tetrisPecas">Peças equilibradas</small></span><span><b>HOLD</b><small data-i18n="tetrisReserva">Reserva estratégica</small></span><span><b>GHOST</b><small data-i18n="tetrisProjecao">Projeção precisa</small></span></div>
+          </section>
+          <section class="config-tetris config-maze" id="config-maze" hidden>
+            <div class="tetris-destaque maze-destaque"><i>◉</i><span><small>ARCADE / 03</small><h2 data-i18n="mazeNome">Labirinto</h2><p data-i18n="mazeFrase">Recolhe a energia. Lê os sentinelas. Domina cada rota.</p></span></div>
+            <div class="tetris-recursos"><span><b>4 IAs</b><small data-i18n="mazeIas">Personalidades próprias</small></span><span><b>PULSO</b><small data-i18n="mazePulso">Inverte a perseguição</small></span><span><b>ROTAS</b><small data-i18n="mazeRotas">Labirinto original</small></span></div>
           </section>
           </section>
 
@@ -285,6 +290,15 @@
       <section class="tetris-controlos" aria-label="Controlos do jogo">
         <button type="button" data-tetris="hold"><small>HOLD</small>◇</button><button type="button" data-tetris="left" aria-label="Esquerda">‹</button><button class="principal" type="button" data-tetris="rotate" aria-label="Rodar">↻</button><button type="button" data-tetris="right" aria-label="Direita">›</button><button type="button" data-tetris="down" aria-label="Descer">↓</button><button class="largo" type="button" data-tetris="drop"><small>QUEDA</small>⇣</button>
       </section>
+    </main>
+    <main class="maze-jogo" id="maze-jogo" hidden>
+      <header class="topo maze-topo"><div class="marca"><i>◉</i><span>LABIRINTO</span></div><div class="acoes"><button class="botao-icone" id="maze-menu" type="button" aria-label="Abrir menu">☰</button><button class="botao-icone" id="maze-pausa" type="button" aria-label="Pausar">Ⅱ</button></div></header>
+      <section class="maze-hud"><span><small>PONTOS</small><b id="maze-pontos">0</b></span><span><small>NÍVEL</small><b id="maze-nivel">1</b></span><span><small>VIDAS</small><b id="maze-vidas">◆ ◆ ◆</b></span><span><small>RECORDE</small><b id="maze-recorde">0</b></span></section>
+      <section class="maze-console">
+        <div class="maze-arena" id="maze-arena"><canvas id="maze-canvas" width="570" height="630"></canvas><div class="maze-overlay" id="maze-overlay"><small>ARCADE / 03</small><h1>Lê cada<br><em>movimento.</em></h1><p>Desliza para explorar o circuito.</p><button id="maze-iniciar" type="button">JOGAR <span>→</span></button></div></div>
+        <div class="maze-mensagem" id="maze-mensagem">À TUA ESPERA</div>
+      </section>
+      <section class="maze-controlos" aria-label="Direções"><button data-maze="cima">↑</button><button data-maze="esquerda">←</button><i>◉</i><button data-maze="direita">→</button><button data-maze="baixo">↓</button></section>
     </main>
     <section class="folha" id="folha-carreira" hidden aria-labelledby="carreira-titulo">
       <button class="folha-fundo" id="fechar-carreira" type="button" aria-label="Fechar carreira"></button>
