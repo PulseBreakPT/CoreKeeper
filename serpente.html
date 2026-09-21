@@ -2,112 +2,106 @@
 <html lang="pt-PT">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#10120f" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0e09" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="description" content="Serpente — um clássico, um novo ritmo. Entra na arena, cresce e supera o teu recorde." />
+    <meta name="description" content="Serpente — um jogo arcade para telemóvel." />
     <link rel="icon" href="/src/serpente/icone.svg" type="image/svg+xml" />
-    <title>Serpente — Só mais uma partida.</title>
+    <title>Serpente</title>
   </head>
   <body>
     <main class="jogo">
-      <header class="cabecalho">
-        <a class="marca" href="" aria-label="Serpente — início">
-          <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M23 7H12a5 5 0 0 0 0 10h8a5 5 0 0 1 0 10H8" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><circle cx="24" cy="6" r="1.5" fill="#10120f"/></svg>
-          serpente<span class="marca-ponto">®</span>
-        </a>
-        <span class="edicao">O CLÁSSICO. OUTRO NÍVEL.</span>
-        <span class="selo"><i></i> ARCADE / VOL. 01</span>
+      <header class="topo">
+        <div class="marca" aria-label="Serpente">
+          <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M23 7H12a5 5 0 0 0 0 10h8a5 5 0 0 1 0 10H8" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><circle cx="24" cy="6" r="1.5" fill="#0b0e09"/></svg>
+          <span>SERPENTE</span>
+        </div>
+        <div class="acoes">
+          <button class="botao-icone som" id="som" type="button" aria-pressed="true" aria-label="Desligar som">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path class="onda" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/><path class="risca" d="m16 9.5 5 5m0-5-5 5"/></svg>
+          </button>
+          <button class="botao-icone" id="pausar" type="button" aria-label="Pausar partida" aria-pressed="false" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg>
+          </button>
+        </div>
       </header>
 
-      <div class="layout">
-        <aside class="lateral" aria-label="Pontuação e instruções">
-          <div class="introducao">
-            <p class="sobretitulo"><span>01</span> PEQUENA COBRA. GRANDE VÍCIO.</p>
-            <h1>Só mais<br> uma <em>partida.</em></h1>
-            <p class="descricao">Segue o instinto. Encontra o ritmo.<br>O próximo recorde é teu.</p>
-          </div>
+      <section class="hud" id="hud" aria-label="Pontuação">
+        <div class="marcador" id="marcador-pontos">
+          <span class="rotulo">PONTOS</span>
+          <span class="valor" id="pontos">0</span>
+        </div>
+        <div class="estado"><i></i><span id="estado" role="status">PRONTO</span></div>
+        <div class="marcador direita">
+          <span class="rotulo"><i class="coroa" id="coroa" hidden></i> RECORDE</span>
+          <span class="valor" id="recorde">0</span>
+        </div>
+      </section>
 
-          <section class="hud" id="hud" aria-label="Pontuação">
-            <div class="marcador" id="marcador-pontos">
-              <span class="rotulo">PONTOS</span>
-              <span class="valor" id="pontos">0</span>
-              <span class="nota">nesta partida</span>
-            </div>
-            <div class="marcador direita">
-              <span class="rotulo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 3h8v7a4 4 0 0 1-8 0V3Zm0 2H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4m-4 2v6m-4 1h8"/></svg> RECORDE <i class="coroa" id="coroa" hidden></i></span>
-              <span class="valor" id="recorde">0</span>
-              <span class="nota">o teu melhor</span>
-            </div>
-          </section>
-
-          <section class="progresso" aria-label="Próximo marco">
-            <div><span class="rotulo">PRÓXIMO MARCO</span><span id="marco-texto">0 / 10</span></div>
-            <progress id="progresso" value="0" max="10" aria-label="Progresso até ao próximo marco"></progress>
-            <p>Cada ponto conta. Cada curva também.</p>
-          </section>
-
-          <section class="guia" aria-label="Como jogar">
-            <h2>Simples de jogar.<br>Difícil de largar.</h2>
-            <div class="instrucao"><span class="alimento-mini" aria-hidden="true"></span><p>Apanha a luz. <span>Faz a cobra crescer.</span></p></div>
-            <div class="instrucao"><span class="limite-mini" aria-hidden="true"></span><p>Mantém o espaço. <span>Evita as paredes e o teu corpo.</span></p></div>
-            <div class="teclado"><div class="teclas" aria-hidden="true"><kbd>↑</kbd><div><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd></div></div><p>Setas ou WASD<span>Desliza no telemóvel</span></p></div>
-          </section>
-          <p class="assinatura">FEITO PARA ENTRAR NO FLOW. <span>↗</span></p>
-        </aside>
-
-        <section class="consola" aria-label="Arena de jogo">
-          <div class="barra-arena">
-            <div class="estado"><i></i><span id="estado" role="status">À TUA ESPERA</span></div>
-            <div class="botoes">
-              <button class="pastilha modo" id="modo" type="button" aria-pressed="false" aria-label="Modo clássico. Tocar liga o modo relógio">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg><span id="modo-nome">Clássico</span><span class="trocar" aria-hidden="true">⇄</span>
-              </button>
-              <button class="pastilha" id="pausar" type="button" aria-label="Pausar partida" aria-pressed="false" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg></button>
-              <button class="pastilha som" id="som" type="button" aria-pressed="true" aria-label="Desligar som">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path class="onda" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/><path class="risca" d="m16 9.5 5 5m0-5-5 5"/></svg>
-              </button>
-            </div>
-          </div>
-
-          <div class="palco" id="palco">
-            <div class="arena" id="arena">
-              <canvas id="tela" width="600" height="600" aria-label="Tabuleiro de Serpente. Usa as setas, WASD ou desliza para mudar de direcção."></canvas>
-              <div class="inicio" id="inicio">
-                <div class="inicio-titulo"><span class="sobretitulo">SEM PRESSA. ATÉ COMEÇAR.</span><h2>Entra no flow<span>.</span></h2></div>
-                <svg class="cobra-arte" viewBox="0 0 500 280" fill="none" aria-hidden="true">
-                  <defs><linearGradient id="cor-cobra" x1="90" y1="230" x2="350" y2="60" gradientUnits="userSpaceOnUse"><stop stop-color="#506f25"/><stop offset=".55" stop-color="#b9ec65"/><stop offset="1" stop-color="#dcffa0"/></linearGradient><filter id="brilho"><feGaussianBlur stdDeviation="12"/></filter></defs>
-                  <path d="M78 232h87a37 37 0 0 0 0-74h-25a39 39 0 0 1 0-78h141a36 36 0 0 1 36 36v26" stroke="#a8e75e" stroke-opacity=".14" stroke-width="48" filter="url(#brilho)"/>
-                  <path d="M78 232h87a37 37 0 0 0 0-74h-25a39 39 0 0 1 0-78h141a36 36 0 0 1 36 36v26" stroke="url(#cor-cobra)" stroke-width="31" stroke-linecap="round"/>
-                  <path d="M80 222h84a27 27 0 0 0 0-54h-25a49 49 0 0 1 0-98h139" stroke="#e2ffba" stroke-opacity=".2" stroke-width="2" stroke-linecap="round"/>
-                  <rect x="298" y="121" width="38" height="42" rx="16" fill="#d8fa9d"/><path d="M309 145v5m15-5v5" stroke="#253214" stroke-width="5" stroke-linecap="round"/>
-                  <circle cx="397" cy="190" r="28" stroke="#ee9a77" stroke-opacity=".14"/><circle cx="397" cy="190" r="18" stroke="#ee9a77" stroke-opacity=".28"/><circle cx="397" cy="190" r="9" fill="#f8ae88"/><circle cx="394" cy="187" r="2" fill="#ffead0"/>
-                  <path d="M393 141h8m-4-4v8M244 215h6m-3-3v6" stroke="#a9bf8a" stroke-opacity=".45"/>
-                </svg>
-                <button class="jogar comecar" id="comecar" type="button"><span>Vamos jogar</span><span aria-hidden="true">↗</span></button>
+      <section class="consola" aria-label="Arena de jogo">
+        <div class="palco" id="palco">
+          <div class="arena" id="arena">
+            <canvas id="tela" width="600" height="600" aria-label="Tabuleiro. Desliza para mudar de direcção."></canvas>
+            <div class="inicio" id="inicio">
+              <div class="inicio-marca">
+                <span class="etiqueta">ARCADE / 01</span>
+                <h1>Segue o<br><em>instinto.</em></h1>
               </div>
-              <p class="dica" id="dica">Setas ou WASD para começar</p>
-              <div class="fim pausa" id="pausa" hidden><span class="sobretitulo">RESPIRA. A ARENA ESPERA.</span><h2>Uma pequena pausa.</h2><button class="jogar" id="continuar" type="button">Continuar <span aria-hidden="true">↗</span></button><p class="atalho">P ou Escape para continuar</p></div>
-              <div class="fim" id="fim" hidden aria-labelledby="fim-titulo">
-                <span class="sobretitulo">CADA FIM É UM NOVO COMEÇO.</span>
-                <h2 id="fim-titulo">FIM DE JOGO</h2>
-                <div class="fim-numeros">
-                  <div class="marcador"><span class="rotulo">PONTOS</span><span class="valor" id="fim-pontos">0</span></div>
-                  <div class="marcador"><span class="rotulo">RECORDE</span><span class="valor" id="fim-recorde">0</span></div>
-                </div>
-                <p class="medalha" id="fim-medalha" hidden></p>
-                <button class="jogar" id="jogar" type="button">Jogar novamente <span aria-hidden="true">↗</span></button>
-                <p class="atalho">Enter ou Espaço</p>
+              <svg class="cobra-arte" viewBox="0 0 500 280" fill="none" aria-hidden="true">
+                <defs><linearGradient id="cor-cobra" x1="90" y1="230" x2="350" y2="60" gradientUnits="userSpaceOnUse"><stop stop-color="#506f25"/><stop offset=".55" stop-color="#b9ec65"/><stop offset="1" stop-color="#dcffa0"/></linearGradient><filter id="brilho"><feGaussianBlur stdDeviation="12"/></filter></defs>
+                <path d="M78 232h87a37 37 0 0 0 0-74h-25a39 39 0 0 1 0-78h141a36 36 0 0 1 36 36v26" stroke="#a8e75e" stroke-opacity=".14" stroke-width="48" filter="url(#brilho)"/>
+                <path d="M78 232h87a37 37 0 0 0 0-74h-25a39 39 0 0 1 0-78h141a36 36 0 0 1 36 36v26" stroke="url(#cor-cobra)" stroke-width="31" stroke-linecap="round"/>
+                <path d="M80 222h84a27 27 0 0 0 0-54h-25a49 49 0 0 1 0-98h139" stroke="#e2ffba" stroke-opacity=".2" stroke-width="2" stroke-linecap="round"/>
+                <rect x="298" y="121" width="38" height="42" rx="16" fill="#d8fa9d"/><path d="M309 145v5m15-5v5" stroke="#253214" stroke-width="5" stroke-linecap="round"/>
+                <circle cx="397" cy="190" r="28" stroke="#ee9a77" stroke-opacity=".14"/><circle cx="397" cy="190" r="18" stroke="#ee9a77" stroke-opacity=".28"/><circle cx="397" cy="190" r="9" fill="#f8ae88"/>
+              </svg>
+              <button class="jogar comecar" id="comecar" type="button"><span>JOGAR</span><span aria-hidden="true">→</span></button>
+            </div>
+            <p class="dica" id="dica">DESLIZA PARA COMEÇAR</p>
+            <div class="fim pausa" id="pausa" hidden>
+              <span class="etiqueta">JOGO EM PAUSA</span>
+              <h2>Respira.</h2>
+              <button class="jogar" id="continuar" type="button">CONTINUAR <span aria-hidden="true">→</span></button>
+              <p class="atalho">A arena fica à tua espera.</p>
+            </div>
+            <div class="fim" id="fim" hidden aria-labelledby="fim-titulo">
+              <span class="etiqueta">FIM DA PARTIDA</span>
+              <h2 id="fim-titulo">FIM DE JOGO</h2>
+              <div class="fim-numeros">
+                <div class="marcador"><span class="rotulo">PONTOS</span><span class="valor" id="fim-pontos">0</span></div>
+                <div class="marcador"><span class="rotulo">RECORDE</span><span class="valor" id="fim-recorde">0</span></div>
               </div>
+              <p class="medalha" id="fim-medalha" hidden></p>
+              <button class="jogar" id="jogar" type="button">JOGAR OUTRA VEZ <span aria-hidden="true">↻</span></button>
+              <p class="atalho">Toca para voltar à arena.</p>
             </div>
           </div>
-          <div class="telemetria"><span><i class="ponto-lima"></i> <span id="comprimento">3</span> SEGMENTOS</span><span id="velocidade">1.00× RITMO</span><span>21 × 21 <span class="muted">ARENA</span></span></div>
-          <div class="rodape-arena"><span id="modo-dica">O original. Sem limites de tempo.</span><span><kbd>P</kbd> pausar</span></div>
-        </section>
-      </div>
-      <footer class="rodape"><span>MENOS DISTRAÇÕES. MAIS INSTINTO.</span><span>Um clássico reinventado <span class="estrela">✳</span></span></footer>
+        </div>
+        <div class="telemetria">
+          <span><i></i><b id="comprimento">3</b> SEGMENTOS</span>
+          <span id="velocidade">1.00× RITMO</span>
+          <span>21 × 21</span>
+        </div>
+        <div class="progresso" aria-label="Próximo marco">
+          <progress id="progresso" value="0" max="10" aria-label="Progresso até ao próximo marco"></progress>
+          <span id="marco-texto">0 / 10</span>
+        </div>
+      </section>
+
+      <nav class="controlos" aria-label="Opções do jogo">
+        <button class="modo" id="modo" type="button" aria-pressed="false" aria-label="Modo clássico. Tocar liga o modo relógio">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg>
+          <span><small>MODO</small><strong id="modo-nome">Clássico</strong></span>
+          <span class="trocar" aria-hidden="true">↔</span>
+        </button>
+        <div class="gesto" aria-hidden="true">
+          <svg viewBox="0 0 56 56" fill="none"><path d="M28 5v46M5 28h46M28 5l-5 5m5-5 5 5M51 28l-5-5m5 5-5 5M28 51l-5-5m5 5 5-5M5 28l5-5m-5 5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span>DESLIZA<br><small>para controlar</small></span>
+        </div>
+      </nav>
+      <p class="modo-dica" id="modo-dica">O original. Sem limites de tempo.</p>
     </main>
     <script type="module" src="/src/serpente/main.ts"></script>
   </body>
