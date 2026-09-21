@@ -136,6 +136,8 @@ const marcadorPontos = elemento<HTMLDivElement>('marcador-pontos');
 const alvoPontos = elemento<HTMLSpanElement>('pontos');
 const alvoRecorde = elemento<HTMLSpanElement>('recorde');
 const coroa = elemento<HTMLElement>('coroa');
+const caixaEstado = elemento<HTMLDivElement>('estado-caixa');
+const alvoTempo = elemento<HTMLElement>('tempo');
 const dica = elemento<HTMLParagraphElement>('dica');
 const cartao = elemento<HTMLDivElement>('fim');
 const tituloFim = elemento<HTMLHeadingElement>('fim-titulo');
@@ -197,6 +199,8 @@ let restante = RELOGIO_MS;
 /** Último segundo anunciado, para o tique-taque não disparar a cada quadro. */
 let ultimoTique = 0;
 let porTempo = false;
+/** Último texto posto no contador, para não escrever no DOM a cada quadro. */
+let tempoMostrado = '';
 /** Milissegundos decorridos da contagem de arranque, ou -1 quando não há. */
 let arranque = -1;
 let arranqueAnunciado = -1;
@@ -406,10 +410,12 @@ function actualizarHud(): void {
   elemento('velocidade').textContent = `${(150 / jogo.passoMs()).toFixed(2)}× ${t('ritmo')}`;
   combo.hidden = jogo.combo < 2;
   comboValor.textContent = `×${jogo.combo}`;
-  const poderes: [string, number][] = [
+  // O tipo tem de estar no literal: só depois do filtro, o TypeScript já perdeu o par.
+  const todos: [string, number][] = [
     [t('vidas'), jogo.vidas], [t('escudo'), jogo.escudo], [t('ima'), jogo.ima], [t('lento'), jogo.lento],
     [t('dobro'), jogo.dobro], [t('inversao'), jogo.inversao], [t('veneno'), jogo.sequencia],
-  ].filter(([, valor]) => valor > 0);
+  ];
+  const poderes = todos.filter(([, valor]) => valor > 0);
   poderesActivos.hidden = poderes.length === 0;
   poderesActivos.innerHTML = poderes.map(([nome, valor]) => `<span><b>${nome}</b><i>${valor}</i></span>`).join('');
   actualizarMissao();
@@ -524,6 +530,28 @@ function reporRelogio(): void {
   porTempo = false;
   pintor.relogio = jogo.modo === 'relogio' ? 1 : null;
   pintor.segundos = SEGUNDOS_RELOGIO;
+  mostrarTempo();
+}
+
+/**
+ * Escreve os segundos que faltam, com uma décima — é a décima que faz o
+ * contador parecer vivo em vez de um número parado. A moldura da arena drena
+ * em paralelo: uma coisa lê-se de relance, a outra dá o valor exacto.
+ */
+function mostrarTempo(): void {
+  const activo = jogo.modo === 'relogio';
+  alvoTempo.hidden = !activo;
+  if (!activo) {
+    caixaEstado.classList.remove('urgente');
+    return;
+  }
+  const segundos = Math.max(0, restante) / 1000;
+  const texto = segundos.toFixed(1);
+  if (texto !== tempoMostrado) {
+    tempoMostrado = texto;
+    alvoTempo.textContent = texto;
+  }
+  caixaEstado.classList.toggle('urgente', segundos <= 3);
 }
 
 function aplicar(): void {
@@ -534,6 +562,7 @@ function aplicar(): void {
     vibrar(r.marco ? [18, 28, 18] : 12);
     restante = RELOGIO_MS;
     ultimoTique = 0;
+    mostrarTempo();
     actualizarHud();
     animar(alvoPontos, 'subiu');
     if (r.marco) {
@@ -611,6 +640,7 @@ function quadro(agora: number): void {
     const segundos = Math.max(0, Math.ceil(restante / 1000));
     pintor.relogio = Math.max(0, restante / RELOGIO_MS);
     pintor.segundos = segundos;
+    mostrarTempo();
     if (segundos <= 3 && segundos > 0 && segundos !== ultimoTique) {
       ultimoTique = segundos;
       som.tique();

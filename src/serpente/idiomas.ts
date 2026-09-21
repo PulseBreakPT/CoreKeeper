@@ -5,7 +5,10 @@ export type Idioma = 'pt-PT' | 'en' | 'es' | 'pt-BR';
 
 const CHAVE_IDIOMA = 'serpente:idioma:v1';
 
-const pt = {
+/** Um dicionário: chave de texto para o texto já escrito. */
+type Textos = Record<string, string>;
+
+const pt: Textos = {
   meta: 'Serpente — um jogo arcade para telemóvel.',
   configurar: 'CONFIGURA A PARTIDA', titulo: 'A tua cobra.<br><em>As tuas regras.</em>',
   jogar: 'Jogar', visual: 'Visual', carreira: 'Carreira', ambiente: 'AMBIENTE DA ARENA',
@@ -53,7 +56,6 @@ const pt = {
   conquista_secreto_cofre_nome: 'Cofre', conquista_secreto_cofre_desc: 'Acumula 250 moedas.',
 };
 
-type Textos = Record<string, string>;
 export type ChaveTexto = string;
 
 const en: Textos = {

@@ -131,7 +131,7 @@ describe('colisões', () => {
       // Serpente de um só segmento no centro: o único obstáculo possível é a parede.
       j.corpo = [{ x: 4, y: 4 }];
       j.anterior = [{ x: 4, y: 4 }];
-      j.comida = { x: 0, y: 0 };
+      j.comida = { x: 0, y: 0, tipo: 'normal' };
       j.direcao = d;
       j.comecar();
       let passos = 0;
@@ -157,7 +157,7 @@ describe('colisões', () => {
       { x: 6, y: 6 },
     ];
     j.anterior = j.corpo.map((p) => ({ ...p }));
-    j.comida = { x: 0, y: 0 };
+    j.comida = { x: 0, y: 0, tipo: 'normal' };
     j.direcao = 'direita';
     j.comecar();
     j.virar('baixo');
@@ -177,7 +177,7 @@ describe('colisões', () => {
       { x: 5, y: 6 },
     ];
     j.anterior = j.corpo.map((p) => ({ ...p }));
-    j.comida = { x: 0, y: 0 };
+    j.comida = { x: 0, y: 0, tipo: 'normal' };
     j.direcao = 'direita';
     j.comecar();
     j.virar('baixo');
@@ -192,7 +192,7 @@ describe('comida e pontuação', () => {
   it('comer cresce um segmento, soma um ponto e repõe comida fora do corpo', () => {
     const j = new Jogo({ lado: 11, aleatorio: semente(7) });
     j.comecar();
-    j.comida = { x: j.corpo[0].x + 1, y: j.corpo[0].y };
+    j.comida = { x: j.corpo[0].x + 1, y: j.corpo[0].y, tipo: 'normal' };
     const antes = j.corpo.length;
     const r = j.passo();
     expect(r.comeu).toBe(true);
@@ -208,7 +208,7 @@ describe('comida e pontuação', () => {
     j.comecar();
     for (let i = 0; i < 400; i++) {
       // Põe a comida sempre à frente da cabeça: come a cada passo e a serpente enche.
-      j.comida = vetorAplicado(j);
+      j.comida = { ...vetorAplicado(j), tipo: 'normal' };
       j.passo();
       if (j.estado !== 'a-jogar') {
         j.reiniciar();
@@ -228,7 +228,7 @@ describe('comida e pontuação', () => {
     j.comecar();
     const marcos: number[] = [];
     for (let i = 0; i < MARCO * 2; i++) {
-      j.comida = vetorAplicado(j);
+      j.comida = { ...vetorAplicado(j), tipo: 'normal' };
       const r = j.passo();
       expect(r.comeu).toBe(true);
       if (r.marco) marcos.push(j.comidas);
@@ -246,7 +246,7 @@ describe('comida e pontuação', () => {
     ];
     j.corpo = caminho.slice().reverse();
     j.anterior = j.corpo.map((p) => ({ ...p }));
-    j.comida = { x: 0, y: 3 };
+    j.comida = { x: 0, y: 3, tipo: 'normal' };
     j.direcao = 'esquerda';
     j.comecar();
     const r = j.passo();
@@ -290,7 +290,7 @@ describe('reinício e recorde', () => {
   it('reiniciar apaga tudo o que era da partida anterior', () => {
     const j = new Jogo({ lado: 11, aleatorio: semente(5) });
     j.comecar();
-    j.comida = vetorAplicado(j);
+    j.comida = { ...vetorAplicado(j), tipo: 'normal' };
     j.passo();
     j.virar('cima');
     while (j.estado === 'a-jogar') j.passo();
@@ -312,7 +312,7 @@ describe('reinício e recorde', () => {
     const j = new Jogo({ lado: 11, aleatorio: semente(11) });
     j.comecar();
     for (let i = 0; i < 4; i++) {
-      j.comida = vetorAplicado(j);
+      j.comida = { ...vetorAplicado(j), tipo: 'normal' };
       j.passo();
     }
     expect(j.pontos).toBe(4);
@@ -321,7 +321,7 @@ describe('reinício e recorde', () => {
     expect(j.recorde).toBe(4);
     expect(j.pontos).toBe(0);
     j.comecar();
-    j.comida = vetorAplicado(j);
+    j.comida = { ...vetorAplicado(j), tipo: 'normal' };
     j.passo();
     expect(j.recorde).toBe(4);
   });
@@ -408,7 +408,7 @@ describe('onde a comida nasce', () => {
     j.corpo = corpo;
     j.anterior = corpo.map((c) => ({ ...c }));
     j.direcao = 'esquerda';
-    j.comida = { x: 2, y: 8 };
+    j.comida = { x: 2, y: 8, tipo: 'normal' };
     j.comecar();
     const r = j.passo();
     expect(r.comeu).toBe(true);
@@ -429,7 +429,7 @@ describe('onde a comida nasce', () => {
         const v = vetor(j.direcao);
         const frente = { x: j.corpo[0].x + v.x, y: j.corpo[0].y + v.y };
         const dentro = frente.x >= 0 && frente.y >= 0 && frente.x < 11 && frente.y < 11;
-        if (dentro && !j.corpo.some((c) => igual(c, frente))) j.comida = frente;
+        if (dentro && !j.corpo.some((c) => igual(c, frente))) j.comida = { ...frente, tipo: 'normal' };
         else j.virar(DIRECCOES[Math.floor(rng() * 4)]);
         j.passo();
         if (j.estado === 'a-jogar') expect(alcancavel(j, j.comida)).toBe(true);
@@ -457,7 +457,7 @@ describe('onde a comida nasce', () => {
     let apertadas = 0;
     const amostras = 300;
     for (let i = 0; i < amostras; i++) {
-      j.comida = { x: 0, y: 4 };
+      j.comida = { x: 0, y: 4, tipo: 'normal' };
       j.corpo = corpo.map((c) => ({ ...c }));
       j.anterior = j.corpo.map((c) => ({ ...c }));
       j.direcao = 'esquerda';
@@ -484,7 +484,7 @@ describe('onde a comida nasce', () => {
         const v = vetor(j.direcao);
         const frente = { x: j.corpo[0].x + v.x, y: j.corpo[0].y + v.y };
         const dentro = frente.x >= 0 && frente.y >= 0 && frente.x < 7 && frente.y < 7;
-        if (dentro && !j.corpo.some((c) => igual(c, frente))) j.comida = frente;
+        if (dentro && !j.corpo.some((c) => igual(c, frente))) j.comida = { ...frente, tipo: 'normal' };
         else j.virar(DIRECCOES[Math.floor(rng() * 4)]);
         j.passo();
       }
