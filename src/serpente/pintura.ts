@@ -2,9 +2,6 @@
 
 import { PASSO_INICIAL, PASSO_MINIMO, vetor, type Jogo, type Ponto } from './logica';
 
-/** Matiz do corpo parado (esmeralda) e à velocidade máxima (turquesa). */
-const MATIZ_LENTO = 83;
-const MATIZ_RAPIDO = 155;
 /** A cor só aquece a sério na parte final da curva de velocidade. */
 const CURVA_MATIZ = 1.8;
 
@@ -108,7 +105,10 @@ export class Pintor {
   /** Intensidade 0–1 da velocidade actual, lida pelo HUD para acompanhar a cor. */
   intensidade = 0;
   /** Matiz actual do corpo — é daqui que a interface tira a sua cor. */
-  matiz = MATIZ_LENTO;
+  matiz = 83;
+  /** Cores escolhidas no menu; a cobra varia só ligeiramente com a velocidade. */
+  private matizBase = 83;
+  private matizArena = 83;
   /** Fracção do relógio que resta (1 a 0), ou `null` no modo clássico. */
   relogio: number | null = null;
   /** Segundos inteiros que faltam, para a contagem grande dos últimos tempos. */
@@ -139,6 +139,13 @@ export class Pintor {
     const ctx = tela.getContext('2d', { alpha: false });
     if (!ctx) throw new Error('Canvas 2D indisponível');
     this.ctx = ctx;
+  }
+
+  definirCores(cobra: number, tema: number): void {
+    this.matizBase = cobra;
+    this.matizArena = tema;
+    this.matiz = cobra;
+    this.chao = null;
   }
 
   /** Ajusta a tela a um quadrado de `ladoCss` píxeis CSS, com nitidez de retina. */
@@ -232,7 +239,7 @@ export class Pintor {
       0,
       1,
     );
-    const matiz = lerp(MATIZ_LENTO, MATIZ_RAPIDO, Math.pow(this.intensidade, CURVA_MATIZ));
+    const matiz = this.matizBase + 10 * Math.pow(this.intensidade, CURVA_MATIZ);
     this.matiz = matiz;
 
     this.avancarEfeitos(s, jogo, cel);
@@ -243,7 +250,7 @@ export class Pintor {
       ctx.translate((Math.random() - 0.5) * f, (Math.random() - 0.5) * f);
     }
 
-    this.arena(L, cel, jogo.lado, matiz);
+    this.arena(L, cel, jogo.lado, this.matizArena);
     this.contagem(L, tempo, jogo.estado);
     // A contagem fica por trás de tudo: é pano de fundo, a serpente é o assunto.
     this.arrancada(L, matiz);
@@ -320,7 +327,7 @@ export class Pintor {
   // ---------- Arena ----------
 
   /** Pinta o chão da arena num buffer: só muda quando o tamanho muda. */
-  private prepararChao(L: number, cel: number, lado: number): HTMLCanvasElement {
+  private prepararChao(L: number, cel: number, lado: number, matiz: number): HTMLCanvasElement {
     const dpr = Math.min(2.5, window.devicePixelRatio || 1);
     const buffer = document.createElement('canvas');
     buffer.width = Math.round(L * dpr);
@@ -331,9 +338,9 @@ export class Pintor {
 
     caminhoRedondo(c, 0, 0, L, L, this.raio);
     const fundo = c.createLinearGradient(0, 0, L * 0.35, L);
-    fundo.addColorStop(0, '#172013');
-    fundo.addColorStop(0.55, '#11190f');
-    fundo.addColorStop(1, '#0e140c');
+    fundo.addColorStop(0, `hsl(${matiz}, 24%, 15%)`);
+    fundo.addColorStop(0.55, `hsl(${matiz}, 22%, 10%)`);
+    fundo.addColorStop(1, `hsl(${matiz}, 20%, 7%)`);
     c.fillStyle = fundo;
     c.fill();
     c.save();
@@ -376,7 +383,7 @@ export class Pintor {
     ctx.fillRect(-L, -L, L * 3, L * 3);
 
     if (!this.chao || this.celulasChao !== lado) {
-      this.chao = this.prepararChao(L, cel, lado);
+      this.chao = this.prepararChao(L, cel, lado, matiz);
       this.celulasChao = lado;
     }
     ctx.drawImage(this.chao, 0, 0, L, L);

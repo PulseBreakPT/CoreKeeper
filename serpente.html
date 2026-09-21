@@ -12,6 +12,69 @@
     <title>Serpente</title>
   </head>
   <body>
+    <section class="menu-principal" id="menu-principal" aria-labelledby="menu-titulo">
+      <div class="menu-conteudo">
+        <header class="menu-topo">
+          <div class="marca" aria-label="Serpente">
+            <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M23 7H12a5 5 0 0 0 0 10h8a5 5 0 0 1 0 10H8" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><circle cx="24" cy="6" r="1.5" fill="currentColor" class="olho-logo"/></svg>
+            <span>SERPENTE</span>
+          </div>
+          <span class="versao">MOBILE / 1.4</span>
+        </header>
+
+        <div class="menu-hero">
+          <div>
+            <span class="menu-indice">CONFIGURA A PARTIDA</span>
+            <h1 id="menu-titulo">A tua cobra.<br><em>As tuas regras.</em></h1>
+          </div>
+          <svg class="cobra-preview" viewBox="0 0 180 116" fill="none" aria-hidden="true">
+            <path class="preview-halo" d="M22 92h54a25 25 0 0 0 0-50H61a25 25 0 0 1 0-50h70c18 0 27 11 27 28v18"/>
+            <path class="preview-corpo" d="M22 92h54a25 25 0 0 0 0-50H61a25 25 0 0 1 0-50h70c18 0 27 11 27 28v18"/>
+            <rect class="preview-cabeca" x="145" y="27" width="27" height="32" rx="12"/>
+            <path d="M153 44v4m11-4v4" stroke="#17200f" stroke-width="3.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <div class="menu-opcoes">
+          <fieldset class="escolha">
+            <legend><span>01</span> AMBIENTE</legend>
+            <div class="paleta" id="paleta-tema">
+              <button class="amostra tema-floresta" type="button" data-tema="floresta" aria-label="Tema Floresta"><i></i><span>Floresta</span></button>
+              <button class="amostra tema-oceano" type="button" data-tema="oceano" aria-label="Tema Oceano"><i></i><span>Oceano</span></button>
+              <button class="amostra tema-violeta" type="button" data-tema="violeta" aria-label="Tema Violeta"><i></i><span>Violeta</span></button>
+              <button class="amostra tema-brasa" type="button" data-tema="brasa" aria-label="Tema Brasa"><i></i><span>Brasa</span></button>
+            </div>
+          </fieldset>
+
+          <fieldset class="escolha">
+            <legend><span>02</span> COR DA COBRA</legend>
+            <div class="paleta cobras" id="paleta-cobra">
+              <button class="amostra cobra-lima" type="button" data-cobra="83" aria-label="Cobra Lima"><i></i><span>Lima</span></button>
+              <button class="amostra cobra-ciano" type="button" data-cobra="188" aria-label="Cobra Ciano"><i></i><span>Ciano</span></button>
+              <button class="amostra cobra-rosa" type="button" data-cobra="330" aria-label="Cobra Rosa"><i></i><span>Rosa</span></button>
+              <button class="amostra cobra-dourada" type="button" data-cobra="42" aria-label="Cobra Dourada"><i></i><span>Dourada</span></button>
+            </div>
+          </fieldset>
+
+          <fieldset class="escolha modos-menu">
+            <legend><span>03</span> MODO DE JOGO</legend>
+            <div class="cartoes-modo">
+              <button type="button" data-escolha-modo="classico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 13c0-5 3-9 8-9s8 4 8 9-3 7-8 7-8-2-8-7Z"/><path d="M8 12h3m-1.5-1.5v3M15.5 12h.01"/></svg>
+                <span><strong>Clássico</strong><small>Sem limite. Só instinto.</small></span><i></i>
+              </button>
+              <button type="button" data-escolha-modo="relogio">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg>
+                <span><strong>Contra o tempo</strong><small>10 segundos por luz.</small></span><i></i>
+              </button>
+            </div>
+          </fieldset>
+        </div>
+
+        <button class="entrar" id="entrar" type="button"><span>ENTRAR NA ARENA</span><span aria-hidden="true">→</span></button>
+      </div>
+    </section>
+
     <main class="jogo">
       <header class="topo">
         <div class="marca" aria-label="Serpente">
@@ -19,6 +82,9 @@
           <span>SERPENTE</span>
         </div>
         <div class="acoes">
+          <button class="botao-icone" id="abrir-menu" type="button" aria-label="Abrir menu principal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          </button>
           <button class="botao-icone som" id="som" type="button" aria-pressed="true" aria-label="Desligar som">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path class="onda" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/><path class="risca" d="m16 9.5 5 5m0-5-5 5"/></svg>
           </button>
@@ -33,7 +99,7 @@
           <span class="rotulo">PONTOS</span>
           <span class="valor" id="pontos">0</span>
         </div>
-        <div class="estado"><i></i><span id="estado" role="status">PRONTO</span></div>
+        <div class="estado"><i></i><span><b id="estado" role="status">PRONTO</b><small id="hud-modo">CLÁSSICO</small></span></div>
         <div class="marcador direita">
           <span class="rotulo"><i class="coroa" id="coroa" hidden></i> RECORDE</span>
           <span class="valor" id="recorde">0</span>

@@ -12,6 +12,12 @@ const CHAVE_RECORDE: Record<Modo, string> = {
   relogio: 'serpente:recorde:relogio:v1',
 };
 const CHAVE_MODO = 'serpente:modo:v1';
+const CHAVE_TEMA = 'serpente:tema:v1';
+const CHAVE_COBRA = 'serpente:cobra:v1';
+
+type Tema = 'floresta' | 'oceano' | 'violeta' | 'brasa';
+const TEMAS: Record<Tema, number> = { floresta: 83, oceano: 188, violeta: 274, brasa: 19 };
+const CORES_COBRA = [83, 188, 330, 42] as const;
 /** Tempo entre a morte e o cartão de fim — dá espaço ao impacto. */
 const ESPERA_FIM = 440;
 const RELOGIO_MS = SEGUNDOS_RELOGIO * 1000;
@@ -54,6 +60,24 @@ function lerModo(): Modo {
   }
 }
 
+function lerTema(): Tema {
+  try {
+    const guardado = localStorage.getItem(CHAVE_TEMA) as Tema | null;
+    return guardado && guardado in TEMAS ? guardado : 'floresta';
+  } catch {
+    return 'floresta';
+  }
+}
+
+function lerCobra(): number {
+  try {
+    const guardada = Number(localStorage.getItem(CHAVE_COBRA));
+    return CORES_COBRA.includes(guardada as (typeof CORES_COBRA)[number]) ? guardada : 83;
+  } catch {
+    return 83;
+  }
+}
+
 const palco = elemento<HTMLDivElement>('palco');
 const arena = elemento<HTMLDivElement>('arena');
 const tela = elemento<HTMLCanvasElement>('tela');
@@ -73,15 +97,24 @@ const botaoModo = elemento<HTMLButtonElement>('modo');
 const botaoPausar = elemento<HTMLButtonElement>('pausar');
 const inicio = elemento<HTMLDivElement>('inicio');
 const pausa = elemento<HTMLDivElement>('pausa');
-const estado = elemento<HTMLSpanElement>('estado');
+const estado = elemento<HTMLElement>('estado');
+const hudModo = elemento<HTMLElement>('hud-modo');
 const progresso = elemento<HTMLProgressElement>('progresso');
+const menuPrincipal = elemento<HTMLElement>('menu-principal');
+const botaoEntrar = elemento<HTMLButtonElement>('entrar');
+const botaoAbrirMenu = elemento<HTMLButtonElement>('abrir-menu');
 let pausado = false;
 let estadoAplicado = '';
+let temaEscolhido = lerTema();
+let cobraEscolhida = lerCobra();
 
 const modoInicial = lerModo();
 const jogo = new Jogo({ lado: LADO, recorde: lerRecorde(modoInicial), modo: modoInicial });
 const pintor = new Pintor(tela);
 const som = new Som();
+pintor.definirCores(cobraEscolhida, TEMAS[temaEscolhido]);
+document.documentElement.dataset.tema = temaEscolhido;
+document.documentElement.style.setProperty('--cobra', String(cobraEscolhida));
 
 let temporizadorFim: number | null = null;
 let podeReiniciar = false;
@@ -118,7 +151,55 @@ function sincronizarMatiz(): void {
   const matiz = Math.round(pintor.matiz);
   if (matiz === matizAplicada) return;
   matizAplicada = matiz;
-  document.documentElement.style.setProperty('--matiz', String(matiz));
+  document.documentElement.style.setProperty('--cobra', String(matiz));
+}
+
+function actualizarEscolhasMenu(): void {
+  document.querySelectorAll<HTMLButtonElement>('[data-tema]').forEach((botao) => {
+    const seleccionado = botao.dataset.tema === temaEscolhido;
+    botao.classList.toggle('seleccionada', seleccionado);
+    botao.setAttribute('aria-pressed', String(seleccionado));
+  });
+  document.querySelectorAll<HTMLButtonElement>('[data-cobra]').forEach((botao) => {
+    const seleccionado = Number(botao.dataset.cobra) === cobraEscolhida;
+    botao.classList.toggle('seleccionada', seleccionado);
+    botao.setAttribute('aria-pressed', String(seleccionado));
+  });
+  document.querySelectorAll<HTMLButtonElement>('[data-escolha-modo]').forEach((botao) => {
+    const seleccionado = botao.dataset.escolhaModo === jogo.modo;
+    botao.classList.toggle('seleccionado', seleccionado);
+    botao.setAttribute('aria-pressed', String(seleccionado));
+  });
+}
+
+function escolherTema(tema: Tema): void {
+  temaEscolhido = tema;
+  document.documentElement.dataset.tema = tema;
+  pintor.definirCores(cobraEscolhida, TEMAS[tema]);
+  try { localStorage.setItem(CHAVE_TEMA, tema); } catch { /* preferência desta sessão */ }
+  actualizarEscolhasMenu();
+  vibrar(8);
+}
+
+function escolherCobra(matiz: number): void {
+  cobraEscolhida = matiz;
+  document.documentElement.style.setProperty('--cobra', String(matiz));
+  matizAplicada = matiz;
+  pintor.definirCores(matiz, TEMAS[temaEscolhido]);
+  try { localStorage.setItem(CHAVE_COBRA, String(matiz)); } catch { /* preferência desta sessão */ }
+  actualizarEscolhasMenu();
+  vibrar(8);
+}
+
+function escolherModo(modo: Modo): void {
+  if (jogo.modo === modo) return;
+  jogo.modo = modo;
+  jogo.recorde = lerRecorde(modo);
+  try { localStorage.setItem(CHAVE_MODO, modo); } catch { /* preferência desta sessão */ }
+  sincronizarBotaoModo();
+  reiniciar();
+  actualizarEscolhasMenu();
+  vibrar(8);
 }
 
 function actualizarHud(): void {
@@ -364,22 +445,14 @@ function sincronizarBotaoModo(): void {
   botaoModo.setAttribute('aria-label', etiqueta);
   botaoModo.title = etiqueta;
   elemento('modo-nome').textContent = relogio ? 'Relógio' : 'Clássico';
+  hudModo.textContent = relogio ? 'CONTRA O TEMPO' : 'CLÁSSICO';
   elemento('modo-dica').textContent = relogio
     ? `${SEGUNDOS_RELOGIO} segundos para comer. Cada luz renova o tempo.`
     : 'O original. Sem limites de tempo.';
 }
 
 function trocarModo(): void {
-  jogo.modo = jogo.modo === 'relogio' ? 'classico' : 'relogio';
-  try {
-    localStorage.setItem(CHAVE_MODO, jogo.modo);
-  } catch {
-    /* sem armazenamento, o modo vive só nesta sessão */
-  }
-  // Cada modo tem o seu recorde, por isso troca-se também o que está no HUD.
-  jogo.recorde = lerRecorde(jogo.modo);
-  sincronizarBotaoModo();
-  reiniciar();
+  escolherModo(jogo.modo === 'relogio' ? 'classico' : 'relogio');
 }
 
 function sincronizarBotaoSom(): void {
@@ -390,6 +463,29 @@ function sincronizarBotaoSom(): void {
 }
 
 ligarControlos(arena, { virar, confirmar, interacao: () => som.garantir() });
+document.querySelectorAll<HTMLButtonElement>('[data-tema]').forEach((botao) => {
+  botao.addEventListener('click', () => escolherTema(botao.dataset.tema as Tema));
+});
+document.querySelectorAll<HTMLButtonElement>('[data-cobra]').forEach((botao) => {
+  botao.addEventListener('click', () => escolherCobra(Number(botao.dataset.cobra)));
+});
+document.querySelectorAll<HTMLButtonElement>('[data-escolha-modo]').forEach((botao) => {
+  botao.addEventListener('click', () => escolherModo(botao.dataset.escolhaModo as Modo));
+});
+botaoEntrar.addEventListener('click', () => {
+  som.garantir();
+  vibrar(14);
+  menuPrincipal.classList.add('fechado');
+  confirmar();
+});
+botaoAbrirMenu.addEventListener('click', () => {
+  reiniciar();
+  document.documentElement.style.setProperty('--cobra', String(cobraEscolhida));
+  matizAplicada = cobraEscolhida;
+  actualizarEscolhasMenu();
+  menuPrincipal.classList.remove('fechado');
+  vibrar(10);
+});
 document.querySelectorAll<HTMLButtonElement>('[data-direcao]').forEach((botao) => {
   botao.addEventListener('pointerdown', (e) => {
     e.preventDefault();
@@ -454,6 +550,7 @@ window.serpente = { jogo, som, reiniciar, restante: () => restante };
 
 sincronizarBotaoSom();
 sincronizarBotaoModo();
+actualizarEscolhasMenu();
 reporRelogio();
 sincronizarMatiz();
 actualizarHud();
