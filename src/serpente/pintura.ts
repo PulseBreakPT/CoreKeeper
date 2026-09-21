@@ -386,33 +386,79 @@ export class Pintor {
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     caminhoRedondo(c, 0, 0, L, L, this.raio);
-    const fundo = c.createLinearGradient(0, 0, L * 0.35, L);
-    fundo.addColorStop(0, `hsl(${matiz}, 24%, 15%)`);
-    fundo.addColorStop(0.55, `hsl(${matiz}, 22%, 10%)`);
-    fundo.addColorStop(1, `hsl(${matiz}, 20%, 7%)`);
+    const fundo = c.createLinearGradient(0, 0, L * 0.72, L);
+    fundo.addColorStop(0, `hsl(${matiz}, 30%, 14%)`);
+    fundo.addColorStop(0.46, `hsl(${matiz}, 27%, 9%)`);
+    fundo.addColorStop(1, `hsl(${matiz}, 30%, 5.5%)`);
     c.fillStyle = fundo;
     c.fill();
     c.save();
     c.clip();
 
-    c.strokeStyle = 'rgba(174, 198, 143, 0.045)';
-    c.lineWidth = 1;
-    c.beginPath();
+    // Luz ambiental em duas profundidades: mantém o centro legível e evita um
+    // chão plano mesmo quando o ambiente escolhido é muito escuro.
+    const aura = c.createRadialGradient(L * 0.38, L * 0.31, 0, L * 0.38, L * 0.31, L * 0.7);
+    aura.addColorStop(0, `hsla(${matiz}, 72%, 52%, .075)`);
+    aura.addColorStop(0.5, `hsla(${matiz}, 55%, 36%, .025)`);
+    aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    c.fillStyle = aura;
+    c.fillRect(0, 0, L, L);
+
+    // Cada célula tem uma placa quase imperceptível. O padrão alternado dá
+    // matéria ao chão sem competir com a serpente nem criar ruído em movimento.
+    for (let y = 0; y < lado; y++) {
+      for (let x = 0; x < lado; x++) {
+        if ((x + y) % 2 !== 0) continue;
+        c.fillStyle = `hsla(${matiz}, 55%, 66%, ${(x + y) % 4 === 0 ? 0.009 : 0.005})`;
+        c.fillRect(x * cel + 1, y * cel + 1, cel - 2, cel - 2);
+      }
+    }
+
+    // Linhas de célula e linhas estruturais a cada cinco casas. A dupla linha
+    // faz o grid parecer gravado no material, em vez de desenhado por cima.
     for (let i = 1; i < lado; i++) {
+      const principal = i % 5 === 0;
+      c.beginPath();
       c.moveTo(i * cel, 0); c.lineTo(i * cel, L);
       c.moveTo(0, i * cel); c.lineTo(L, i * cel);
+      c.strokeStyle = `hsla(${matiz}, ${principal ? 70 : 48}%, ${principal ? 70 : 62}%, ${principal ? .105 : .038})`;
+      c.lineWidth = principal ? 1.15 : 0.75;
+      c.stroke();
+      if (principal) {
+        c.translate(1, 1);
+        c.strokeStyle = 'rgba(0, 0, 0, .16)';
+        c.stroke();
+        c.translate(-1, -1);
+      }
     }
-    c.stroke();
 
-    // Grelha de pontos nos cruzamentos: dá escala sem sujar o campo de jogo.
-    c.fillStyle = 'rgba(174, 198, 143, 0.17)';
-    const r = Math.max(0.7, cel * 0.045);
+    // Nós do grid: os maiores marcam sectores e ajudam a antecipar trajectórias.
     for (let y = 1; y < lado; y++) {
       for (let x = 1; x < lado; x++) {
+        const principal = x % 5 === 0 && y % 5 === 0;
+        const r = principal ? Math.max(1.05, cel * 0.065) : Math.max(0.55, cel * 0.032);
+        c.fillStyle = `hsla(${matiz}, 70%, 74%, ${principal ? .3 : .13})`;
         c.beginPath();
         c.arc(x * cel, y * cel, r, 0, Math.PI * 2);
         c.fill();
       }
+    }
+
+    // Mira central técnica, suficientemente subtil para nunca parecer um alvo.
+    c.strokeStyle = `hsla(${matiz}, 75%, 72%, .075)`;
+    c.lineWidth = 1;
+    c.setLineDash([cel * 0.22, cel * 0.3]);
+    c.beginPath();
+    c.arc(L / 2, L / 2, cel * 2.5, 0, Math.PI * 2);
+    c.stroke();
+    c.setLineDash([]);
+
+    // Grão determinístico: não tremeluz entre frames e quebra superfícies lisas.
+    for (let i = 0; i < 150; i++) {
+      const x = ((Math.sin(i * 91.17) + 1) * 0.5) * L;
+      const y = ((Math.sin(i * 47.73 + 2.4) + 1) * 0.5) * L;
+      c.fillStyle = i % 3 === 0 ? `hsla(${matiz}, 70%, 78%, .035)` : 'rgba(255, 255, 255, .018)';
+      c.fillRect(x, y, 0.65, 0.65);
     }
 
     // Vinheta interior: escurece as bordas e empurra o olhar para o centro.
@@ -565,54 +611,110 @@ export class Pintor {
     const ctx = this.ctx;
     const cx = (c.x + 0.5) * cel;
     const cy = (c.y + 0.5) * cel;
-    const pulso = 0.5 + 0.5 * Math.sin(tempo / 260);
+    const pulso = 0.5 + 0.5 * Math.sin(tempo / 230);
     const tipo = c.tipo ?? 'normal';
     const [cor, borda] = CORES_COMIDA[tipo];
-    const raio = cel * ((tipo === 'gigante' ? 0.4 : tipo === 'leve' ? 0.27 : 0.32) + 0.04 * pulso);
+    const raio = cel * ((tipo === 'gigante' ? 0.38 : tipo === 'leve' ? 0.265 : 0.31) + 0.025 * pulso);
 
     ctx.save();
     ctx.translate(cx, cy);
 
-    // Sombra no chão: assenta a comida na arena em vez de a deixar a flutuar.
+    // Aura volumétrica no chão e sombra de contacto.
+    const halo = ctx.createRadialGradient(0, 0, 0, 0, 0, cel * 1.15);
+    halo.addColorStop(0, borda);
+    halo.addColorStop(0.22, `${borda}3d`);
+    halo.addColorStop(1, `${borda}00`);
+    ctx.globalAlpha = 0.24 + pulso * 0.12;
+    ctx.fillStyle = halo;
+    ctx.fillRect(-cel * 1.2, -cel * 1.2, cel * 2.4, cel * 2.4);
+    ctx.globalAlpha = 1;
     ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
     ctx.beginPath();
-    ctx.ellipse(0, cel * 0.3, raio * 0.85, raio * 0.3, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, cel * 0.31, raio * 0.9, raio * 0.27, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Faísca de quatro pontas, a rodar devagar.
-    ctx.rotate(tempo / 1600);
-    ctx.fillStyle = `rgba(255, 214, 150, ${0.3 + 0.35 * pulso})`;
-    const ponta = cel * (0.52 + 0.08 * pulso);
-    const cintura = cel * 0.07;
+    // Rosa energética de oito pontas e órbita dupla. Cada raridade muda a
+    // velocidade e o número de satélites, por isso reconhece-se sem texto.
+    const rotacao = tempo / (tipo === 'leve' ? 720 : tipo === 'ouro' ? 1150 : 1550);
+    ctx.save();
+    ctx.rotate(rotacao);
+    ctx.fillStyle = borda;
+    ctx.globalAlpha = 0.22 + 0.24 * pulso;
+    const ponta = cel * ((tipo === 'gigante' ? 0.69 : 0.55) + 0.045 * pulso);
+    const cintura = cel * 0.045;
     ctx.beginPath();
-    for (let i = 0; i < 4; i++) {
-      const a = (Math.PI / 2) * i;
-      const b = a + Math.PI / 4;
+    for (let i = 0; i < 8; i++) {
+      const a = (Math.PI / 4) * i;
+      const b = a + Math.PI / 8;
       ctx.lineTo(Math.cos(a) * ponta, Math.sin(a) * ponta);
       ctx.lineTo(Math.cos(b) * cintura, Math.sin(b) * cintura);
     }
     ctx.closePath();
     ctx.fill();
-    ctx.rotate(-tempo / 1600);
+    ctx.restore();
 
     ctx.strokeStyle = borda;
-    ctx.globalAlpha = 0.28 + 0.2 * pulso;
-    ctx.lineWidth = Math.max(1.2, cel * 0.06);
+    ctx.globalAlpha = 0.34 + 0.2 * pulso;
+    ctx.lineWidth = Math.max(1, cel * 0.045);
     ctx.beginPath();
-    ctx.arc(0, 0, cel * (0.4 + 0.06 * pulso), 0, Math.PI * 2);
+    ctx.ellipse(0, 0, cel * (0.48 + .025 * pulso), cel * (0.25 + .02 * pulso), -rotacao * .7, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.globalAlpha *= .65;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, cel * (0.3 + .02 * pulso), cel * (0.52 + .03 * pulso), rotacao * .55, 0, Math.PI * 2);
+    ctx.stroke();
+
+    const satelites = tipo === 'gigante' ? 3 : tipo === 'ouro' ? 2 : 1;
+    ctx.globalAlpha = 1;
+    for (let i = 0; i < satelites; i++) {
+      const a = rotacao * (i % 2 === 0 ? 1 : -1) + (Math.PI * 2 * i) / satelites;
+      const d = cel * (0.45 + (i % 2) * .08);
+      ctx.shadowColor = borda;
+      ctx.shadowBlur = cel * .28;
+      ctx.fillStyle = i === 0 ? '#fff8e9' : cor;
+      ctx.beginPath();
+      ctx.arc(Math.cos(a) * d, Math.sin(a) * d * .62, cel * (i === 0 ? .055 : .04), 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.globalAlpha = 1;
 
+    // Núcleo facetado com uma coroa exterior translúcida.
     ctx.shadowColor = borda;
-    ctx.shadowBlur = cel * 0.8;
-    const g = ctx.createRadialGradient(-raio * 0.3, -raio * 0.35, raio * 0.1, 0, 0, raio);
+    ctx.shadowBlur = cel * 0.95;
+    ctx.fillStyle = `${borda}55`;
+    ctx.beginPath();
+    for (let i = 0; i < 8; i++) {
+      const a = Math.PI / 8 + i * Math.PI / 4;
+      const r = raio * 1.18;
+      if (i === 0) ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+      else ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+    }
+    ctx.closePath();
+    ctx.fill();
+    const g = ctx.createRadialGradient(-raio * 0.32, -raio * 0.38, raio * 0.08, 0, 0, raio);
     g.addColorStop(0, '#fffaf0');
-    g.addColorStop(0.5, cor);
+    g.addColorStop(0.34, cor);
+    g.addColorStop(0.76, borda);
     g.addColorStop(1, borda);
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(0, 0, raio, 0, Math.PI * 2);
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + i * Math.PI / 5;
+      const r = raio * (i % 2 === 0 ? 1 : .9);
+      if (i === 0) ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+      else ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+    }
+    ctx.closePath();
     ctx.fill();
+
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(255,255,255,.55)';
+    ctx.lineWidth = Math.max(.75, cel * .035);
+    ctx.beginPath();
+    ctx.moveTo(-raio * .34, -raio * .18);
+    ctx.lineTo(-raio * .05, -raio * .48);
+    ctx.lineTo(raio * .28, -raio * .24);
+    ctx.stroke();
     ctx.restore();
   }
 
@@ -722,12 +824,11 @@ export class Pintor {
     }
     suavizar(pontos, 2);
 
-    // O corpo afina da cabeça para a cauda, em bandas que se sobrepõem. As
-    // bandas são baratas de traçar; o que dava bolhas era o halo, que agora
-    // leva uma passagem só, de largura constante.
-    const larguraCabeca = cel * 0.78;
-    const larguraCauda = lerp(larguraCabeca, cel * 0.36, Math.min(1, comprimento / 7));
-    const bandas = limitar(Math.ceil(total / 4), 1, 16);
+    // Silhueta orgânica: ombros largos, afunilamento progressivo e uma ponta de
+    // cauda realmente fina. As bandas sobrepõem-se para manter curvas contínuas.
+    const larguraCabeca = cel * 0.8;
+    const larguraCauda = lerp(larguraCabeca * .9, cel * 0.24, Math.min(1, comprimento / 6));
+    const bandas = limitar(Math.ceil(total / 3), 2, 20);
 
     ctx.save();
     ctx.lineJoin = 'round';
@@ -740,15 +841,24 @@ export class Pintor {
       return { i0, i1, f, largura: lerp(larguraCabeca, larguraCauda, f) };
     };
 
-    // Halo de movimento: uma passagem inteira, senão as pontas redondas de cada
-    // banda desenham círculos uns por cima dos outros ao longo do corpo.
-    ctx.strokeStyle = `hsla(${matiz}, 90%, 62%, ${0.1 + this.intensidade * 0.1})`;
-    ctx.lineWidth = larguraCabeca + cel * (0.26 + this.intensidade * 0.28);
+    // Sombra no chão e aura cinética. A sombra deslocada ancora a cobra; a aura
+    // cresce apenas com a velocidade para conservar contraste em repouso.
+    ctx.save();
+    ctx.translate(0, cel * .12);
+    ctx.strokeStyle = 'rgba(0, 0, 0, .42)';
+    ctx.lineWidth = larguraCabeca + cel * .2;
     this.traco(pontos, 0, total - 1);
+    ctx.restore();
+    ctx.strokeStyle = `hsla(${matiz}, 94%, 64%, ${0.09 + this.intensidade * 0.13})`;
+    ctx.lineWidth = larguraCabeca + cel * (0.3 + this.intensidade * 0.32);
+    ctx.shadowColor = `hsla(${matiz}, 90%, 62%, .28)`;
+    ctx.shadowBlur = cel * (.25 + this.intensidade * .35);
+    this.traco(pontos, 0, total - 1);
+    ctx.shadowBlur = 0;
 
-    // Contorno escuro: é o que separa o corpo do chão a qualquer velocidade.
-    const contorno = Math.max(2, cel * 0.1);
-    ctx.strokeStyle = 'rgba(3, 14, 12, 0.88)';
+    // Contorno duplo: recorte escuro e um rebordo colorido muito fino.
+    const contorno = Math.max(2.4, cel * 0.115);
+    ctx.strokeStyle = `hsla(${matiz + 8}, 45%, 4%, .94)`;
     for (let k = 0; k < bandas; k++) {
       const b = faixa(k);
       ctx.lineWidth = b.largura + contorno;
@@ -758,35 +868,63 @@ export class Pintor {
     for (let k = 0; k < bandas; k++) {
       const b = faixa(k);
       ctx.lineWidth = b.largura;
-      ctx.strokeStyle = `hsl(${matiz + b.f * 8}, ${lerp(78, 64, b.f)}%, ${lerp(56, 34, b.f)}%)`;
+      const brilhoPele = this.pele === 'brasa' ? 4 : this.pele === 'pulso' ? 7 * Math.sin(tempo / 180 - b.f * 9) : 0;
+      ctx.strokeStyle = `hsl(${matiz + b.f * 10}, ${lerp(86, 67, b.f)}%, ${lerp(58 + brilhoPele, 31 + brilhoPele * .4, b.f)}%)`;
       this.traco(pontos, b.i0, b.i1);
     }
 
-    // Escamas: traços curtos perpendiculares, todos num só caminho.
-    const salto = Math.max(2, Math.round(0.72 / espacamento));
-    if (total > salto * 2) {
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.11)';
-      ctx.lineWidth = Math.max(1, cel * 0.06);
-      ctx.beginPath();
-      for (let i = salto; i < total - salto; i += salto) {
-        const f = i / (total - 1);
-        const dx = pontos[i + 1].x - pontos[i - 1].x;
-        const dy = pontos[i + 1].y - pontos[i - 1].y;
-        const d = Math.hypot(dx, dy) || 1;
-        const meia = lerp(larguraCabeca, larguraCauda, f) * 0.3;
-        ctx.moveTo(pontos[i].x - (dy / d) * meia, pontos[i].y + (dx / d) * meia);
-        ctx.lineTo(pontos[i].x + (dy / d) * meia, pontos[i].y - (dx / d) * meia);
-      }
-      ctx.stroke();
+    // Fita dorsal que segue a normal de cada curva. Ao contrário de deslocar o
+    // desenho para cima, o brilho mantém-se no mesmo lado do corpo ao virar.
+    const dorsal: { x: number; y: number }[] = [];
+    for (let i = 0; i < total; i++) {
+      const a = pontos[Math.max(0, i - 1)];
+      const b = pontos[Math.min(total - 1, i + 1)];
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const d = Math.hypot(dx, dy) || 1;
+      const f = i / Math.max(1, total - 1);
+      const desloca = lerp(larguraCabeca, larguraCauda, f) * -.18;
+      dorsal.push({ x: pontos[i].x - (dy / d) * desloca, y: pontos[i].y + (dx / d) * desloca });
+    }
+    const dorsalGrad = ctx.createLinearGradient(pontos[0].x, pontos[0].y, pontos[total - 1].x, pontos[total - 1].y);
+    dorsalGrad.addColorStop(0, 'rgba(255,255,255,.3)');
+    dorsalGrad.addColorStop(.35, 'rgba(255,255,255,.15)');
+    dorsalGrad.addColorStop(1, 'rgba(255,255,255,.025)');
+    ctx.strokeStyle = dorsalGrad;
+    ctx.lineWidth = Math.max(1.1, cel * .095);
+    this.traco(dorsal, 0, Math.max(0, total - 2));
+
+    // Escamas individuais alternadas. São pequenos losangos orientados pela
+    // tangente e desaparecem gradualmente na ponta da cauda.
+    const salto = Math.max(2, Math.round(.68 / espacamento));
+    for (let i = salto; i < total - salto; i += salto) {
+      const f = i / Math.max(1, total - 1);
+      const a = pontos[i - 1];
+      const b = pontos[i + 1];
+      const ang = Math.atan2(b.y - a.y, b.x - a.x);
+      const ladoEscama = i % (salto * 2) === 0 ? -1 : 1;
+      const largura = lerp(larguraCabeca, larguraCauda, f);
+      ctx.save();
+      ctx.translate(pontos[i].x + Math.cos(ang + Math.PI / 2) * largura * .16 * ladoEscama, pontos[i].y + Math.sin(ang + Math.PI / 2) * largura * .16 * ladoEscama);
+      ctx.rotate(ang + Math.PI / 4);
+      ctx.fillStyle = this.pele === 'prisma'
+        ? `hsla(${matiz + f * 150}, 95%, 78%, ${.2 * (1 - f)})`
+        : `rgba(255,255,255,${.13 * (1 - f * .7)})`;
+      const e = Math.max(.8, cel * .07 * (1 - f * .35));
+      ctx.fillRect(-e, -e, e * 2, e * 2);
+      ctx.restore();
     }
 
-    // Brilho de cima: um fio claro deslocado, que dá volume ao tubo.
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.09)';
-    ctx.lineWidth = cel * 0.15;
-    ctx.save();
-    ctx.translate(0, -cel * 0.15);
-    this.traco(pontos, 0, Math.max(0, total - 3));
-    ctx.restore();
+    // Ponta de cauda luminosa: fecha a silhueta e torna clara a direcção do
+    // movimento mesmo quando o corpo ocupa várias curvas.
+    const ponta = pontos[total - 1];
+    ctx.fillStyle = `hsla(${matiz + 10}, 80%, 62%, .72)`;
+    ctx.shadowColor = `hsl(${matiz}, 90%, 62%)`;
+    ctx.shadowBlur = cel * .35;
+    ctx.beginPath();
+    ctx.arc(ponta.x, ponta.y, Math.max(1.2, larguraCauda * .28), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
     ctx.restore();
 
     // A inclinação da cabeça sai do próprio caminho, por isso roda sozinha ao
@@ -836,6 +974,17 @@ export class Pintor {
     ctx.translate(p.x, p.y);
     ctx.rotate(angulo);
 
+    const formaCabeca = (escalaForma: number): void => {
+      const s = l * escalaForma;
+      ctx.beginPath();
+      ctx.moveTo(-s * .5, -s * .3);
+      ctx.bezierCurveTo(-s * .15, -s * .49, s * .34, -s * .44, s * .56, -s * .2);
+      ctx.bezierCurveTo(s * .67, -s * .08, s * .67, s * .08, s * .56, s * .2);
+      ctx.bezierCurveTo(s * .34, s * .44, -s * .15, s * .49, -s * .5, s * .3);
+      ctx.bezierCurveTo(-s * .58, s * .16, -s * .58, -s * .16, -s * .5, -s * .3);
+      ctx.closePath();
+    };
+
     // Luz projectada à frente: lê-se a direcção mesmo de relance.
     if (vivo) {
       const facho = ctx.createRadialGradient(l * 0.4, 0, 0, l * 0.4, 0, l * 1.5);
@@ -847,43 +996,104 @@ export class Pintor {
       ctx.fill();
     }
 
-    // Rebordo escuro primeiro: separa a cabeça do corpo mesmo a alta velocidade.
-    caminhoRedondo(ctx, -l / 2, -l / 2, l, l, l * 0.36);
-    ctx.fillStyle = 'rgba(3, 14, 12, 0.88)';
+    // Sombra e rebordo com silhueta de cabeça, mais larga na face e ligada ao
+    // pescoço atrás. Esta forma mantém a direcção legível em qualquer curva.
+    ctx.save();
+    ctx.translate(0, cel * .1);
+    formaCabeca(1.08);
+    ctx.fillStyle = 'rgba(0, 0, 0, .42)';
+    ctx.fill();
+    ctx.restore();
+    formaCabeca(1.07);
+    ctx.fillStyle = `hsl(${matiz + 7}, 52%, 5%)`;
     ctx.fill();
 
-    const m = l - Math.max(2, cel * 0.1);
-    caminhoRedondo(ctx, -m / 2, -m / 2, m, m, m * 0.34);
-    const brilho = ctx.createLinearGradient(0, -m / 2, 0, m / 2);
+    formaCabeca(.94);
+    const brilho = ctx.createLinearGradient(-l * .25, -l * .4, l * .28, l * .42);
     brilho.addColorStop(0, '#ffffff');
-    brilho.addColorStop(0.42, `hsl(${matiz}, 95%, 86%)`);
-    brilho.addColorStop(1, `hsl(${matiz + 6}, 85%, 66%)`);
+    brilho.addColorStop(0.3, `hsl(${matiz}, 96%, 88%)`);
+    brilho.addColorStop(0.68, `hsl(${matiz + 4}, 88%, 72%)`);
+    brilho.addColorStop(1, `hsl(${matiz + 9}, 76%, 55%)`);
     ctx.fillStyle = brilho;
     ctx.fill();
 
+    // Placa frontal e veio dorsal: pequenos volumes que evitam o aspecto de
+    // quadrado liso sem comprometer a expressão da cara.
+    ctx.strokeStyle = 'rgba(255,255,255,.28)';
+    ctx.lineWidth = Math.max(.8, cel * .035);
+    ctx.beginPath();
+    ctx.moveTo(-l * .36, -l * .18);
+    ctx.bezierCurveTo(-l * .12, -l * .34, l * .18, -l * .3, l * .38, -l * .16);
+    ctx.stroke();
+    ctx.fillStyle = `hsla(${matiz}, 80%, 44%, .15)`;
+    ctx.beginPath();
+    ctx.moveTo(-l * .38, 0);
+    ctx.lineTo(-l * .12, -l * .11);
+    ctx.lineTo(l * .05, 0);
+    ctx.lineTo(-l * .12, l * .11);
+    ctx.closePath();
+    ctx.fill();
+
     // Olhos: já rodados com a cabeça, ficam sempre virados para a frente.
-    const dOlho = cel * 0.21;
-    const frente = cel * 0.17;
-    const raioOlho = cel * 0.125;
+    const dOlho = cel * 0.205;
+    const frente = cel * 0.195;
+    const raioOlho = cel * 0.132;
     const piscar = vivo && Math.sin(tempo / 1400) > 0.985 ? 0.2 : 1;
-    ctx.fillStyle = '#04201a';
+    // Sombra das órbitas e esclera clara, para os olhos terem profundidade.
+    ctx.fillStyle = `hsla(${matiz + 12}, 55%, 18%, .32)`;
+    for (const s of [-1, 1]) {
+      ctx.beginPath();
+      ctx.ellipse(frente - cel * .015, dOlho * s + cel * .015, raioOlho * 1.2, raioOlho * 1.16 * piscar, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#f8fff6';
     for (const s of [-1, 1]) {
       ctx.beginPath();
       ctx.ellipse(frente, dOlho * s, raioOlho, raioOlho * piscar, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#071511';
+    for (const s of [-1, 1]) {
+      ctx.beginPath();
+      ctx.ellipse(frente + raioOlho * .22, dOlho * s, raioOlho * .48, raioOlho * .7 * piscar, 0, 0, Math.PI * 2);
       ctx.fill();
     }
     if (vivo && piscar > 0.5) {
       ctx.fillStyle = '#ffffff';
       for (const s of [-1, 1]) {
         ctx.beginPath();
-        ctx.arc(frente + raioOlho * 0.34, dOlho * s - raioOlho * 0.2, raioOlho * 0.34, 0, Math.PI * 2);
+        ctx.arc(frente + raioOlho * 0.36, dOlho * s - raioOlho * 0.2, raioOlho * 0.2, 0, Math.PI * 2);
         ctx.fill();
       }
     }
 
+    // Narinas discretas e língua rara: vida suficiente sem distrair durante
+    // mudanças rápidas de direcção.
+    ctx.fillStyle = `hsla(${matiz + 10}, 45%, 16%, .62)`;
+    for (const s of [-1, 1]) {
+      ctx.beginPath();
+      ctx.arc(l * .49, s * l * .085, Math.max(.65, cel * .026), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    const lingua = vivo ? Math.max(0, Math.sin(tempo / 260) - .83) / .17 : 0;
+    if (lingua > 0) {
+      const alcance = l * (.18 + lingua * .18);
+      ctx.strokeStyle = '#ff6d98';
+      ctx.lineWidth = Math.max(1, cel * .045);
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(l * .55, 0);
+      ctx.lineTo(l * .55 + alcance, 0);
+      ctx.moveTo(l * .55 + alcance, 0);
+      ctx.lineTo(l * .55 + alcance + cel * .1, -cel * .075);
+      ctx.moveTo(l * .55 + alcance, 0);
+      ctx.lineTo(l * .55 + alcance + cel * .1, cel * .075);
+      ctx.stroke();
+    }
+
     if (!vivo) {
       // Cruz nos olhos: leitura imediata de que a partida acabou.
-      ctx.strokeStyle = '#04201a';
+      ctx.strokeStyle = '#071511';
       ctx.lineWidth = Math.max(1.4, cel * 0.07);
       ctx.lineCap = 'round';
       ctx.beginPath();
