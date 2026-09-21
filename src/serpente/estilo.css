@@ -263,6 +263,30 @@ button:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; }
 .estado > span { display: flex; flex-direction: column; gap: 2px; }
 .estado b { color: var(--tinta); font-size: 8px; font-weight: 600; white-space: nowrap; }
 .estado small { color: var(--acento); font-size: 6px; letter-spacing: 1px; }
+/* Contador do modo de relógio: vive dentro da pílula de estado, com divisória,
+   para não mexer nas três colunas da HUD. */
+.estado .tempo {
+  padding-left: 8px;
+  margin-left: 1px;
+  border-left: 1px solid var(--linha);
+  color: var(--acento);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  transition: color 200ms linear;
+}
+.estado .tempo[hidden] { display: none; }
+.estado.urgente .tempo {
+  color: var(--vermelho, #ff6b7a);
+  animation: aperto 500ms ease-in-out infinite;
+}
+@keyframes aperto {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.14); }
+}
+
 .estado i, .telemetria i {
   width: 5px;
   height: 5px;
