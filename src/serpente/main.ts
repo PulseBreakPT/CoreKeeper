@@ -319,7 +319,7 @@ function medirArena(): void {
   const deitado = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
   const movel = window.matchMedia('(max-width: 800px)').matches;
   const topo = palco.getBoundingClientRect().top;
-  const reserva = deitado ? 42 : movel ? (window.innerHeight <= 720 ? 88 : 134) : 155;
+  const reserva = deitado ? 42 : movel ? (window.innerHeight <= 720 ? 122 : 170) : 191;
   const lado = Math.max(100, Math.floor(Math.min(palco.clientWidth, window.innerHeight - topo - reserva)));
   if (tela.style.width === `${lado}px`) return;
   pintor.redimensionar(lado);

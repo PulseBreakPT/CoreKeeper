@@ -289,21 +289,22 @@ button:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; }
   box-shadow: inset 0 0 40px rgba(0, 0, 0, .28);
 }
 .arena canvas { display: block; border-radius: inherit; }
+.partida-info { height: 37px; margin-top: 5px; display: flex; align-items: center; gap: 6px; }
 .missao-partida {
-  position: absolute; z-index: 3; top: 10px; left: 10px; max-width: calc(100% - 20px); min-height: 29px;
-  display: flex; align-items: center; gap: 7px; padding: 6px 9px; pointer-events: none;
-  color: var(--tinta-fraca); background: hsla(var(--tema), 25%, 5%, .78); border: 1px solid hsla(var(--tema), 55%, 70%, .16);
-  border-radius: 999px; backdrop-filter: blur(8px); font-size: 7px; letter-spacing: .55px;
+  min-width: 0; min-height: 29px; flex: 1 1 auto; display: flex; align-items: center; gap: 7px; padding: 6px 9px; pointer-events: none;
+  color: var(--tinta-fraca); background: var(--painel-profundo); border: 1px solid var(--linha);
+  border-radius: 9px; font-size: 7px; letter-spacing: .55px;
 }
+.missao-partida span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .missao-partida small { color: var(--acento); font-size: 6px; letter-spacing: 1px; }
-.missao-partida b { color: #fff; font-size: 7px; }
+.missao-partida b { margin-left: auto; color: var(--tinta); font-size: 7px; white-space: nowrap; }
 .missao-partida.cumprida { color: hsl(var(--tema), 35%, 10%); background: var(--acento); border-color: var(--acento-forte); }
 .missao-partida.cumprida small, .missao-partida.cumprida b { color: hsl(var(--tema), 35%, 10%); }
 .missao-partida.celebrar { animation: celebrar-missao .55s ease-out; }
 .combo {
-  position: absolute; z-index: 3; top: 48px; right: 10px; display: flex; align-items: baseline; gap: 5px;
-  padding: 5px 8px; color: var(--acento); background: hsla(var(--tema), 25%, 5%, .76); border: 1px solid hsla(var(--tema), 70%, 60%, .24);
-  border-radius: 9px; pointer-events: none; backdrop-filter: blur(8px);
+  min-height: 29px; flex: 0 0 auto; display: flex; align-items: center; gap: 5px;
+  padding: 5px 9px; color: var(--acento); background: var(--painel-profundo); border: 1px solid hsla(var(--tema), 70%, 60%, .24);
+  border-radius: 9px; pointer-events: none;
 }
 .combo span { font-size: 6px; letter-spacing: 1px; }.combo b { font-size: 14px; }
 @keyframes celebrar-missao { 35% { transform: scale(1.08); box-shadow: 0 0 28px hsla(var(--tema), 90%, 70%, .4); } }
