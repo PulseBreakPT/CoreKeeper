@@ -1,7 +1,7 @@
 export type TipoPeca = 'I' | 'O' | 'T' | 'S' | 'Z' | 'J' | 'L';
 export type Celula = TipoPeca | null;
 export interface Peca { tipo: TipoPeca; x: number; y: number; rotacao: number }
-export interface EventoTetris { linhas: number; pontos: number; nome: string; terminou: boolean; nivelSubiu: boolean }
+export interface EventoTetris { linhas: number; pontos: number; nome: string; terminou: boolean; nivelSubiu: boolean; limpas: { y: number; tipos: TipoPeca[] }[] }
 
 export const COLUNAS = 10;
 export const LINHAS = 22;
@@ -135,7 +135,7 @@ export class Tetris {
   fantasma(): Peca { const p = { ...this.peca }; while (!this.colide({ ...p, y: p.y + 1 })) p.y++; return p; }
 
   quedaTotal(): EventoTetris {
-    if (this.estado !== 'jogar') return { linhas: 0, pontos: 0, nome: '', terminou: false, nivelSubiu: false };
+    if (this.estado !== 'jogar') return { linhas: 0, pontos: 0, nome: '', terminou: false, nivelSubiu: false, limpas: [] };
     const inicio = this.peca.y; this.peca = this.fantasma(); this.pontos += Math.max(0, this.peca.y - inicio) * 2;
     return this.fixar();
   }
@@ -158,9 +158,10 @@ export class Tetris {
 
   private fixar(): EventoTetris {
     const antes = this.pontos; const nivelAntes = this.nivel; const spin = this.tSpin();
-    for (const { x, y } of blocos(this.peca)) { if (y < 0) { this.estado = 'fim'; return { linhas: 0, pontos: 0, nome: 'FIM', terminou: true, nivelSubiu: false }; } this.grelha[y][x] = this.peca.tipo; }
+    for (const { x, y } of blocos(this.peca)) { if (y < 0) { this.estado = 'fim'; return { linhas: 0, pontos: 0, nome: 'FIM', terminou: true, nivelSubiu: false, limpas: [] }; } this.grelha[y][x] = this.peca.tipo; }
     const completas: number[] = [];
     for (let y = 0; y < LINHAS; y++) if (this.grelha[y].every(Boolean)) completas.push(y);
+    const limpas = completas.map((y) => ({ y, tipos: this.grelha[y] as TipoPeca[] }));
     for (const y of completas) { this.grelha.splice(y, 1); this.grelha.unshift(Array<Celula>(COLUNAS).fill(null)); }
     const n = completas.length; this.combo = n ? this.combo + 1 : -1;
     const base = spin ? [400, 800, 1200, 1600][n] : [0, 100, 300, 500, 800][n];
@@ -172,6 +173,6 @@ export class Tetris {
     this.linhas += n; this.nivel = 1 + Math.floor(this.linhas / 10);
     this.criarPeca();
     const nomes = spin ? `T-SPIN${n ? ` ×${n}` : ''}` : n === 4 ? 'TETRIS' : n ? `${n} LINHA${n > 1 ? 'S' : ''}` : '';
-    return { linhas: n, pontos: this.pontos - antes, nome: nomes, terminou: this.estado === 'fim', nivelSubiu: this.nivel > nivelAntes };
+    return { linhas: n, pontos: this.pontos - antes, nome: nomes, terminou: this.estado === 'fim', nivelSubiu: this.nivel > nivelAntes, limpas };
   }
 }
