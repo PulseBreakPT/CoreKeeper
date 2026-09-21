@@ -86,6 +86,7 @@ button:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; }
 }
 .menu-categorias button { color: var(--tinta-fraca); background: transparent; border-radius: 10px; font-size: 9px; font-weight: 600; letter-spacing: .5px; }
 .menu-categorias button span { margin-right: 4px; color: hsl(var(--tema), 35%, 42%); font-size: 7px; }
+.menu-categorias button b { font: inherit; }
 .menu-categorias button.activo { color: var(--tinta); background: var(--painel-alto); box-shadow: inset 0 0 0 1px var(--linha-forte); }
 .menu-categorias button.activo span { color: var(--acento); }
 .menu-painel { display: none; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
@@ -114,6 +115,9 @@ button:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; }
 .amostra i { width: 23px; height: 23px; border-radius: 50%; background: var(--cor); box-shadow: 0 0 0 4px rgba(255, 255, 255, .045), 0 0 14px rgba(255, 255, 255, .04); }
 .amostra.seleccionada { color: var(--tinta); border-color: var(--acento); background: var(--painel-alto); box-shadow: 0 0 0 1px hsla(var(--tema), 75%, 65%, .16); }
 .amostra.seleccionada::after { content: ''; position: absolute; }
+.idiomas .amostra { min-height: 52px; gap: 4px; }
+.idiomas .amostra b { color: var(--acento); font-size: 11px; letter-spacing: 1px; }
+.idiomas .amostra.seleccionada b { color: var(--acento-forte); text-shadow: 0 0 12px var(--brilho); }
 .tema-floresta { --cor: #b9ed68; }.tema-oceano { --cor: #60ddea; }.tema-violeta { --cor: #b98aff; }.tema-brasa { --cor: #ff895c; }
 .cobra-lima { --cor: hsl(83, 78%, 67%); }.cobra-ciano { --cor: hsl(188, 78%, 67%); }.cobra-rosa { --cor: hsl(330, 78%, 67%); }.cobra-dourada { --cor: hsl(42, 85%, 66%); }
 .pele-aurora { --cor: linear-gradient(135deg, hsl(var(--cobra), 85%, 76%), hsl(var(--cobra), 70%, 44%)); }

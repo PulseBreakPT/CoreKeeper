@@ -19,13 +19,13 @@
             <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M23 7H12a5 5 0 0 0 0 10h8a5 5 0 0 1 0 10H8" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><circle cx="24" cy="6" r="1.5" fill="currentColor" class="olho-logo"/></svg>
             <span>SERPENTE</span>
           </div>
-          <span class="versao">MOBILE / 3.2.1</span>
+          <span class="versao">MOBILE / 3.3</span>
         </header>
 
         <div class="menu-hero">
           <div>
-            <span class="menu-indice">CONFIGURA A PARTIDA</span>
-            <h1 id="menu-titulo">A tua cobra.<br><em>As tuas regras.</em></h1>
+            <span class="menu-indice" data-i18n="configurar">CONFIGURA A PARTIDA</span>
+            <h1 id="menu-titulo" data-i18n-html="titulo">A tua cobra.<br><em>As tuas regras.</em></h1>
           </div>
           <svg class="cobra-preview" viewBox="0 0 180 116" fill="none" aria-hidden="true">
             <path class="preview-halo" d="M22 92h54a25 25 0 0 0 0-50H61a25 25 0 0 1 0-50h70c18 0 27 11 27 28v18"/>
@@ -37,100 +37,109 @@
 
         <div class="menu-opcoes">
           <nav class="menu-categorias" aria-label="Categorias do menu">
-            <button type="button" data-menu-categoria="jogo" class="activo"><span>01</span> Jogar</button>
-            <button type="button" data-menu-categoria="visual"><span>02</span> Visual</button>
-            <button type="button" data-menu-categoria="carreira"><span>03</span> Carreira</button>
+            <button type="button" data-menu-categoria="jogo" class="activo"><span>01</span><b data-i18n="jogar">Jogar</b></button>
+            <button type="button" data-menu-categoria="visual"><span>02</span><b data-i18n="visual">Visual</b></button>
+            <button type="button" data-menu-categoria="carreira"><span>03</span><b data-i18n="carreira">Carreira</b></button>
           </nav>
 
           <section class="menu-painel" data-menu-painel="visual" aria-label="Personalização visual">
           <fieldset class="escolha">
-            <legend>AMBIENTE DA ARENA</legend>
+            <legend data-i18n="ambiente">AMBIENTE DA ARENA</legend>
             <div class="paleta" id="paleta-tema">
-              <button class="amostra tema-floresta" type="button" data-tema="floresta" aria-label="Tema Floresta"><i></i><span>Floresta</span></button>
-              <button class="amostra tema-oceano" type="button" data-tema="oceano" aria-label="Tema Oceano"><i></i><span>Oceano</span></button>
-              <button class="amostra tema-violeta" type="button" data-tema="violeta" aria-label="Tema Violeta"><i></i><span>Violeta</span></button>
-              <button class="amostra tema-brasa" type="button" data-tema="brasa" aria-label="Tema Brasa"><i></i><span>Brasa</span></button>
+              <button class="amostra tema-floresta" type="button" data-tema="floresta"><i></i><span data-i18n="floresta">Floresta</span></button>
+              <button class="amostra tema-oceano" type="button" data-tema="oceano"><i></i><span data-i18n="oceano">Oceano</span></button>
+              <button class="amostra tema-violeta" type="button" data-tema="violeta"><i></i><span data-i18n="violeta">Violeta</span></button>
+              <button class="amostra tema-brasa" type="button" data-tema="brasa"><i></i><span data-i18n="brasa">Brasa</span></button>
             </div>
           </fieldset>
 
           <fieldset class="escolha">
-            <legend>COR DO TEMA E DA COBRA</legend>
+            <legend data-i18n="cor">COR DO TEMA E DA COBRA</legend>
             <div class="paleta cobras" id="paleta-cobra">
-              <button class="amostra cobra-lima" type="button" data-cobra="83" aria-label="Cobra Lima"><i></i><span>Lima</span></button>
-              <button class="amostra cobra-ciano" type="button" data-cobra="188" aria-label="Cobra Ciano"><i></i><span>Ciano</span></button>
-              <button class="amostra cobra-rosa" type="button" data-cobra="330" aria-label="Cobra Rosa"><i></i><span>Rosa</span></button>
-              <button class="amostra cobra-dourada" type="button" data-cobra="42" aria-label="Cobra Dourada"><i></i><span>Dourada</span></button>
+              <button class="amostra cobra-lima" type="button" data-cobra="83"><i></i><span data-i18n="lima">Lima</span></button>
+              <button class="amostra cobra-ciano" type="button" data-cobra="188"><i></i><span data-i18n="ciano">Ciano</span></button>
+              <button class="amostra cobra-rosa" type="button" data-cobra="330"><i></i><span data-i18n="rosa">Rosa</span></button>
+              <button class="amostra cobra-dourada" type="button" data-cobra="42"><i></i><span data-i18n="dourada">Dourada</span></button>
             </div>
           </fieldset>
 
           <fieldset class="escolha">
-            <legend>PELE ANIMADA</legend>
+            <legend data-i18n="pele">PELE ANIMADA</legend>
             <div class="paleta peles" id="paleta-pele">
-              <button class="amostra pele-aurora" type="button" data-pele="aurora"><i></i><span>Aurora</span></button>
-              <button class="amostra pele-pulso" type="button" data-pele="pulso"><i></i><span>Pulso</span></button>
-              <button class="amostra pele-prisma" type="button" data-pele="prisma"><i></i><span>Prisma</span></button>
-              <button class="amostra pele-brasa" type="button" data-pele="brasa"><i></i><span>Brasa</span></button>
+              <button class="amostra pele-aurora" type="button" data-pele="aurora"><i></i><span data-i18n="aurora">Aurora</span></button>
+              <button class="amostra pele-pulso" type="button" data-pele="pulso"><i></i><span data-i18n="pulso">Pulso</span></button>
+              <button class="amostra pele-prisma" type="button" data-pele="prisma"><i></i><span data-i18n="prisma">Prisma</span></button>
+              <button class="amostra pele-brasa" type="button" data-pele="brasa"><i></i><span data-i18n="brasa">Brasa</span></button>
+            </div>
+          </fieldset>
+          <fieldset class="escolha escolha-idioma">
+            <legend data-i18n="idioma">IDIOMA / LANGUAGE</legend>
+            <div class="paleta idiomas" id="paleta-idioma">
+              <button class="amostra" type="button" data-idioma="pt-PT"><b>PT</b><span>Portugal</span></button>
+              <button class="amostra" type="button" data-idioma="en"><b>EN</b><span>English</span></button>
+              <button class="amostra" type="button" data-idioma="es"><b>ES</b><span>Español</span></button>
+              <button class="amostra" type="button" data-idioma="pt-BR"><b>BR</b><span>Brasil</span></button>
             </div>
           </fieldset>
           </section>
 
           <section class="menu-painel activo" data-menu-painel="jogo" aria-label="Modos de jogo">
           <fieldset class="escolha modos-menu">
-            <legend>ESCOLHE O MODO</legend>
+            <legend data-i18n="escolherModo">ESCOLHE O MODO</legend>
             <div class="cartoes-modo">
               <button type="button" data-escolha-modo="classico">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 13c0-5 3-9 8-9s8 4 8 9-3 7-8 7-8-2-8-7Z"/><path d="M8 12h3m-1.5-1.5v3M15.5 12h.01"/></svg>
-                <span><strong>Clássico</strong><small>Sem limite. Só instinto.</small></span><i></i>
+                <span><strong data-i18n="classico">Clássico</strong><small data-i18n="classicoDesc">Sem limite. Só instinto.</small></span><i></i>
               </button>
               <button type="button" data-escolha-modo="relogio">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg>
-                <span><strong>Contra o tempo</strong><small>10 segundos por luz.</small></span><i></i>
+                <span><strong data-i18n="relogio">Contra o tempo</strong><small data-i18n="relogioDesc">10 segundos por luz.</small></span><i></i>
               </button>
               <button type="button" data-escolha-modo="portais">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 4h5v16H5M19 4h-5v16h5"/><path d="m8 12 3-3m-3 3 3 3m5-3-3-3m3 3-3 3"/></svg>
-                <span><strong>Portais</strong><small>Atravessa as margens.</small></span><i></i>
+                <span><strong data-i18n="portais">Portais</strong><small data-i18n="portaisDesc">Atravessa as margens.</small></span><i></i>
               </button>
               <button type="button" data-escolha-modo="zen">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 21c5-3 8-7 8-12-4 0-7 1-8 4-1-3-4-4-8-4 0 5 3 9 8 12Z"/><path d="M12 13v8"/></svg>
-                <span><strong>Zen</strong><small>Sem derrota. Só fluxo.</small></span><i></i>
+                <span><strong data-i18n="zen">Zen</strong><small data-i18n="zenDesc">Sem derrota. Só fluxo.</small></span><i></i>
               </button>
               <button type="button" data-escolha-modo="escuro">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 15.5A8 8 0 1 1 8.5 4 7 7 0 0 0 20 15.5Z"/></svg>
-                <span><strong>Eclipse</strong><small>Visão limitada à cabeça.</small></span><i></i>
+                <span><strong data-i18n="escuro">Eclipse</strong><small data-i18n="escuroDesc">Visão limitada à cabeça.</small></span><i></i>
               </button>
               <button type="button" data-escolha-modo="obstaculos">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/><path d="M17 4v6M4 17h6"/></svg>
-                <span><strong>Labirinto</strong><small>Blocos em cada arena.</small></span><i></i>
+                <span><strong data-i18n="obstaculos">Labirinto</strong><small data-i18n="obstaculosDesc">Blocos em cada arena.</small></span><i></i>
               </button>
               <button type="button" data-escolha-modo="uma-vida">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 8c0 6-8 11-8 11S4 14 4 8a4 4 0 0 1 7-2.6L12 7l1-1.6A4 4 0 0 1 20 8Z"/><path d="M12 9v5"/></svg>
-                <span><strong>Uma vida</strong><small>Mais rápido. Pontos ×2.</small></span><i></i>
+                <span><strong data-i18n="umaVida">Uma vida</strong><small data-i18n="umaVidaDesc">Mais rápido. Pontos ×2.</small></span><i></i>
               </button>
             </div>
           </fieldset>
 
           <button class="desafio-diario" id="desafio-diario" type="button" data-escolha-modo="diario">
-            <span><small>DESAFIO DO DIA</small><strong id="diario-titulo">A regra muda todos os dias</strong></span>
+            <span><small data-i18n="desafio">DESAFIO DO DIA</small><strong id="diario-titulo">A regra muda todos os dias</strong></span>
             <b id="diario-recorde">0</b><i>→</i>
           </button>
           </section>
 
           <section class="menu-painel" data-menu-painel="carreira" aria-label="Carreira e progressão">
-            <div class="carreira-resumo"><small>PROGRESSÃO LOCAL</small><h2>O teu percurso.</h2><p>Recordes, missões e conquistas ficam guardados neste dispositivo.</p></div>
+            <div class="carreira-resumo"><small data-i18n="progressao">PROGRESSÃO LOCAL</small><h2 data-i18n="percurso">O teu percurso.</h2><p data-i18n="percursoDesc">Recordes, missões e conquistas ficam guardados neste dispositivo.</p></div>
           <section class="carreira" aria-label="Carreira">
             <button type="button" id="abrir-carreira">
-              <span><small>CARREIRA</small><strong><b id="stat-partidas">0</b> partidas · <b id="stat-comidas">0</b> luzes</strong></span>
-              <span class="nivel"><small>NÍVEL</small><b id="stat-nivel">1</b></span>
+              <span><small data-i18n="carreira">CARREIRA</small><strong id="carreira-contagem"><b id="stat-partidas">0</b> partidas · <b id="stat-comidas">0</b> luzes</strong></span>
+              <span class="nivel"><small data-i18n="nivel">NÍVEL</small><b id="stat-nivel">1</b></span>
             </button>
           </section>
           <div class="carreira-destaques">
-            <span><b id="menu-recorde">0</b><small>RECORDE ATUAL</small></span>
-            <span><b id="menu-conquistas">0/10</b><small>CONQUISTAS</small></span>
+            <span><b id="menu-recorde">0</b><small data-i18n="recordeAtual">RECORDE ATUAL</small></span>
+            <span><b id="menu-conquistas">0/10</b><small data-i18n="conquistas">CONQUISTAS</small></span>
           </div>
           </section>
         </div>
 
-        <button class="entrar" id="entrar" type="button"><span>ENTRAR NA ARENA</span><span aria-hidden="true">→</span></button>
+        <button class="entrar" id="entrar" type="button"><span data-i18n="entrar">ENTRAR NA ARENA</span><span aria-hidden="true">→</span></button>
       </div>
     </section>
 
@@ -155,12 +164,12 @@
 
       <section class="hud" id="hud" aria-label="Pontuação">
         <div class="marcador" id="marcador-pontos">
-          <span class="rotulo">PONTOS</span>
+          <span class="rotulo" data-i18n="pontos">PONTOS</span>
           <span class="valor" id="pontos">0</span>
         </div>
         <div class="estado"><i></i><span><b id="estado" role="status">PRONTO</b><small id="hud-modo">CLÁSSICO</small></span></div>
         <div class="marcador direita">
-          <span class="rotulo"><i class="coroa" id="coroa" hidden></i> RECORDE</span>
+          <span class="rotulo"><i class="coroa" id="coroa" hidden></i><span data-i18n="recorde"> RECORDE</span></span>
           <span class="valor" id="recorde">0</span>
         </div>
       </section>
@@ -172,7 +181,7 @@
             <div class="inicio" id="inicio">
               <div class="inicio-marca">
                 <span class="etiqueta">ARCADE / 01</span>
-                <h1>Segue o<br><em>instinto.</em></h1>
+                <h1 data-i18n-html="segue">Segue o<br><em>instinto.</em></h1>
               </div>
               <svg class="cobra-arte" viewBox="0 0 500 280" fill="none" aria-hidden="true">
                 <defs><linearGradient id="cor-cobra" x1="90" y1="230" x2="350" y2="60" gradientUnits="userSpaceOnUse"><stop stop-color="#506f25"/><stop offset=".55" stop-color="#b9ec65"/><stop offset="1" stop-color="#dcffa0"/></linearGradient><filter id="brilho"><feGaussianBlur stdDeviation="12"/></filter></defs>
@@ -182,35 +191,35 @@
                 <rect x="298" y="121" width="38" height="42" rx="16" fill="#d8fa9d"/><path d="M309 145v5m15-5v5" stroke="#253214" stroke-width="5" stroke-linecap="round"/>
                 <circle cx="397" cy="190" r="28" stroke="#ee9a77" stroke-opacity=".14"/><circle cx="397" cy="190" r="18" stroke="#ee9a77" stroke-opacity=".28"/><circle cx="397" cy="190" r="9" fill="#f8ae88"/>
               </svg>
-              <button class="jogar comecar" id="comecar" type="button"><span>JOGAR</span><span aria-hidden="true">→</span></button>
+              <button class="jogar comecar" id="comecar" type="button"><span data-i18n="jogarAcao">JOGAR</span><span aria-hidden="true">→</span></button>
             </div>
             <p class="dica" id="dica">DESLIZA PARA COMEÇAR</p>
             <div class="fim pausa" id="pausa" hidden>
-              <span class="etiqueta">JOGO EM PAUSA</span>
-              <h2>Respira.</h2>
-              <button class="jogar" id="continuar" type="button">CONTINUAR <span aria-hidden="true">→</span></button>
-              <p class="atalho">A arena fica à tua espera.</p>
+              <span class="etiqueta" data-i18n="pausaEtiqueta">JOGO EM PAUSA</span>
+              <h2 data-i18n="respira">Respira.</h2>
+              <button class="jogar" id="continuar" type="button"><span data-i18n="continuar">CONTINUAR</span> <span aria-hidden="true">→</span></button>
+              <p class="atalho" data-i18n="espera">A arena fica à tua espera.</p>
             </div>
             <div class="fim" id="fim" hidden aria-labelledby="fim-titulo">
-              <span class="etiqueta">FIM DA PARTIDA</span>
+              <span class="etiqueta" data-i18n="fimEtiqueta">FIM DA PARTIDA</span>
               <h2 id="fim-titulo">FIM DE JOGO</h2>
               <div class="fim-numeros">
-                <div class="marcador"><span class="rotulo">PONTOS</span><span class="valor" id="fim-pontos">0</span></div>
-                <div class="marcador"><span class="rotulo">RECORDE</span><span class="valor" id="fim-recorde">0</span></div>
+                <div class="marcador"><span class="rotulo" data-i18n="pontos">PONTOS</span><span class="valor" id="fim-pontos">0</span></div>
+                <div class="marcador"><span class="rotulo" data-i18n="recorde">RECORDE</span><span class="valor" id="fim-recorde">0</span></div>
               </div>
               <p class="medalha" id="fim-medalha" hidden></p>
-              <button class="jogar" id="jogar" type="button">JOGAR OUTRA VEZ <span aria-hidden="true">↻</span></button>
-              <button class="partilhar" id="partilhar" type="button">PARTILHAR RESULTADO <span aria-hidden="true">↗</span></button>
-              <p class="atalho">Toca para voltar à arena.</p>
+              <button class="jogar" id="jogar" type="button"><span data-i18n="jogarOutra">JOGAR OUTRA VEZ</span> <span aria-hidden="true">↻</span></button>
+              <button class="partilhar" id="partilhar" type="button"><span data-i18n="partilhar">PARTILHAR RESULTADO</span> <span aria-hidden="true">↗</span></button>
+              <p class="atalho" data-i18n="voltar">Toca para voltar à arena.</p>
             </div>
           </div>
         </div>
         <div class="partida-info" aria-label="Objetivo da partida">
-          <div class="missao-partida" id="missao-partida"><small>MISSÃO</small><span id="missao-texto">Recolhe 8 luzes</span><b id="missao-progresso">0/8</b></div>
+          <div class="missao-partida" id="missao-partida"><small data-i18n="missao">MISSÃO</small><span id="missao-texto">Recolhe 8 luzes</span><b id="missao-progresso">0/8</b></div>
           <div class="combo" id="combo" hidden><span>COMBO</span><b id="combo-valor">×2</b></div>
         </div>
         <div class="telemetria">
-          <span><i></i><b id="comprimento">3</b> SEGMENTOS</span>
+          <span><i></i><b id="comprimento">3</b> <span data-i18n="segmentos">SEGMENTOS</span></span>
           <span id="velocidade">1.00× RITMO</span>
           <span>21 × 21</span>
         </div>
@@ -222,16 +231,16 @@
 
       <div class="gesto-dica" aria-hidden="true">
         <svg viewBox="0 0 44 44" fill="none"><path d="M22 4v36M4 22h36M22 4l-4 4m4-4 4 4M40 22l-4-4m4 4-4 4M22 40l-4-4m4 4 4-4M4 22l4-4m-4 4 4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-        <span>DESLIZA NA ARENA<small>uma direção por gesto</small></span>
+        <span><span data-i18n="deslizaArena">DESLIZA NA ARENA</span><small data-i18n="gesto">uma direção por gesto</small></span>
       </div>
     </main>
     <section class="folha" id="folha-carreira" hidden aria-labelledby="carreira-titulo">
       <button class="folha-fundo" id="fechar-carreira" type="button" aria-label="Fechar carreira"></button>
       <div class="folha-painel">
         <div class="folha-puxador"></div>
-        <header><span><small>PERFIL LOCAL</small><h2 id="carreira-titulo">A tua carreira</h2></span><button type="button" id="fechar-carreira-x" aria-label="Fechar">×</button></header>
+        <header><span><small data-i18n="perfil">PERFIL LOCAL</small><h2 id="carreira-titulo" data-i18n="tuaCarreira">A tua carreira</h2></span><button type="button" id="fechar-carreira-x" aria-label="Fechar">×</button></header>
         <div class="estatisticas" id="estatisticas"></div>
-        <h3>CONQUISTAS</h3>
+        <h3 data-i18n="conquistas">CONQUISTAS</h3>
         <div class="conquistas" id="conquistas"></div>
       </div>
     </section>

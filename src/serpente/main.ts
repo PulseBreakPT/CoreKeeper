@@ -9,11 +9,21 @@ import {
   CONQUISTAS,
   Carreira,
   criarMissao,
-  nomeDesafioDiario,
   partilharResultado,
   valorMissao,
   type Missao,
 } from './progressao';
+import {
+  definirIdioma,
+  idiomaActual,
+  nomeDiario,
+  nomeModo,
+  t,
+  textoConquista,
+  textoMissao,
+  type ChaveTexto,
+  type Idioma,
+} from './idiomas';
 
 /** Cada modo tem o seu recorde: as pontuações não são comparáveis entre eles. */
 const CHAVE_RECORDE: Record<Modo, string> = {
@@ -36,10 +46,6 @@ const TEMAS: Record<Tema, number> = { floresta: 83, oceano: 188, violeta: 274, b
 const CORES_COBRA = [83, 188, 330, 42] as const;
 type Pele = 'aurora' | 'pulso' | 'prisma' | 'brasa';
 const PELES: Pele[] = ['aurora', 'pulso', 'prisma', 'brasa'];
-const NOMES_MODO: Record<Modo, string> = {
-  classico: 'CLÁSSICO', relogio: 'CONTRA O TEMPO', portais: 'PORTAIS', zen: 'ZEN',
-  escuro: 'ECLIPSE', obstaculos: 'LABIRINTO', 'uma-vida': 'UMA VIDA', diario: 'DESAFIO DIÁRIO',
-};
 /** Tempo entre a morte e o cartão de fim — dá espaço ao impacto. */
 const ESPERA_FIM = 440;
 const RELOGIO_MS = SEGUNDOS_RELOGIO * 1000;
@@ -48,7 +54,7 @@ const ARRANQUE: { texto: string; ms: number }[] = [
   { texto: '3', ms: 520 },
   { texto: '2', ms: 520 },
   { texto: '1', ms: 520 },
-  { texto: 'VAI', ms: 380 },
+  { texto: '', ms: 380 },
 ];
 
 function elemento<T extends HTMLElement>(id: string): T {
@@ -146,6 +152,8 @@ let estadoAplicado = '';
 let temaEscolhido = lerTema();
 let cobraEscolhida = lerCobra();
 let peleEscolhida = lerPele();
+let idiomaEscolhido = idiomaActual();
+definirIdioma(idiomaEscolhido);
 
 const modoInicial = lerModo();
 const jogo = new Jogo({ lado: LADO, recorde: lerRecorde(modoInicial), modo: modoInicial });
@@ -222,6 +230,36 @@ function actualizarEscolhasMenu(): void {
     botao.classList.toggle('seleccionada', seleccionado);
     botao.setAttribute('aria-pressed', String(seleccionado));
   });
+  document.querySelectorAll<HTMLButtonElement>('[data-idioma]').forEach((botao) => {
+    const seleccionado = botao.dataset.idioma === idiomaEscolhido;
+    botao.classList.toggle('seleccionada', seleccionado);
+    botao.setAttribute('aria-pressed', String(seleccionado));
+  });
+}
+
+function aplicarIdioma(idioma: Idioma): void {
+  idiomaEscolhido = idioma;
+  definirIdioma(idioma);
+  document.querySelectorAll<HTMLElement>('[data-i18n]').forEach((alvo) => {
+    alvo.textContent = t(alvo.dataset.i18n as ChaveTexto);
+  });
+  document.querySelectorAll<HTMLElement>('[data-i18n-html]').forEach((alvo) => {
+    alvo.innerHTML = t(alvo.dataset.i18nHtml as ChaveTexto);
+  });
+  const descricao = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+  if (descricao) descricao.content = t('meta');
+  tela.setAttribute('aria-label', t('deslizaArena'));
+  botaoAbrirMenu.setAttribute('aria-label', t('abrirMenu'));
+  elemento('fechar-carreira').setAttribute('aria-label', t('fechar'));
+  elemento('fechar-carreira-x').setAttribute('aria-label', t('fechar'));
+  if (jogo.estado === 'pronto') dica.textContent = semRato ? t('deslizaComecar') : t('teclasComecar');
+  estadoAplicado = '';
+  sincronizarBotaoSom();
+  sincronizarBotaoModo();
+  actualizarEscolhasMenu();
+  actualizarCarreira();
+  actualizarHud();
+  sincronizarEstado();
 }
 
 function actualizarCarreira(): void {
@@ -229,19 +267,21 @@ function actualizarCarreira(): void {
   elemento('stat-partidas').textContent = String(d.partidas);
   elemento('stat-comidas').textContent = String(d.comidas);
   elemento('stat-nivel').textContent = String(carreira.nivel());
-  elemento('diario-titulo').textContent = nomeDesafioDiario();
+  elemento('diario-titulo').textContent = nomeDiario();
   elemento('diario-recorde').textContent = String(lerRecorde('diario'));
   elemento('menu-recorde').textContent = String(jogo.recorde);
   elemento('menu-conquistas').textContent = `${d.conquistas.length}/${CONQUISTAS.length}`;
   const minutos = Math.floor(d.tempoMs / 60_000);
+  elemento('carreira-contagem').innerHTML = `<b id="stat-partidas">${d.partidas}</b> ${t('partidas')} · <b id="stat-comidas">${d.comidas}</b> ${t('luzes')}`;
   elemento('estatisticas').innerHTML = [
-    ['PARTIDAS', d.partidas], ['PONTOS', d.pontos], ['LUZES', d.comidas],
-    ['ESPECIAIS', d.especiais], ['MELHOR COMBO', `×${d.melhorCombo}`],
-    ['MAIOR COBRA', d.maiorComprimento], ['MISSÕES', d.missoes], ['MINUTOS', minutos],
+    [t('statPartidas'), d.partidas], [t('statPontos'), d.pontos], [t('statLuzes'), d.comidas],
+    [t('statEspeciais'), d.especiais], [t('statCombo'), `×${d.melhorCombo}`],
+    [t('statCobra'), d.maiorComprimento], [t('statMissoes'), d.missoes], [t('statMinutos'), minutos],
   ].map(([rotulo, valor]) => `<div><small>${rotulo}</small><strong>${valor}</strong></div>`).join('');
   elemento('conquistas').innerHTML = CONQUISTAS.map((c) => {
     const feita = d.conquistas.includes(c.id);
-    return `<article class="${feita ? 'feita' : ''}"><b>${c.icone}</b><span><strong>${c.nome}</strong><small>${c.descricao}</small></span><i>${feita ? '✓' : '·'}</i></article>`;
+    const texto = textoConquista(c.id);
+    return `<article class="${feita ? 'feita' : ''}"><b>${c.icone}</b><span><strong>${texto.nome}</strong><small>${texto.descricao}</small></span><i>${feita ? '✓' : '·'}</i></article>`;
   }).join('');
 }
 
@@ -273,6 +313,12 @@ function escolherPele(pele: Pele): void {
   vibrar(8);
 }
 
+function escolherIdioma(idioma: Idioma): void {
+  if (idioma === idiomaEscolhido) return;
+  aplicarIdioma(idioma);
+  vibrar(8);
+}
+
 function escolherModo(modo: Modo): void {
   if (jogo.modo === modo) return;
   jogo.modo = modo;
@@ -286,13 +332,13 @@ function escolherModo(modo: Modo): void {
 
 function actualizarMissao(): void {
   const valor = Math.min(missao.alvo, valorMissao(missao, jogo));
-  missaoTexto.textContent = missao.texto;
+  missaoTexto.textContent = textoMissao(missao);
   missaoProgresso.textContent = `${valor}/${missao.alvo}`;
   missaoPartida.classList.toggle('cumprida', missaoCumprida);
   if (!missaoCumprida && valor >= missao.alvo) {
     missaoCumprida = true;
     missaoPartida.classList.add('cumprida');
-    missaoTexto.textContent = 'Missão cumprida';
+    missaoTexto.textContent = t('missaoCumprida');
     missaoProgresso.textContent = '✓';
     animar(missaoPartida, 'celebrar');
     som.marco();
@@ -308,7 +354,7 @@ function actualizarHud(): void {
   elemento('marco-texto').textContent = `${jogo.pontos} / ${marco}`;
   progresso.value = jogo.pontos % 10;
   elemento('comprimento').textContent = String(jogo.corpo.length);
-  elemento('velocidade').textContent = `${(150 / jogo.passoMs()).toFixed(2)}× RITMO`;
+  elemento('velocidade').textContent = `${(150 / jogo.passoMs()).toFixed(2)}× ${t('ritmo')}`;
   combo.hidden = jogo.combo < 2;
   comboValor.textContent = `×${jogo.combo}`;
   actualizarMissao();
@@ -337,10 +383,10 @@ function sincronizarEstado(): void {
   pausa.hidden = !pausado;
   botaoPausar.disabled = jogo.estado !== 'a-jogar';
   botaoPausar.setAttribute('aria-pressed', String(pausado));
-  botaoPausar.setAttribute('aria-label', pausado ? 'Continuar partida' : 'Pausar partida');
-  estado.textContent = pausado ? 'EM PAUSA' : jogo.estado === 'pronto' ? 'À TUA ESPERA'
-    : jogo.estado === 'a-jogar' ? (arranque >= 0 ? 'PREPARA-TE' : 'NO FLOW')
-    : jogo.estado === 'completo' ? 'ARENA CONQUISTADA' : 'MAIS UMA?';
+  botaoPausar.setAttribute('aria-label', pausado ? t('retomar') : t('pausar'));
+  estado.textContent = pausado ? t('emPausa') : jogo.estado === 'pronto' ? t('pronto')
+    : jogo.estado === 'a-jogar' ? (arranque >= 0 ? t('prepara') : t('fluxo'))
+    : jogo.estado === 'completo' ? t('conquistada') : t('maisUma');
 }
 
 function alternarPausa(): void {
@@ -355,14 +401,14 @@ function mostrarFim(): void {
   podeReiniciar = true;
   const ganhou = jogo.estado === 'completo';
   cartao.classList.toggle('vitoria', ganhou);
-  tituloFim.textContent = ganhou ? 'ARENA CHEIA' : porTempo ? 'TEMPO ESGOTADO' : 'FIM DE JOGO';
+  tituloFim.textContent = ganhou ? t('arenaCheia') : porTempo ? t('tempoEsgotado') : t('fimJogo');
   fimPontos.textContent = String(jogo.pontos);
   fimRecorde.textContent = String(jogo.recorde);
-  if (ganhou) fimMedalha.textContent = 'Encheste o tabuleiro. Não há mais sítio para crescer.';
-  else if (jogo.pontos > 0 && jogo.pontos === jogo.recorde) fimMedalha.textContent = 'Recorde novo!';
+  if (ganhou) fimMedalha.textContent = t('cheiaDesc');
+  else if (jogo.pontos > 0 && jogo.pontos === jogo.recorde) fimMedalha.textContent = t('novoRecorde');
   else fimMedalha.textContent = '';
-  if (novasConquistas) fimMedalha.textContent = `${fimMedalha.textContent ? `${fimMedalha.textContent} · ` : ''}Conquista: ${novasConquistas}.`;
-  if (missaoCumprida) fimMedalha.textContent = `${fimMedalha.textContent ? `${fimMedalha.textContent} · ` : ''}Missão cumprida.`;
+  if (novasConquistas) fimMedalha.textContent = `${fimMedalha.textContent ? `${fimMedalha.textContent} · ` : ''}${t('conquistaNova', { nome: novasConquistas })}`;
+  if (missaoCumprida) fimMedalha.textContent = `${fimMedalha.textContent ? `${fimMedalha.textContent} · ` : ''}${t('missaoCumprida')}`;
   fimMedalha.hidden = fimMedalha.textContent === '';
   cartao.hidden = false;
   animar(cartao, 'aparecer-fim');
@@ -371,7 +417,7 @@ function mostrarFim(): void {
 function terminar(): void {
   gravarRecorde(jogo.modo, jogo.recorde);
   const novas = carreira.registar(jogo, duracaoPartida, missaoCumprida);
-  novasConquistas = novas.map((c) => c.nome).join(', ');
+  novasConquistas = novas.map((c) => textoConquista(c.id).nome).join(', ');
   actualizarCarreira();
   actualizarHud();
   dica.hidden = true;
@@ -393,7 +439,7 @@ function reiniciar(): void {
   cartao.hidden = true;
   fimMedalha.hidden = true;
   dica.hidden = false;
-  dica.textContent = semRato ? 'Desliza para começar' : 'Setas ou WASD para começar';
+  dica.textContent = semRato ? t('deslizaComecar') : t('teclasComecar');
   pintor.limpar();
   jogo.reiniciar();
   numeroPartida++;
@@ -471,7 +517,7 @@ function quadro(agora: number): void {
       acumulado = 0;
     } else {
       pintor.arranque = {
-        texto: ARRANQUE[passo].texto,
+        texto: passo === ARRANQUE.length - 1 ? t('vai') : ARRANQUE[passo].texto,
         progresso: (arranque - inicio) / ARRANQUE[passo].ms,
       };
       if (passo !== arranqueAnunciado) {
@@ -514,8 +560,8 @@ function quadro(agora: number): void {
     if (jogo.estado !== 'a-jogar') acumulado = 0;
   }
 
-  const t = jogo.estado === 'a-jogar' && arranque < 0 ? Math.min(1, acumulado / jogo.passoMs()) : 1;
-  pintor.desenhar(jogo, t, dt, agora);
+  const progressoPasso = jogo.estado === 'a-jogar' && arranque < 0 ? Math.min(1, acumulado / jogo.passoMs()) : 1;
+  pintor.desenhar(jogo, progressoPasso, dt, agora);
   sincronizarMatiz();
   sincronizarEstado();
   requestAnimationFrame(quadro);
@@ -554,14 +600,14 @@ function confirmar(): void {
 }
 
 function sincronizarBotaoModo(): void {
-  hudModo.textContent = NOMES_MODO[jogo.modo];
+  hudModo.textContent = nomeModo(jogo.modo);
 }
 
 function sincronizarBotaoSom(): void {
   botaoSom.classList.toggle('mudo', !som.ligado);
   botaoSom.setAttribute('aria-pressed', String(som.ligado));
-  botaoSom.setAttribute('aria-label', som.ligado ? 'Desligar som' : 'Ligar som');
-  botaoSom.title = som.ligado ? 'Desligar som' : 'Ligar som';
+  botaoSom.setAttribute('aria-label', som.ligado ? t('somDesligar') : t('somLigar'));
+  botaoSom.title = som.ligado ? t('somDesligar') : t('somLigar');
 }
 
 ligarControlos(arena, { virar, confirmar, interacao: () => som.garantir() });
@@ -573,6 +619,9 @@ document.querySelectorAll<HTMLButtonElement>('[data-cobra]').forEach((botao) => 
 });
 document.querySelectorAll<HTMLButtonElement>('[data-pele]').forEach((botao) => {
   botao.addEventListener('click', () => escolherPele(botao.dataset.pele as Pele));
+});
+document.querySelectorAll<HTMLButtonElement>('[data-idioma]').forEach((botao) => {
+  botao.addEventListener('click', () => escolherIdioma(botao.dataset.idioma as Idioma));
 });
 document.querySelectorAll<HTMLButtonElement>('[data-escolha-modo]').forEach((botao) => {
   botao.addEventListener('click', () => escolherModo(botao.dataset.escolhaModo as Modo));
@@ -596,11 +645,11 @@ elemento('fechar-carreira').addEventListener('click', fecharCarreira);
 elemento('fechar-carreira-x').addEventListener('click', fecharCarreira);
 
 botaoPartilhar.addEventListener('click', async () => {
-  const modo = NOMES_MODO[jogo.modo].toLocaleLowerCase('pt-PT');
-  const texto = `Marquei ${jogo.pontos} pontos e cheguei a ${jogo.corpo.length} segmentos no modo ${modo} de Serpente. Consegues superar?`;
+  const modo = nomeModo(jogo.modo).toLocaleLowerCase(idiomaEscolhido);
+  const texto = t('partilhaTexto', { pontos: jogo.pontos, segmentos: jogo.corpo.length, modo });
   try {
     const resultado = await partilharResultado(texto);
-    if (resultado === 'copiado') botaoPartilhar.firstChild!.textContent = 'RESULTADO COPIADO ';
+    if (resultado === 'copiado') botaoPartilhar.querySelector('span')!.textContent = t('copiado');
   } catch { /* o jogador fechou o menu nativo */ }
 });
 botaoEntrar.addEventListener('click', () => {
@@ -666,13 +715,8 @@ declare global {
 }
 window.serpente = { jogo, som, reiniciar, restante: () => restante };
 
-sincronizarBotaoSom();
-sincronizarBotaoModo();
-actualizarEscolhasMenu();
-actualizarCarreira();
+aplicarIdioma(idiomaEscolhido);
 reporRelogio();
 sincronizarMatiz();
-actualizarHud();
 medirArena();
-sincronizarEstado();
 requestAnimationFrame(quadro);
