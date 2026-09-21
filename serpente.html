@@ -19,7 +19,7 @@
             <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M23 7H12a5 5 0 0 0 0 10h8a5 5 0 0 1 0 10H8" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><circle cx="24" cy="6" r="1.5" fill="currentColor" class="olho-logo"/></svg>
             <span>SERPENTE</span>
           </div>
-          <span class="versao">MOBILE / 2.0.1</span>
+          <span class="versao">MOBILE / 2.1</span>
         </header>
 
         <div class="menu-hero">
@@ -36,8 +36,15 @@
         </div>
 
         <div class="menu-opcoes">
+          <nav class="menu-categorias" aria-label="Categorias do menu">
+            <button type="button" data-menu-categoria="jogo" class="activo"><span>01</span> Jogar</button>
+            <button type="button" data-menu-categoria="visual"><span>02</span> Visual</button>
+            <button type="button" data-menu-categoria="carreira"><span>03</span> Carreira</button>
+          </nav>
+
+          <section class="menu-painel" data-menu-painel="visual" aria-label="Personalização visual">
           <fieldset class="escolha">
-            <legend><span>01</span> AMBIENTE</legend>
+            <legend>AMBIENTE DA ARENA</legend>
             <div class="paleta" id="paleta-tema">
               <button class="amostra tema-floresta" type="button" data-tema="floresta" aria-label="Tema Floresta"><i></i><span>Floresta</span></button>
               <button class="amostra tema-oceano" type="button" data-tema="oceano" aria-label="Tema Oceano"><i></i><span>Oceano</span></button>
@@ -47,7 +54,7 @@
           </fieldset>
 
           <fieldset class="escolha">
-            <legend><span>02</span> COR DA COBRA</legend>
+            <legend>COR DO TEMA E DA COBRA</legend>
             <div class="paleta cobras" id="paleta-cobra">
               <button class="amostra cobra-lima" type="button" data-cobra="83" aria-label="Cobra Lima"><i></i><span>Lima</span></button>
               <button class="amostra cobra-ciano" type="button" data-cobra="188" aria-label="Cobra Ciano"><i></i><span>Ciano</span></button>
@@ -56,8 +63,20 @@
             </div>
           </fieldset>
 
+          <fieldset class="escolha">
+            <legend>PELE ANIMADA</legend>
+            <div class="paleta peles" id="paleta-pele">
+              <button class="amostra pele-aurora" type="button" data-pele="aurora"><i></i><span>Aurora</span></button>
+              <button class="amostra pele-pulso" type="button" data-pele="pulso"><i></i><span>Pulso</span></button>
+              <button class="amostra pele-prisma" type="button" data-pele="prisma"><i></i><span>Prisma</span></button>
+              <button class="amostra pele-brasa" type="button" data-pele="brasa"><i></i><span>Brasa</span></button>
+            </div>
+          </fieldset>
+          </section>
+
+          <section class="menu-painel activo" data-menu-painel="jogo" aria-label="Modos de jogo">
           <fieldset class="escolha modos-menu">
-            <legend><span>03</span> MODO DE JOGO</legend>
+            <legend>ESCOLHE O MODO</legend>
             <div class="cartoes-modo">
               <button type="button" data-escolha-modo="classico">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 13c0-5 3-9 8-9s8 4 8 9-3 7-8 7-8-2-8-7Z"/><path d="M8 12h3m-1.5-1.5v3M15.5 12h.01"/></svg>
@@ -90,26 +109,24 @@
             </div>
           </fieldset>
 
-          <fieldset class="escolha">
-            <legend><span>04</span> PELE ANIMADA</legend>
-            <div class="paleta peles" id="paleta-pele">
-              <button class="amostra pele-aurora" type="button" data-pele="aurora"><i></i><span>Aurora</span></button>
-              <button class="amostra pele-pulso" type="button" data-pele="pulso"><i></i><span>Pulso</span></button>
-              <button class="amostra pele-prisma" type="button" data-pele="prisma"><i></i><span>Prisma</span></button>
-              <button class="amostra pele-brasa" type="button" data-pele="brasa"><i></i><span>Brasa</span></button>
-            </div>
-          </fieldset>
-
           <button class="desafio-diario" id="desafio-diario" type="button" data-escolha-modo="diario">
             <span><small>DESAFIO DO DIA</small><strong id="diario-titulo">A regra muda todos os dias</strong></span>
             <b id="diario-recorde">0</b><i>→</i>
           </button>
+          </section>
 
+          <section class="menu-painel" data-menu-painel="carreira" aria-label="Carreira e progressão">
+            <div class="carreira-resumo"><small>PROGRESSÃO LOCAL</small><h2>O teu percurso.</h2><p>Recordes, missões e conquistas ficam guardados neste dispositivo.</p></div>
           <section class="carreira" aria-label="Carreira">
             <button type="button" id="abrir-carreira">
               <span><small>CARREIRA</small><strong><b id="stat-partidas">0</b> partidas · <b id="stat-comidas">0</b> luzes</strong></span>
               <span class="nivel"><small>NÍVEL</small><b id="stat-nivel">1</b></span>
             </button>
+          </section>
+          <div class="carreira-destaques">
+            <span><b id="menu-recorde">0</b><small>RECORDE ATUAL</small></span>
+            <span><b id="menu-conquistas">0/10</b><small>CONQUISTAS</small></span>
+          </div>
           </section>
         </div>
 

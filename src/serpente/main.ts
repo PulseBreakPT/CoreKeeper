@@ -156,6 +156,7 @@ pintor.definirCores(cobraEscolhida, TEMAS[temaEscolhido]);
 pintor.definirPele(peleEscolhida);
 document.documentElement.dataset.tema = temaEscolhido;
 document.documentElement.style.setProperty('--cobra', String(cobraEscolhida));
+document.documentElement.style.setProperty('--tema', String(cobraEscolhida));
 
 let temporizadorFim: number | null = null;
 let podeReiniciar = false;
@@ -230,6 +231,8 @@ function actualizarCarreira(): void {
   elemento('stat-nivel').textContent = String(carreira.nivel());
   elemento('diario-titulo').textContent = nomeDesafioDiario();
   elemento('diario-recorde').textContent = String(lerRecorde('diario'));
+  elemento('menu-recorde').textContent = String(jogo.recorde);
+  elemento('menu-conquistas').textContent = `${d.conquistas.length}/${CONQUISTAS.length}`;
   const minutos = Math.floor(d.tempoMs / 60_000);
   elemento('estatisticas').innerHTML = [
     ['PARTIDAS', d.partidas], ['PONTOS', d.pontos], ['LUZES', d.comidas],
@@ -254,6 +257,7 @@ function escolherTema(tema: Tema): void {
 function escolherCobra(matiz: number): void {
   cobraEscolhida = matiz;
   document.documentElement.style.setProperty('--cobra', String(matiz));
+  document.documentElement.style.setProperty('--tema', String(matiz));
   matizAplicada = matiz;
   pintor.definirCores(matiz, TEMAS[temaEscolhido]);
   try { localStorage.setItem(CHAVE_COBRA, String(matiz)); } catch { /* preferência desta sessão */ }
@@ -571,6 +575,14 @@ document.querySelectorAll<HTMLButtonElement>('[data-pele]').forEach((botao) => {
 document.querySelectorAll<HTMLButtonElement>('[data-escolha-modo]').forEach((botao) => {
   botao.addEventListener('click', () => escolherModo(botao.dataset.escolhaModo as Modo));
 });
+document.querySelectorAll<HTMLButtonElement>('[data-menu-categoria]').forEach((botao) => {
+  botao.addEventListener('click', () => {
+    const categoria = botao.dataset.menuCategoria;
+    document.querySelectorAll<HTMLButtonElement>('[data-menu-categoria]').forEach((b) => b.classList.toggle('activo', b === botao));
+    document.querySelectorAll<HTMLElement>('[data-menu-painel]').forEach((painel) => painel.classList.toggle('activo', painel.dataset.menuPainel === categoria));
+    vibrar(6);
+  });
+});
 
 const fecharCarreira = (): void => { folhaCarreira.hidden = true; };
 elemento('abrir-carreira').addEventListener('click', () => {
@@ -598,6 +610,7 @@ botaoEntrar.addEventListener('click', () => {
 botaoAbrirMenu.addEventListener('click', () => {
   reiniciar();
   document.documentElement.style.setProperty('--cobra', String(cobraEscolhida));
+  document.documentElement.style.setProperty('--tema', String(cobraEscolhida));
   matizAplicada = cobraEscolhida;
   actualizarEscolhasMenu();
   menuPrincipal.classList.remove('fechado');
