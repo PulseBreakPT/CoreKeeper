@@ -97,7 +97,12 @@ let arranque = -1;
 let arranqueAnunciado = -1;
 
 const semRato = window.matchMedia('(hover: none)').matches;
-dica.textContent = semRato ? 'Desliza para começar' : 'Setas ou WASD para começar';
+dica.textContent = semRato ? 'Desliza ou toca nas setas' : 'Setas ou WASD para começar';
+
+/** Resposta tátil curta: acrescenta confirmação sem competir com o som. */
+function vibrar(padrao: number | number[]): void {
+  if ('vibrate' in navigator) navigator.vibrate(padrao);
+}
 
 function animar(alvo: HTMLElement, classe: string): void {
   alvo.classList.remove(classe);
@@ -142,7 +147,7 @@ function medirArena(): void {
 }
 
 function sincronizarEstado(): void {
-  const chave = `${jogo.estado}:${pausado}:${arranque >= 0}`;
+  const chave = `${jogo.estado}:${jogo.direcao}:${pausado}:${arranque >= 0}`;
   if (chave === estadoAplicado) return;
   estadoAplicado = chave;
   inicio.hidden = jogo.estado !== 'pronto';
@@ -153,6 +158,9 @@ function sincronizarEstado(): void {
   estado.textContent = pausado ? 'EM PAUSA' : jogo.estado === 'pronto' ? 'À TUA ESPERA'
     : jogo.estado === 'a-jogar' ? (arranque >= 0 ? 'PREPARA-TE' : 'NO FLOW')
     : jogo.estado === 'completo' ? 'ARENA CONQUISTADA' : 'MAIS UMA?';
+  document.querySelectorAll<HTMLButtonElement>('[data-direcao]').forEach((botao) => {
+    botao.classList.toggle('activa', jogo.estado === 'a-jogar' && botao.dataset.direcao === jogo.direcao);
+  });
 }
 
 function alternarPausa(): void {
@@ -200,7 +208,7 @@ function reiniciar(): void {
   cartao.hidden = true;
   fimMedalha.hidden = true;
   dica.hidden = false;
-  dica.textContent = semRato ? 'Desliza para começar' : 'Setas ou WASD para começar';
+  dica.textContent = semRato ? 'Desliza ou toca nas setas' : 'Setas ou WASD para começar';
   pintor.limpar();
   jogo.reiniciar();
   acumulado = 0;
@@ -223,6 +231,7 @@ function aplicar(): void {
   if (r.comeu) {
     pintor.explodir(jogo.corpo[0], jogo.pontos, r.marco);
     som.comer(jogo.comidas);
+    vibrar(r.marco ? [18, 28, 18] : 12);
     restante = RELOGIO_MS;
     ultimoTique = 0;
     actualizarHud();
@@ -235,12 +244,14 @@ function aplicar(): void {
   if (r.completo) {
     pintor.vitoria(jogo.corpo[0]);
     som.vitoria();
+    vibrar([25, 35, 25, 35, 60]);
     terminar();
     return;
   }
   if (r.morreu) {
     pintor.impacto(r.cabeca);
     som.fim();
+    vibrar([55, 35, 90]);
     terminar();
   }
 }
@@ -291,6 +302,7 @@ function quadro(agora: number): void {
       pintor.relogio = 0;
       pintor.impacto(jogo.corpo[0]);
       som.fim();
+      vibrar([55, 35, 90]);
       terminar();
     }
   }
@@ -317,6 +329,7 @@ function virar(d: Direcao): void {
   const arrancava = jogo.estado === 'pronto';
   // Se a direcção for recusada (inversão), a dica fica — o jogo ainda não arrancou.
   if (!jogo.virar(d)) return;
+  vibrar(7);
   dica.hidden = true;
   // A primeira ordem não põe a serpente a andar: põe a contagem a andar.
   if (arrancava) comecarContagem();
@@ -377,6 +390,14 @@ function sincronizarBotaoSom(): void {
 }
 
 ligarControlos(arena, { virar, confirmar, interacao: () => som.garantir() });
+document.querySelectorAll<HTMLButtonElement>('[data-direcao]').forEach((botao) => {
+  botao.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    som.garantir();
+    virar(botao.dataset.direcao as Direcao);
+    botao.blur();
+  });
+});
 elemento('comecar').addEventListener('click', () => { elemento('comecar').blur(); som.garantir(); confirmar(); });
 elemento('continuar').addEventListener('click', () => { elemento('continuar').blur(); alternarPausa(); });
 botaoPausar.addEventListener('click', () => { botaoPausar.blur(); alternarPausa(); });

@@ -91,17 +91,26 @@
       </section>
 
       <nav class="controlos" aria-label="Opções do jogo">
-        <button class="modo" id="modo" type="button" aria-pressed="false" aria-label="Modo clássico. Tocar liga o modo relógio">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg>
-          <span><small>MODO</small><strong id="modo-nome">Clássico</strong></span>
-          <span class="trocar" aria-hidden="true">↔</span>
-        </button>
-        <div class="gesto" aria-hidden="true">
-          <svg viewBox="0 0 56 56" fill="none"><path d="M28 5v46M5 28h46M28 5l-5 5m5-5 5 5M51 28l-5-5m5 5-5 5M28 51l-5-5m5 5 5-5M5 28l5-5m-5 5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <span>DESLIZA<br><small>para controlar</small></span>
+        <div class="painel-modo">
+          <span class="comando-titulo">A TUA PARTIDA</span>
+          <button class="modo" id="modo" type="button" aria-pressed="false" aria-label="Modo clássico. Tocar liga o modo relógio">
+            <span class="modo-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg></span>
+            <span><small>MODO</small><strong id="modo-nome">Clássico</strong></span>
+            <span class="trocar" aria-hidden="true">↔</span>
+          </button>
+          <p id="modo-dica">O original. Sem limites de tempo.</p>
+        </div>
+        <div class="comando">
+          <span class="comando-titulo">TOCA OU DESLIZA</span>
+          <div class="dpad" aria-label="Controlos direcionais">
+            <button class="direcao cima" type="button" data-direcao="cima" aria-label="Virar para cima"><span>↑</span></button>
+            <button class="direcao esquerda" type="button" data-direcao="esquerda" aria-label="Virar para a esquerda"><span>←</span></button>
+            <span class="nucleo" aria-hidden="true"><i></i></span>
+            <button class="direcao direita" type="button" data-direcao="direita" aria-label="Virar para a direita"><span>→</span></button>
+            <button class="direcao baixo" type="button" data-direcao="baixo" aria-label="Virar para baixo"><span>↓</span></button>
+          </div>
         </div>
       </nav>
-      <p class="modo-dica" id="modo-dica">O original. Sem limites de tempo.</p>
     </main>
     <script type="module" src="/src/serpente/main.ts"></script>
   </body>
