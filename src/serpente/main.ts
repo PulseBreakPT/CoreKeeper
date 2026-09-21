@@ -5,6 +5,7 @@ import { Jogo, LADO, SEGUNDOS_RELOGIO, type Direcao, type Modo } from './logica'
 import { Pintor } from './pintura';
 import { Som } from './audio';
 import { ligarControlos } from './controlos';
+import { montarTetris } from '../tetris/main';
 import {
   CONQUISTAS,
   Carreira,
@@ -169,6 +170,10 @@ const sistemaConteudo = elemento<HTMLElement>('sistema-conteudo');
 const poderesActivos = elemento<HTMLElement>('poderes-ativos');
 const botaoReviver = elemento<HTMLButtonElement>('reviver');
 const tutorial = elemento<HTMLElement>('tutorial');
+const vistaSerpente = document.querySelector<HTMLElement>('main.jogo')!;
+const configSerpente = elemento<HTMLElement>('config-serpente');
+const configTetris = elemento<HTMLElement>('config-tetris');
+let jogoHub: 'serpente' | 'tetris' = 'serpente';
 let pausado = false;
 let estadoAplicado = '';
 let temaEscolhido = lerTema();
@@ -307,6 +312,7 @@ function aplicarIdioma(idioma: Idioma): void {
   actualizarCarreira();
   actualizarHud();
   sincronizarEstado();
+  escolherJogoHub(jogoHub);
 }
 
 function actualizarCarreira(): void {
@@ -716,6 +722,27 @@ function sincronizarBotaoSom(): void {
   botaoSom.title = som.ligado ? t('somDesligar') : t('somLigar');
 }
 
+function abrirHub(): void {
+  tetrisHub.desactivar();
+  vistaSerpente.hidden = false;
+  menuPrincipal.classList.remove('fechado');
+}
+
+const tetrisHub = montarTetris(abrirHub);
+
+function escolherJogoHub(escolha: 'serpente' | 'tetris'): void {
+  jogoHub = escolha;
+  menuPrincipal.classList.toggle('tetris-seleccionado', escolha === 'tetris');
+  configSerpente.hidden = escolha !== 'serpente';
+  configTetris.hidden = escolha !== 'tetris';
+  document.querySelectorAll<HTMLButtonElement>('[data-jogo]').forEach((b) => b.classList.toggle('seleccionado', b.dataset.jogo === escolha));
+  const titulo = elemento<HTMLElement>('menu-titulo');
+  titulo.innerHTML = escolha === 'serpente' ? t('titulo') : t('tetrisTitulo');
+  document.querySelector<HTMLElement>('.cobra-preview')!.hidden = escolha === 'tetris';
+  botaoEntrar.querySelector('span')!.textContent = escolha === 'tetris' ? t('jogarTetris') : t('entrar');
+  vibrar(7);
+}
+
 function abrirSistema(titulo: string, etiqueta: string, conteudo: string): void {
   sistemaTitulo.textContent = titulo;
   sistemaEtiqueta.textContent = etiqueta;
@@ -813,6 +840,9 @@ document.querySelectorAll<HTMLButtonElement>('[data-menu-categoria]').forEach((b
     vibrar(6);
   });
 });
+document.querySelectorAll<HTMLButtonElement>('[data-jogo]').forEach((botao) => {
+  botao.addEventListener('click', () => escolherJogoHub(botao.dataset.jogo as 'serpente' | 'tetris'));
+});
 
 const fecharCarreira = (): void => { folhaCarreira.hidden = true; };
 elemento('abrir-carreira').addEventListener('click', () => {
@@ -877,7 +907,15 @@ botaoEntrar.addEventListener('click', () => {
   som.garantir();
   vibrar(14);
   menuPrincipal.classList.add('fechado');
-  confirmar();
+  if (jogoHub === 'tetris') {
+    reiniciar();
+    vistaSerpente.hidden = true;
+    tetrisHub.activar();
+  } else {
+    tetrisHub.desactivar();
+    vistaSerpente.hidden = false;
+    confirmar();
+  }
 });
 botaoAbrirMenu.addEventListener('click', () => {
   reiniciar();
