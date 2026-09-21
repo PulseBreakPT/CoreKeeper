@@ -140,6 +140,9 @@ export class Pintor {
   private molduraCor = COR_COMIDA;
   /** Sobra de crescimento: faz a cabeça inchar por instantes depois de comer. */
   private incho = 0;
+  /** Combo já apresentado e energia do impacto visual do multiplicador. */
+  private comboVisto = 0;
+  private comboImpacto = 0;
   /** Progresso 0–1 da desintegração do corpo depois da morte. */
   private desfazer = -1;
   private desfeitos = 0;
@@ -237,6 +240,8 @@ export class Pintor {
     this.clarao = 0;
     this.moldura = 0;
     this.incho = 0;
+    this.comboVisto = 0;
+    this.comboImpacto = 0;
     this.relogioRasto = 0;
     this.desfazer = -1;
     this.desfeitos = 0;
@@ -262,6 +267,11 @@ export class Pintor {
       + 10 * Math.pow(this.intensidade, CURVA_MATIZ);
     this.matiz = matiz;
 
+    if (jogo.combo !== this.comboVisto) {
+      if (jogo.combo >= 2 && jogo.combo > this.comboVisto) this.comboImpacto = 1;
+      this.comboVisto = jogo.combo;
+    }
+
     this.avancarEfeitos(s, jogo, cel);
 
     ctx.save();
@@ -274,6 +284,7 @@ export class Pintor {
     this.contagem(L, tempo, jogo.estado);
     // A contagem fica por trás de tudo: é pano de fundo, a serpente é o assunto.
     this.arrancada(L, matiz);
+    this.comboFundo(L, jogo.combo, tempo, matiz);
     this.comida(jogo.comida, cel, tempo, jogo.estado);
     this.obstaculos(jogo, cel, tempo);
     const saltaX = jogo.atravessaParedes() && jogo.corpo.some((p, i) => i > 0 && Math.abs(p.x - jogo.corpo[i - 1].x) > jogo.lado / 2);
@@ -309,6 +320,7 @@ export class Pintor {
     this.clarao = Math.max(0, this.clarao - s * 5);
     this.moldura = Math.max(0, this.moldura - s * 2.2);
     this.incho = Math.max(0, this.incho - s * 5);
+    this.comboImpacto = Math.max(0, this.comboImpacto - s * 2.35);
 
     this.relogioRasto += s;
     if (this.rastoActivo && jogo.estado === 'a-jogar' && this.relogioRasto >= 0.055 && jogo.corpo.length > 1) {
@@ -562,6 +574,51 @@ export class Pintor {
     ctx.globalAlpha = 0.07 + pulso * 0.07;
     ctx.fillStyle = COR_MORTE;
     ctx.fillText(String(this.segundos), L / 2, L / 2);
+    ctx.restore();
+  }
+
+  /**
+   * Multiplicador integrado no chão da arena. É desenhado antes de comida,
+   * obstáculos e serpente para estes passarem sempre por cima. Quando aumenta,
+   * só esta camada recebe escala e tremor; a arena e os controlos ficam imóveis.
+   */
+  private comboFundo(L: number, combo: number, tempo: number, matiz: number): void {
+    if (combo < 2) return;
+    const ctx = this.ctx;
+    const impacto = this.comboImpacto;
+    const entrada = 1 - impacto;
+    const onda = Math.sin(entrada * Math.PI);
+    const tremeX = Math.sin(tempo * .19) * L * .011 * impacto;
+    const tremeY = Math.cos(tempo * .27) * L * .007 * impacto;
+    const escala = 1 + onda * .14 + impacto * .025;
+    const respirar = 1 + Math.sin(tempo / 420) * .012;
+
+    ctx.save();
+    ctx.translate(L / 2 + tremeX, L / 2 + tremeY);
+    ctx.scale(escala * respirar, escala * respirar);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    ctx.strokeStyle = `hsla(${matiz}, 88%, 72%, ${.035 + impacto * .12})`;
+    ctx.lineWidth = Math.max(1, L * .003);
+    ctx.setLineDash([L * .018, L * .022]);
+    ctx.beginPath();
+    ctx.arc(0, 0, L * (.17 + onda * .025), 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.font = `700 ${L * .052}px ${LETRA}`;
+    ctx.fillStyle = `hsla(${matiz}, 90%, 80%, ${.07 + impacto * .12})`;
+    ctx.fillText('COMBO', 0, -L * .082);
+
+    ctx.font = `650 ${L * .21}px ${LETRA}`;
+    ctx.lineWidth = Math.max(1.2, L * .004);
+    ctx.strokeStyle = `hsla(${matiz}, 85%, 74%, ${.045 + impacto * .1})`;
+    ctx.fillStyle = `hsla(${matiz}, 92%, 82%, ${.045 + impacto * .105})`;
+    ctx.shadowColor = `hsla(${matiz}, 95%, 66%, ${impacto * .35})`;
+    ctx.shadowBlur = L * .055 * impacto;
+    ctx.strokeText(`×${combo}`, 0, L * .035);
+    ctx.fillText(`×${combo}`, 0, L * .035);
     ctx.restore();
   }
 

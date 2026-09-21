@@ -983,3 +983,6 @@ html[data-estado-jogo='terminado'] .hud { filter: saturate(.65); }
   .consola { grid-column: 2; grid-row: 1 / 3; }
   .gesto-dica { max-height: none; }
 }
+
+/* O multiplicador vive no fundo do Canvas; abaixo da arena fica apenas a missão. */
+.partida-info .combo { display: none !important; }
