@@ -365,7 +365,7 @@ function mostrarFim(): void {
   if (missaoCumprida) fimMedalha.textContent = `${fimMedalha.textContent ? `${fimMedalha.textContent} · ` : ''}Missão cumprida.`;
   fimMedalha.hidden = fimMedalha.textContent === '';
   cartao.hidden = false;
-  animar(cartao, 'entrar');
+  animar(cartao, 'aparecer-fim');
 }
 
 function terminar(): void {

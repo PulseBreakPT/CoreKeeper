@@ -463,7 +463,7 @@ progress::-moz-progress-bar { background: var(--acento); }
 
 #pontos.subiu { animation: pulo .28s ease-out; }
 .marco .valor { animation: brilho .6s ease-out; }
-.fim.entrar { animation: surgir .3s ease-out; }
+.fim.aparecer-fim { animation: surgir .3s ease-out; }
 .arena.virou { animation: confirmar-viragem .16s ease-out; }
 @keyframes pulo { 40% { transform: translateY(-3px) scale(1.08); } }
 @keyframes brilho { 30% { color: var(--ambar); text-shadow: 0 0 20px #efb68f55; } }
@@ -910,6 +910,8 @@ progress::-moz-progress-bar { background: linear-gradient(90deg, hsl(var(--tema)
 .dica { bottom: 4%; color: hsl(var(--tema), 10%, 53%); font-size: 7px; letter-spacing: 1.7px; }
 
 .fim {
+  position: absolute;
+  inset: 0;
   z-index: 30;
   gap: 16px;
   background:
