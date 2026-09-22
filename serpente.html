@@ -284,6 +284,25 @@
       </section>
     </main>
 
+    <!-- PRISMA — a luz parte-se contra os prismas. Arrasta para mover, toca para largar. -->
+    <main class="jogo-prisma" id="jogo-prisma" hidden>
+      <header class="topo topo-prisma">
+        <div class="marca"><i>◆</i><span>PRISMA</span></div>
+        <div class="marcador"><span class="valor" id="pontos-prisma">0</span><span class="rotulo">NÍVEL <b id="nivel-prisma">1</b></span></div>
+        <div class="acoes"><b class="vidas" id="vidas-prisma">◆ ◆ ◆</b><button class="botao-icone" id="menu-prisma" type="button" aria-label="Voltar ao arcade">‹</button><button class="botao-icone" id="pausa-prisma" type="button" aria-label="Pausar">Ⅱ</button></div>
+      </header>
+      <div class="linha-viva">
+        <span class="estado" id="mensagem-prisma">À TUA ESPERA</span>
+        <span class="recorde-linha">RECORDE <b id="recorde-prisma">0</b></span>
+      </div>
+      <section class="console-prisma">
+        <div class="arena-prisma"><canvas id="canvas-prisma" width="450" height="700" aria-label="Arena do Prisma. Arrasta para mover a raquete e toca para largar a bola."></canvas><div class="overlay-prisma" id="overlay-prisma"><small>ARCADE / 06</small><h1>Parte<br><em>a luz.</em></h1><p>Arrasta para mover · toca para largar.</p><button id="iniciar-prisma" type="button">JOGAR <span>→</span></button></div></div>
+      </section>
+      <section class="rodape-jogo" aria-label="Controlos do Prisma">
+        <button id="novo-prisma" type="button"><span>↻</span><small>REINICIAR</small></button>
+      </section>
+    </main>
+
     <section class="folha" id="folha-carreira" hidden aria-labelledby="carreira-titulo">
       <button class="folha-fundo" id="fechar-carreira" type="button" aria-label="Fechar carreira"></button>
       <div class="folha-painel">

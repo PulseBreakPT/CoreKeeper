@@ -202,6 +202,78 @@ await sair('abrir-menu');
 await verificar(await visivel('#menu-principal'), 'sair a meio da animação de morte devolve o launcher');
 await verificar(erros.length === 0, 'e não deixa erros para trás');
 
+// ---------- Prisma: joga, pausa e não aceita nada depois do fim ----------
+
+await entrar('prisma');
+await pagina.click('#iniciar-prisma');
+await pagina.waitForTimeout(150);
+const jogarPrisma = (ms) => pagina.evaluate(async (duracao) => {
+  const tela = document.getElementById('canvas-prisma');
+  const r = tela.getBoundingClientRect();
+  const dormir = (t) => new Promise((res) => setTimeout(res, t));
+  const toque = (tipo, x) => tela.dispatchEvent(new PointerEvent(tipo, {
+    clientX: r.left + (x / 90) * r.width, clientY: r.top + r.height * 0.9,
+    bubbles: true, pointerId: 1, isPrimary: true,
+  }));
+  toque('pointerdown', 45);
+  const fim = Date.now() + duracao;
+  while (Date.now() < fim && window.nexus.prisma.estado === 'jogar') {
+    toque('pointermove', window.nexus.prisma.bola.x);
+    await dormir(16);
+  }
+  toque('pointerup', 45);
+}, ms);
+
+await jogarPrisma(6000);
+const prisma = await pagina.evaluate(() => {
+  const j = window.nexus.prisma;
+  return { pontos: j.pontos, vidas: j.vidas, blocos: j.blocos.length, estado: j.estado, presa: j.presa };
+});
+await verificar(prisma.pontos > 0, `a bola parte prismas e marca pontos (${prisma.pontos})`);
+await verificar(prisma.blocos > 0 && prisma.blocos < 28, 'o tabuleiro vai sendo limpo sem desaparecer de uma vez');
+await verificar(
+  Number((await pagina.textContent('#pontos-prisma')).replace(/\D/g, '')) === prisma.pontos,
+  'a pontuação no cabeçalho bate certo com o motor',
+);
+
+// Em pausa a bola não se mexe, por muito que se arraste.
+await pagina.click('#pausa-prisma');
+await pagina.waitForTimeout(100);
+const paradaEm = await pagina.evaluate(() => ({ ...window.nexus.prisma.bola }));
+await jogarPrisma(800);
+const depoisDaPausa = await pagina.evaluate(() => ({ ...window.nexus.prisma.bola }));
+await verificar(
+  paradaEm.x === depoisDaPausa.x && paradaEm.y === depoisDaPausa.y,
+  'em pausa o arrasto não mexe a bola do Prisma',
+);
+await pagina.click('#pausa-prisma');
+await pagina.waitForTimeout(100);
+
+// Terminado, nem o arrasto nem o teclado voltam a mexer em nada.
+await pagina.evaluate(() => {
+  window.nexus.prisma.estado = 'fim';
+  document.getElementById('overlay-prisma').hidden = false;
+});
+const fimEm = await pagina.evaluate(() => ({ ...window.nexus.prisma.bola }));
+await jogarPrisma(500);
+for (let i = 0; i < 12; i++) await pagina.keyboard.press('ArrowLeft');
+await pagina.waitForTimeout(150);
+const depoisDoFim = await pagina.evaluate(() => ({ ...window.nexus.prisma.bola }));
+await verificar(
+  fimEm.x === depoisDoFim.x && fimEm.y === depoisDoFim.y,
+  'com a partida terminada nada mais mexe no Prisma',
+);
+await verificar(await visivel('#overlay-prisma'), 'e o ecrã de fim não se deixa esconder');
+
+await pagina.click('#novo-prisma');
+await pagina.waitForTimeout(200);
+await verificar(
+  await pagina.evaluate(() => window.nexus.prisma.pontos === 0 && window.nexus.prisma.vidas === 3),
+  'reiniciar devolve três luzes e a pontuação a zero',
+);
+await pagina.screenshot({ path: join(saida, '4-prisma.png') });
+await sair('menu-prisma');
+
 // ---------- Rodar o telemóvel com um jogo aberto ----------
 
 await entrar('tetris');
@@ -216,14 +288,14 @@ const tetrisCabe = await pagina.evaluate(() => {
   return a.bottom <= window.innerHeight + 1 && a.width > 100;
 });
 await verificar(tetrisCabe, 'rodar o telemóvel e voltar não parte o tabuleiro dos blocos');
-await pagina.screenshot({ path: join(saida, '4-tetris.png') });
+await pagina.screenshot({ path: join(saida, '5-tetris.png') });
 await sair('tetris-menu');
 
 // ---------- Estado final ----------
 
 await verificar(await visivel('#menu-principal'), 'no fim de tudo continua-se a poder voltar ao arcade');
 await verificar(erros.length === 0, `nenhum erro de consola em toda a sessão${erros.length ? `: ${erros.join(' | ')}` : ''}`);
-await pagina.screenshot({ path: join(saida, '5-final.png') });
+await pagina.screenshot({ path: join(saida, '6-final.png') });
 
 console.log(`\nCapturas em ${saida}`);
 await fecharTudo();

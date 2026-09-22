@@ -9,6 +9,7 @@ import { montarTetris } from '../tetris/main';
 import { montarMaze } from '../pacman/main';
 import { montar2048 } from '../game2048/main';
 import { montarMinas } from '../minesweeper/main';
+import { montarPrisma } from '../prisma/main';
 import {
   CATALOGO,
   animarCapas,
@@ -749,6 +750,7 @@ function voltarAoArcade(): void {
   mazeHub.desactivar();
   hub2048.desactivar();
   minasHub.desactivar();
+  prismaHub.desactivar();
   vistaSerpente.hidden = false;
   reiniciar();
   reporCorNexus();
@@ -769,10 +771,12 @@ const tetrisHub = montarTetris(voltarAoArcade, registarSessao('tetris'));
 const mazeHub = montarMaze(voltarAoArcade, registarSessao('maze'));
 const hub2048 = montar2048(voltarAoArcade, registarSessao('2048'));
 const minasHub = montarMinas(voltarAoArcade, registarSessao('minas'));
+const prismaHub = montarPrisma(voltarAoArcade, registarSessao('prisma'));
 
 function nomeJogo(id: JogoId): string {
   const chaves: Partial<Record<JogoId, ChaveTexto>> = {
     tetris: 'tetrisNome', maze: 'mazeNome', minas: 'minasNome', serpente: 'serpenteNome',
+    prisma: 'prismaNome',
   };
   const chave = chaves[id];
   return chave ? t(chave) : fichaJogo(id).nome;
@@ -905,6 +909,7 @@ function entrarEm(id: JogoId): void {
   mazeHub.desactivar();
   hub2048.desactivar();
   minasHub.desactivar();
+  prismaHub.desactivar();
   reiniciar();
   if (id === 'serpente') {
     vistaSerpente.hidden = false;
@@ -914,7 +919,7 @@ function entrarEm(id: JogoId): void {
     return;
   }
   vistaSerpente.hidden = true;
-  ({ tetris: tetrisHub, maze: mazeHub, '2048': hub2048, minas: minasHub })[id].activar();
+  ({ tetris: tetrisHub, maze: mazeHub, '2048': hub2048, minas: minasHub, prisma: prismaHub })[id].activar();
 }
 
 function abrirJogo(id: JogoId, origem: HTMLElement): void {

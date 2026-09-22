@@ -9,6 +9,7 @@ const CHAVE_IDIOMA = 'serpente:idioma:v1';
 type Textos = Record<string, string>;
 
 const pt: Textos = {
+  prismaNome: 'Prisma', capaPrisma: 'Parte a luz contra os prismas',
   meta: 'Serpente — um jogo arcade para telemóvel.',
   configurar: 'CONFIGURA A PARTIDA', titulo: 'A tua cobra.<br><em>As tuas regras.</em>',
   jogar: 'Jogar', visual: 'Visual', carreira: 'Carreira', corInterface: 'COR DA INTERFACE', aparencia: 'APARÊNCIA', modoEscuro: 'Escuro', modoClaro: 'Claro', corCobra: 'COR DA COBRA', corNucleo: 'COR DO PERSONAGEM DO LABIRINTO',
@@ -70,6 +71,7 @@ const pt: Textos = {
 export type ChaveTexto = string;
 
 const en: Textos = {
+  prismaNome: 'Prisma', capaPrisma: 'Break the light on the prisms',
   objetivosHoje: "TODAY'S GOALS",
   arcade: 'Arcade', todosJogos: 'ALL GAMES', continuarSeccao: 'CONTINUE', dominio: 'Mastery', desafios: 'Challenges', estatisticasAba: 'Stats',
   carreiraTitulo: 'Your career', carreiraDesc: 'One progression across all five games.', perfilTitulo: 'Profile', perfilDesc: 'Colours, language and accessibility.',
@@ -95,6 +97,7 @@ const en: Textos = {
 };
 
 const es: Textos = {
+  prismaNome: 'Prisma', capaPrisma: 'Rompe la luz contra los prismas',
   objetivosHoje: 'OBJETIVOS DE HOY',
   arcade: 'Arcade', todosJogos: 'TODOS LOS JUEGOS', continuarSeccao: 'CONTINUAR', dominio: 'Dominio', desafios: 'Retos', estatisticasAba: 'Estadísticas',
   carreiraTitulo: 'Tu carrera', carreiraDesc: 'Una sola progresión para los cinco juegos.', perfilTitulo: 'Perfil', perfilDesc: 'Colores, idioma y accesibilidad.',
@@ -116,6 +119,7 @@ const es: Textos = {
 };
 
 const br: Textos = {
+  prismaNome: 'Prisma', capaPrisma: 'Quebre a luz contra os prismas',
   objetivosHoje: 'OBJETIVOS DE HOJE',
   arcade: 'Arcade', todosJogos: 'TODOS OS JOGOS', continuarSeccao: 'CONTINUAR', dominio: 'Domínio', desafios: 'Desafios', estatisticasAba: 'Estatísticas',
   carreiraTitulo: 'Sua carreira', carreiraDesc: 'Uma só progressão para os cinco jogos.', perfilTitulo: 'Perfil', perfilDesc: 'Cores, idioma e acessibilidade.',

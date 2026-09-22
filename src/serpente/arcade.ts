@@ -7,7 +7,7 @@
  * mostra o jogo a mexer-se dentro do cartão em vez de um ícone parado.
  */
 
-export type JogoId = 'serpente' | 'maze' | 'minas' | '2048' | 'tetris';
+export type JogoId = 'serpente' | 'maze' | 'minas' | '2048' | 'tetris' | 'prisma';
 
 export interface FichaCatalogo {
   id: JogoId;
@@ -26,6 +26,7 @@ export const CATALOGO: FichaCatalogo[] = [
   { id: 'minas', nome: 'Campo Minado', matiz: 205, legenda: 'capaMinas', tempo: true },
   { id: '2048', nome: '2048', matiz: 38, legenda: 'capa2048' },
   { id: 'tetris', nome: 'Blocos', matiz: 272, legenda: 'capaTetris' },
+  { id: 'prisma', nome: 'Prisma', matiz: 48, legenda: 'capaPrisma' },
 ];
 
 export function ficha(id: JogoId): FichaCatalogo {
@@ -39,6 +40,7 @@ const CHAVES_RECORDE: Record<JogoId, string[]> = {
   minas: ['nexus:minas:recorde:v1'],
   '2048': ['nexus:2048:recorde:v1'],
   tetris: ['nexus:tetris:recorde:v1'],
+  prisma: ['nexus:prisma:recorde:v1'],
 };
 
 function numero(chave: string): number {
@@ -328,12 +330,74 @@ const cenaTetris: Cena = (ctx, l, a, t, h) => {
   bloco(4, y, (h + 46) % 360);
 };
 
+/** A luz a partir os prismas: o arco da bola lê-se de relance no cartão. */
+const cenaPrisma: Cena = (ctx, l, a, t, h) => {
+  fundo(ctx, l, a, h);
+  const colunas = 7, filas = 3;
+  const margem = l * .08, espaco = l * .014;
+  const largura = (l - margem * 2 - espaco * (colunas - 1)) / colunas;
+  const altura = a * .076;
+  for (let fila = 0; fila < filas; fila++) for (let coluna = 0; coluna < colunas; coluna++) {
+    // A fila de baixo vai sendo partida da esquerda para a direita, e volta.
+    const ciclo = (t / 3400) % 1;
+    if (fila === filas - 1 && coluna < Math.floor(ciclo * (colunas + 2))) continue;
+    const px = margem + coluna * (largura + espaco);
+    const py = a * .2 + fila * (altura + espaco);
+    // O mesmo espectro do jogo: dourado em baixo, âmbar em cima.
+    const tom = (h - (filas - fila) * 6 + 360) % 360;
+    const g = ctx.createLinearGradient(px, py, px, py + altura);
+    g.addColorStop(0, `hsl(${tom} 92% 76%)`);
+    g.addColorStop(1, `hsl(${tom} 78% 46%)`);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.roundRect(px, py, largura, altura, largura * .18);
+    ctx.fill();
+  }
+
+  // Bola num arco, com rasto, e a raquete por baixo a acompanhá-la.
+  const fase = (t / 1900) % 1;
+  const arco = (f: number): { x: number; y: number } => ({
+    x: l * .2 + Math.abs(Math.sin(f * Math.PI * 2)) * l * .6,
+    y: a * .52 + Math.sin(f * Math.PI * 4) * a * .12,
+  });
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  for (let i = 1; i <= 6; i++) {
+    const desvanece = 1 - i / 7;
+    const p = arco(fase - i * .011);
+    ctx.globalAlpha = desvanece * .28;
+    ctx.fillStyle = `hsl(${h} 96% 72%)`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, a * .021 * desvanece, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+  const bola = arco(fase);
+  ctx.shadowColor = `hsl(${h} 100% 70%)`;
+  ctx.shadowBlur = 14;
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(bola.x, bola.y, a * .026, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  const raqueteY = a * .72;
+  const raquete = ctx.createLinearGradient(0, raqueteY, 0, raqueteY + a * .032);
+  raquete.addColorStop(0, `hsl(${h} 100% 86%)`);
+  raquete.addColorStop(1, `hsl(${h} 86% 52%)`);
+  ctx.fillStyle = raquete;
+  ctx.beginPath();
+  ctx.roundRect(bola.x - l * .1, raqueteY, l * .2, a * .032, a * .016);
+  ctx.fill();
+};
+
 const CENAS: Record<JogoId, Cena> = {
   serpente: cenaSerpente,
   maze: cenaMaze,
   minas: cenaMinas,
   '2048': cena2048,
   tetris: cenaTetris,
+  prisma: cenaPrisma,
 };
 
 interface Capa { tela: HTMLCanvasElement; ctx: CanvasRenderingContext2D; id: JogoId }
