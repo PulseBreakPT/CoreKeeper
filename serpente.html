@@ -26,12 +26,12 @@
           <section class="menu-painel activo launcher-jogos" data-menu-painel="jogo" aria-label="Jogos">
             <h1 id="menu-titulo">Escolhe um jogo</h1>
             <div class="jogos-hub" role="list">
-              <button type="button" data-jogo="serpente" class="seleccionado"><i class="icone-serpente">S</i><span><strong>Serpente</strong><small>3 modos · estratégia</small></span></button>
-              <button type="button" data-jogo="tetris"><i class="icone-blocos">▦</i><span><strong data-i18n="tetrisNome">Blocos</strong><small>Clássico · 10×20</small></span></button>
-              <button type="button" data-jogo="maze"><i class="icone-maze">◎</i><span><strong data-i18n="mazeNome">Labirinto</strong><small>Exploração</small></span></button>
-              <button type="button" data-jogo="2048"><i class="icone-2048">＋</i><span><strong>2048</strong><small>Clássico · 4×4</small></span></button>
-              <button type="button" data-jogo="minas"><i class="icone-minas">✦</i><span><strong>Campo Minado</strong><small>9×12 · 18 minas</small></span></button>
-              <button type="button" disabled><i>?</i><span><strong>Próximo jogo</strong><small>Em breve</small></span></button>
+              <button type="button" data-jogo="serpente" class="seleccionado"><canvas class="jogo-preview" data-preview="serpente" width="300" height="96" aria-hidden="true"></canvas><span><strong>Serpente</strong><small>3 modos · estratégia</small></span></button>
+              <button type="button" data-jogo="tetris"><canvas class="jogo-preview" data-preview="tetris" width="300" height="96" aria-hidden="true"></canvas><span><strong data-i18n="tetrisNome">Blocos</strong><small>Clássico · 10×20</small></span></button>
+              <button type="button" data-jogo="maze"><canvas class="jogo-preview" data-preview="maze" width="300" height="96" aria-hidden="true"></canvas><span><strong data-i18n="mazeNome">Labirinto</strong><small>Exploração</small></span></button>
+              <button type="button" data-jogo="2048"><canvas class="jogo-preview" data-preview="2048" width="300" height="96" aria-hidden="true"></canvas><span><strong>2048</strong><small>Clássico · 4×4</small></span></button>
+              <button type="button" data-jogo="minas"><canvas class="jogo-preview" data-preview="minas" width="300" height="96" aria-hidden="true"></canvas><span><strong>Campo Minado</strong><small>9×12 · 18 minas</small></span></button>
+              <button type="button" disabled><span class="preview-brevemente">?</span><span><strong>Próximo jogo</strong><small>Em breve</small></span></button>
             </div>
 
             <div class="launcher-seleccao" id="config-serpente">

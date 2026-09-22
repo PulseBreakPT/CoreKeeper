@@ -9,6 +9,7 @@ import { montarTetris } from '../tetris/main';
 import { montarMaze } from '../pacman/main';
 import { montar2048 } from '../game2048/main';
 import { montarMinas } from '../minesweeper/main';
+import { montarPreviews } from './previews';
 import {
   CONQUISTAS,
   Carreira,
@@ -176,6 +177,7 @@ let mazeCorEscolhida = lerCor(CHAVE_MAZE_COR, 42);
 let idiomaEscolhido = idiomaActual();
 let definicoes = lerDefinicoes();
 definirIdioma(idiomaEscolhido);
+montarPreviews();
 
 const modoInicial = lerModo();
 const jogo = new Jogo({ lado: LADO, recorde: lerRecorde(modoInicial), modo: modoInicial });
