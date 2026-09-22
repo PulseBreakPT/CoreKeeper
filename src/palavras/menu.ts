@@ -114,7 +114,8 @@ export function BottomNavigation():string{
   return `<nav class="nw-bottom" style="--i:5" aria-label="Navegação"><button id="abrir-recordes" type="button"><span class="nw-nav-icone">${Icon({nome:'chart'})}</span><b>RECORDES</b>${Icon({nome:'chevron',classe:'chevron'})}</button><i class="nw-divisoria"></i><button id="abrir-definicoes" type="button"><span class="nw-nav-icone">${Icon({nome:'settings'})}</span><b>DEFINIÇÕES</b>${Icon({nome:'chevron',classe:'chevron'})}</button></nav>`;
 }
 function Logo():string{
-  return `<h1 id="titulo-menu" class="nw-logo"><span class="linha nexus" data-t="NEXUS"><i>NEXUS</i></span><span class="linha word" data-t="WORD"><i>WORD</i></span></h1>`;
+  const linha=(texto:string,classe:string)=>`<span class="linha ${classe}" data-t="${texto}" aria-label="${texto}"><i aria-hidden="true">${[...texto].map((letra,indice)=>`<b style="--letra:${indice}">${letra}</b>`).join('')}</i></span>`;
+  return `<h1 id="titulo-menu" class="nw-logo">${linha('NEXUS','nexus')}${linha('WORD','word')}</h1>`;
 }
 function Folha():string{
   return `<section class="folha" id="folha" hidden><button class="folha-fundo" id="fechar-folha" aria-label="Fechar"></button><div class="folha-painel"><i></i><header><span><small id="folha-etiqueta">NEXUS WORD</small><h2 id="folha-titulo">Recordes</h2></span><button id="fechar-folha-x" type="button">×</button></header><div id="folha-conteudo"></div></div></section>`;
