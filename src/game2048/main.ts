@@ -108,7 +108,9 @@ export function montar2048(aoMenu: () => void): { activar(): void; desactivar():
   const raiz = el<HTMLElement>('jogo-2048'), canvas = el<HTMLCanvasElement>('canvas-2048'), ctx = canvas.getContext('2d')!;
   const overlay = el<HTMLElement>('overlay-2048'), iniciar = el<HTMLButtonElement>('iniciar-2048'), mensagem = el<HTMLElement>('mensagem-2048');
   const jogo = new Jogo2048(); let activo = false, tempo = 0, pulso = 0;
-  const tons = [42, 46, 51, 39, 31, 24, 14, 350, 330, 286, 220];
+  const tons = [188, 112, 48, 25, 350, 330, 282, 220, 168, 42, 55];
+  type Particula = { x: number; y: number; vx: number; vy: number; vida: number; total: number; raio: number; matiz: number };
+  const particulas: Particula[] = [];
 
   function hud(): void {
     el('pontos-2048').textContent = jogo.pontos.toLocaleString(); el('recorde-2048').textContent = jogo.recorde.toLocaleString();
@@ -136,15 +138,38 @@ export function montar2048(aoMenu: () => void): { activar(): void; desactivar():
       ctx.shadowColor = `hsl(${h} 95% 62% / .38)`; ctx.shadowBlur = fundiu ? 28 : 14; ctx.fillStyle = g;
       ctx.beginPath(); ctx.roundRect(-cel / 2, -cel / 2, cel, cel, cel * .16); ctx.fill(); ctx.shadowBlur = 0;
       ctx.strokeStyle = 'rgba(255,255,255,.42)'; ctx.lineWidth = 1.2; ctx.stroke();
+      if (nasceu) {
+        ctx.strokeStyle = 'rgba(120,235,255,.95)'; ctx.lineWidth = 3; ctx.shadowColor = '#62e7ff'; ctx.shadowBlur = 18;
+        ctx.beginPath(); ctx.roundRect(-cel / 2 + 3, -cel / 2 + 3, cel - 6, cel - 6, cel * .14); ctx.stroke(); ctx.shadowBlur = 0;
+        ctx.fillStyle = '#c7f8ff'; ctx.font = `700 ${Math.max(10, cel * .085)}px "Space Grotesk",sans-serif`; ctx.textAlign = 'right'; ctx.textBaseline = 'top'; ctx.fillText('NOVO', cel * .39, -cel * .39);
+      }
       ctx.fillStyle = nivel > 5 ? '#fff' : '#17140d'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.font = `700 ${valor >= 1024 ? cel * .28 : valor >= 128 ? cel * .34 : cel * .42}px "Space Grotesk", sans-serif`;
       ctx.fillText(String(valor), 0, 2); ctx.restore();
     }
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (const p of particulas) {
+      const a = Math.max(0, p.vida / p.total); ctx.globalAlpha = a; ctx.fillStyle = `hsl(${p.matiz} 98% 70%)`; ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 12 * a;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.raio * (.65 + a * .6), 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
   }
 
   function mover(d: Direcao2048): void {
     const r = jogo.mover(d); if (!r.mudou) { mensagem.textContent = 'SEM MOVIMENTO'; navigator.vibrate?.(4); return; }
-    pulso = 0; mensagem.textContent = r.pontos ? `FUSÃO +${r.pontos}` : `${jogo.movimentos} MOVIMENTOS`; navigator.vibrate?.(r.pontos ? [7, 12, 18] : 5); hud();
+    pulso = 0;
+    if (r.fundidas.length) {
+      const w = canvas.width, margem = 24, gap = 13, cel = (w - margem * 2 - gap * 3) / 4;
+      for (const f of r.fundidas) {
+        const valor = jogo.grelha[f.y][f.x], matiz = tons[Math.min(tons.length - 1, Math.log2(Math.max(2, valor)) - 1)];
+        const cx = margem + f.x * (cel + gap) + cel / 2, cy = margem + f.y * (cel + gap) + cel / 2;
+        for (let i = 0; i < 22; i++) {
+          const a = Math.PI * 2 * i / 22 + Math.random() * .18, v = 80 + Math.random() * 190;
+          particulas.push({ x: cx, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, vida: 420 + Math.random() * 330, total: 750, raio: 2.4 + Math.random() * 5, matiz });
+        }
+      }
+    }
+    mensagem.textContent = r.pontos ? `FUSÃO +${r.pontos}` : `${jogo.movimentos} MOVIMENTOS`; navigator.vibrate?.(r.pontos ? [7, 12, 18] : 5); hud();
     if (jogo.estado === 'ganhou' || jogo.estado === 'fim') {
       overlay.querySelector('small')!.textContent = jogo.estado === 'ganhou' ? 'NÚCLEO 2048' : 'SEM MOVIMENTOS';
       overlay.querySelector('h1')!.innerHTML = jogo.estado === 'ganhou' ? '2048.<br><em>Conquistado.</em>' : `${jogo.pontos.toLocaleString()}<br><em>pontos.</em>`;
@@ -162,7 +187,15 @@ export function montar2048(aoMenu: () => void): { activar(): void; desactivar():
   el('reiniciar-2048').addEventListener('click', () => { jogo.reiniciar(); overlay.hidden = true; mensagem.textContent = 'NOVA MATRIZ'; hud(); });
   el('menu-2048').addEventListener('click', aoMenu);
   iniciar.addEventListener('click', () => { if (jogo.estado === 'ganhou' || jogo.estado === 'fim') jogo.reiniciar(); jogo.estado = 'jogar'; overlay.hidden = true; mensagem.textContent = 'DESLIZA PARA FUNDIR'; hud(); });
-  function quadro(agora: number): void { if (activo) { pulso = Math.min(1, pulso + Math.min(40, agora - tempo) / 1000); desenhar(); } tempo = agora; requestAnimationFrame(quadro); }
+  function quadro(agora: number): void {
+    const dt = Math.min(40, agora - tempo);
+    if (activo) {
+      pulso = Math.min(1, pulso + dt / 1000);
+      for (let i = particulas.length - 1; i >= 0; i--) { const p = particulas[i]; p.vida -= dt; p.x += p.vx * dt / 1000; p.y += p.vy * dt / 1000; p.vx *= Math.pow(.975, dt / 16); p.vy *= Math.pow(.975, dt / 16); if (p.vida <= 0) particulas.splice(i, 1); }
+      desenhar();
+    }
+    tempo = agora; requestAnimationFrame(quadro);
+  }
   requestAnimationFrame(quadro); hud(); desenhar();
   return { activar() { activo = true; raiz.hidden = false; tempo = performance.now(); }, desactivar() { activo = false; raiz.hidden = true; } };
 }

@@ -658,6 +658,59 @@ body .jogos-hub small { font-size: 4px; }
 .menu-principal.jogo-2048-seleccionado .menu-hero::after { width: 104px; height: 104px; right: 5px; }
 .console-2048 { transform: translateY(-2.5dvh); }
 
+/* Cinco jogos: biblioteca horizontal, curta e natural num telefone. */
+body .jogos-hub { display: flex; gap: 7px; padding: 3px 15% 7px 1px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; touch-action: pan-x; }
+body .jogos-hub::-webkit-scrollbar { display: none; }
+body .jogos-hub button { flex: 0 0 28%; min-height: 72px; scroll-snap-align: start; }
+.menu-principal.minas-seleccionado .cobra-preview { opacity: 0; }
+.menu-principal.minas-seleccionado .menu-hero h1 { max-width: 67%; font-size: clamp(27px, 7.4vw, 35px); }
+.menu-principal.minas-seleccionado .menu-hero::after {
+  content: '✦';
+  width: 104px;
+  height: 104px;
+  right: 5px;
+  display: grid;
+  place-items: center;
+  color: var(--acento-forte);
+  background: #111319;
+  border: 1px solid #4a4230;
+  border-radius: 50%;
+  font-size: 45px;
+  filter: drop-shadow(0 0 20px var(--brilho));
+}
+.menu-principal.minas-seleccionado .menu-painel[data-menu-painel='jogo']::after { content: '05'; }
+.destaque-minas > i { border-radius: 50%; font-size: 34px; }
+
+.jogo-minas {
+  width: min(100%, 620px);
+  height: 100dvh;
+  min-height: 0;
+  margin: auto;
+  padding: max(10px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(9px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  overflow: hidden;
+  isolation: isolate;
+  background: radial-gradient(circle at 50% 38%,rgba(255,255,255,.025),transparent 42%),#08090b;
+}
+.jogo-minas::before { content:''; position:fixed; z-index:-1; inset:0; pointer-events:none; background:radial-gradient(circle at 14% 18%,rgba(255,255,255,.028),transparent 23%),linear-gradient(118deg,transparent 0 42%,rgba(255,255,255,.012) 42.2% 42.5%,transparent 42.7%); }
+.topo-minas { flex: 0 0 42px; }
+.topo-minas .marca i { width:28px;height:28px;display:grid;place-items:center;color:var(--acento);background:#171a20;border:1px solid #3c414b;border-radius:50%;font-size:16px;font-style:normal;filter:drop-shadow(0 0 12px var(--brilho)); }
+.hud-minas { flex:0 0 52px;display:grid;grid-template-columns:repeat(4,1fr);overflow:hidden;background:linear-gradient(112deg,#15181e,#0a0c10 48%,#12151a);border:1px solid var(--metal);border-radius:15px;box-shadow:inset 0 1px rgba(255,255,255,.075),0 14px 30px rgba(0,0,0,.28); }
+.hud-minas span { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-right:1px solid #30353e; }
+.hud-minas span:last-child { border:0; }.hud-minas small { color:var(--tinta-fraca);font-size:5px;letter-spacing:.7px; }.hud-minas b { color:var(--tinta);font-size:12px;font-variant-numeric:tabular-nums; }.hud-minas span:first-child b { color:var(--acento-forte);text-shadow:0 0 16px var(--brilho); }
+.console-minas { min-height:0;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;transform:translateY(-1.5dvh); }
+.arena-minas { position:relative;width:min(100%,430px,calc((100dvh - 190px)*.75));aspect-ratio:3/4;overflow:hidden;background:#08090b;border:1px solid #665936;border-radius:20px;box-shadow:0 0 0 4px #0b0d10,0 0 0 5px #343a44,0 28px 70px rgba(0,0,0,.5),0 0 36px rgba(222,181,76,.07); }
+#canvas-minas { width:100%;height:100%;display:block;touch-action:none; }
+.arena-minas::after { content:'';position:absolute;inset:6px;pointer-events:none;border:1px solid rgba(255,233,170,.1);border-radius:14px;box-shadow:inset 0 0 34px rgba(0,0,0,.48); }
+.overlay-minas { position:absolute;z-index:3;inset:0;padding:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;color:var(--tinta);text-align:center;background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.05),transparent 36%),rgba(7,8,10,.92);backdrop-filter:blur(12px); }
+.overlay-minas::before { content:'05';position:absolute;right:-13px;bottom:-33px;color:rgba(255,255,255,.026);font-size:150px;font-weight:700;line-height:1;letter-spacing:-11px; }.overlay-minas>*{position:relative;z-index:1}.overlay-minas small{color:var(--acento);font-size:6px;letter-spacing:1.6px}.overlay-minas h1{margin:13px 0 9px;font-size:clamp(29px,9vw,44px);line-height:.94;letter-spacing:-1.8px}.overlay-minas h1 em{color:var(--acento);font-style:normal}.overlay-minas p{margin:0 0 22px;color:var(--tinta-fraca);font-size:8px}.overlay-minas button{width:min(100%,220px);min-height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;color:var(--acento-forte);background:linear-gradient(145deg,#1d2128,#111319);border:1px solid #78683d;border-radius:15px;font-size:8px;font-weight:800;letter-spacing:.9px}
+.mensagem-minas { width:min(100%,350px);min-height:23px;display:grid;place-items:center;color:#9ba0a9;background:linear-gradient(90deg,transparent,#101318 18%,#101318 82%,transparent);border-bottom:1px solid rgba(255,225,145,.08);font-size:6px;font-weight:750;letter-spacing:1.5px; }
+.controlos-minas { flex:0 0 62px;width:min(100%,390px);align-self:center;display:flex;align-items:center;justify-content:center;gap:18px; }
+.controlos-minas button { width:76px;height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--tinta);background:linear-gradient(155deg,#1b1f25,#101216 60%,#090b0e);border:1px solid #414852;border-radius:16px;box-shadow:inset 0 1px rgba(255,255,255,.09),0 7px 15px rgba(0,0,0,.22);font-size:20px; }.controlos-minas button.activo{color:var(--acento-forte);border-color:#8a7540;background:#1d1a12;box-shadow:0 0 24px rgba(222,181,76,.11)}.controlos-minas small{color:inherit;font-size:4px;letter-spacing:.6px}.controlos-minas p{margin:0;color:var(--tinta-fraca);font-size:7px;line-height:1.6;letter-spacing:.4px}.controlos-minas p b{color:var(--acento-forte);font-size:6px;letter-spacing:.8px}
+@media(max-height:700px){.topo-minas{display:none}.hud-minas{flex-basis:46px}.controlos-minas{flex-basis:54px}.arena-minas{width:min(100%,calc((100dvh - 140px)*.75));}}
+
 @media (orientation: landscape) and (max-height: 520px) {
   .jogo {
     width: 100%;

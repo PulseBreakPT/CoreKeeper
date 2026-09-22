@@ -8,6 +8,7 @@ import { ligarControlos } from './controlos';
 import { montarTetris } from '../tetris/main';
 import { montarMaze } from '../pacman/main';
 import { montar2048 } from '../game2048/main';
+import { montarMinas } from '../minesweeper/main';
 import {
   CONQUISTAS,
   Carreira,
@@ -165,7 +166,8 @@ const configSerpente = elemento<HTMLElement>('config-serpente');
 const configTetris = elemento<HTMLElement>('config-tetris');
 const configMaze = elemento<HTMLElement>('config-maze');
 const config2048 = elemento<HTMLElement>('config-2048');
-type JogoHub = 'serpente' | 'tetris' | 'maze' | '2048';
+const configMinas = elemento<HTMLElement>('config-minas');
+type JogoHub = 'serpente' | 'tetris' | 'maze' | '2048' | 'minas';
 let jogoHub: JogoHub = 'serpente';
 let pausado = false;
 let estadoAplicado = '';
@@ -700,6 +702,7 @@ function abrirHub(): void {
   tetrisHub.desactivar();
   mazeHub.desactivar();
   hub2048.desactivar();
+  minasHub.desactivar();
   vistaSerpente.hidden = false;
   menuPrincipal.classList.remove('fechado');
 }
@@ -707,21 +710,30 @@ function abrirHub(): void {
 const tetrisHub = montarTetris(abrirHub);
 const mazeHub = montarMaze(abrirHub);
 const hub2048 = montar2048(abrirHub);
+const minasHub = montarMinas(abrirHub);
 
 function escolherJogoHub(escolha: JogoHub): void {
   jogoHub = escolha;
   menuPrincipal.classList.toggle('tetris-seleccionado', escolha === 'tetris');
   menuPrincipal.classList.toggle('maze-seleccionado', escolha === 'maze');
   menuPrincipal.classList.toggle('jogo-2048-seleccionado', escolha === '2048');
+  menuPrincipal.classList.toggle('minas-seleccionado', escolha === 'minas');
   configSerpente.hidden = escolha !== 'serpente';
   configTetris.hidden = escolha !== 'tetris';
   configMaze.hidden = escolha !== 'maze';
   config2048.hidden = escolha !== '2048';
+  configMinas.hidden = escolha !== 'minas';
   document.querySelectorAll<HTMLButtonElement>('[data-jogo]').forEach((b) => b.classList.toggle('seleccionado', b.dataset.jogo === escolha));
   const titulo = elemento<HTMLElement>('menu-titulo');
-  titulo.innerHTML = escolha === 'serpente' ? t('titulo') : escolha === 'tetris' ? t('tetrisTitulo') : escolha === 'maze' ? t('mazeTitulo') : 'Funde o impossível.<br><em>Ascende a 2048.</em>';
+  titulo.innerHTML = escolha === 'serpente' ? t('titulo') : escolha === 'tetris' ? t('tetrisTitulo') : escolha === 'maze' ? t('mazeTitulo') : escolha === '2048' ? 'Funde o impossível.<br><em>Ascende a 2048.</em>' : 'Cada número conta.<br><em>Cada toque decide.</em>';
   document.querySelector<HTMLElement>('.cobra-preview')!.hidden = escolha !== 'serpente';
-  botaoEntrar.querySelector('span')!.textContent = escolha === 'tetris' ? t('jogarTetris') : escolha === 'maze' ? t('jogarMaze') : escolha === '2048' ? 'JOGAR 2048' : t('entrar');
+  botaoEntrar.querySelector('span')!.textContent = escolha === 'tetris' ? t('jogarTetris') : escolha === 'maze' ? t('jogarMaze') : escolha === '2048' ? 'JOGAR 2048' : escolha === 'minas' ? 'JOGAR CAMPO MINADO' : t('entrar');
+  const escolhido = document.querySelector<HTMLButtonElement>(`[data-jogo="${escolha}"]`);
+  const biblioteca = escolhido?.parentElement;
+  if (escolhido && biblioteca) {
+    const alvo = escolhido.offsetLeft - (biblioteca.clientWidth - escolhido.offsetWidth) / 2;
+    biblioteca.scrollTo({ left: Math.max(0, alvo), behavior: 'smooth' });
+  }
   vibrar(7);
 }
 
@@ -901,10 +913,18 @@ botaoEntrar.addEventListener('click', () => {
     tetrisHub.desactivar();
     mazeHub.desactivar();
     hub2048.activar();
+  } else if (jogoHub === 'minas') {
+    reiniciar();
+    vistaSerpente.hidden = true;
+    tetrisHub.desactivar();
+    mazeHub.desactivar();
+    hub2048.desactivar();
+    minasHub.activar();
   } else {
     tetrisHub.desactivar();
     mazeHub.desactivar();
     hub2048.desactivar();
+    minasHub.desactivar();
     vistaSerpente.hidden = false;
     confirmar();
   }

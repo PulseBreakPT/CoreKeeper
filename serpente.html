@@ -19,7 +19,7 @@
             <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M23 7H12a5 5 0 0 0 0 10h8a5 5 0 0 1 0 10H8" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><circle cx="24" cy="6" r="1.5" fill="currentColor" class="olho-logo"/></svg>
             <span>NEXUS ARCADE</span>
           </div>
-          <span class="versao">MOBILE / 7.0</span>
+          <span class="versao">MOBILE / 7.1</span>
         </header>
 
         <div class="menu-hero">
@@ -82,6 +82,7 @@
               <button type="button" data-jogo="tetris"><i class="icone-blocos">▦</i><span><strong data-i18n="tetrisNome">Blocos</strong><small data-i18n="tetrisDesc">Encaixa · limpa · domina</small></span><b>02</b></button>
               <button type="button" data-jogo="maze"><i class="icone-maze">◉</i><span><strong data-i18n="mazeNome">Labirinto</strong><small data-i18n="mazeDesc">Explora · engana · conquista</small></span><b>03</b></button>
               <button type="button" data-jogo="2048"><i class="icone-2048">＋</i><span><strong>2048</strong><small>Desliza · funde · ascende</small></span><b>04</b></button>
+              <button type="button" data-jogo="minas"><i class="icone-minas">✦</i><span><strong>Minas</strong><small>Analisa · marca · limpa</small></span><b>05</b></button>
             </div>
           </fieldset>
           <div id="config-serpente">
@@ -115,6 +116,10 @@
           <section class="config-tetris config-2048" id="config-2048" hidden>
             <div class="tetris-destaque destaque-2048"><i>＋</i><span><small>ARCADE / 04</small><h2>2048</h2><p>Funde valores. Constrói a matriz perfeita.</p></span></div>
             <div class="tetris-recursos"><span><b>4 × 4</b><small>Matriz de precisão</small></span><span><b>UNDO</b><small>Uma jogada atrás</small></span><span><b>2048</b><small>Núcleo máximo</small></span></div>
+          </section>
+          <section class="config-tetris config-minas" id="config-minas" hidden>
+            <div class="tetris-destaque destaque-minas"><i>✦</i><span><small>ARCADE / 05</small><h2>Campo Minado</h2><p>Lê os sinais. Marca o perigo. Limpa o campo.</p></span></div>
+            <div class="tetris-recursos"><span><b>9 × 12</b><small>Campo mobile</small></span><span><b>18 MINAS</b><small>Pressão equilibrada</small></span><span><b>SAFE</b><small>Primeiro toque seguro</small></span></div>
           </section>
           </section>
 
@@ -274,6 +279,15 @@
         <div class="mensagem-2048" id="mensagem-2048">À TUA ESPERA</div>
       </section>
       <section class="controlos-2048" aria-label="Controlos do 2048"><button id="desfazer-2048" type="button"><small>UNDO</small>↶</button><button data-2048="esquerda" type="button">←</button><button data-2048="cima" type="button">↑</button><button data-2048="baixo" type="button">↓</button><button data-2048="direita" type="button">→</button></section>
+    </main>
+    <main class="jogo-minas" id="jogo-minas" hidden>
+      <header class="topo topo-minas"><div class="marca"><i>✦</i><span>CAMPO MINADO</span></div><div class="acoes"><button class="botao-icone" id="menu-minas" type="button" aria-label="Abrir menu">☰</button><button class="botao-icone" id="novo-minas" type="button" aria-label="Novo campo">↻</button></div></header>
+      <section class="hud-minas"><span><small>TEMPO</small><b id="tempo-minas">0s</b></span><span><small>MINAS</small><b id="minas-restantes">18</b></span><span><small>ABERTAS</small><b id="abertas-minas">0/90</b></span><span><small>RECORDE</small><b id="recorde-minas">—</b></span></section>
+      <section class="console-minas">
+        <div class="arena-minas"><canvas id="canvas-minas" width="540" height="720" aria-label="Campo minado. Toca para abrir e mantém pressionado para marcar."></canvas><div class="overlay-minas" id="overlay-minas"><small>ARCADE / 05</small><h1>Lê.<br><em>Neutraliza.</em></h1><p>O primeiro toque é sempre seguro.</p><button id="iniciar-minas" type="button">JOGAR <span>→</span></button></div></div>
+        <div class="mensagem-minas" id="mensagem-minas">À TUA ESPERA</div>
+      </section>
+      <section class="controlos-minas"><button id="modo-bandeira" type="button" aria-pressed="false"><span>⚑</span><small>MARCAR</small></button><p><b>TOCA</b> para explorar<br><b>SEGURA</b> para marcar</p></section>
     </main>
     <section class="folha" id="folha-carreira" hidden aria-labelledby="carreira-titulo">
       <button class="folha-fundo" id="fechar-carreira" type="button" aria-label="Fechar carreira"></button>
