@@ -92,7 +92,7 @@ export function ModeCard(d:ModeDef,principal=false):string{
 }
 
 export function StatCard():string{
-  return `<section class="nw-best"><span class="coroa">${Icon({nome:'crown'})}</span><strong>MELHOR SEQUÊNCIA</strong><b id="melhor-sequencia">0</b></section>`;
+  return `<section class="nw-best" style="--i:2"><span class="coroa">${Icon({nome:'crown'})}</span><strong>MELHOR SEQUÊNCIA</strong><b id="melhor-sequencia">0</b></section>`;
 }
 export function DailyWordCard():string{
   return `<button class="nw-daily word" id="ver-palavra-dia" type="button"><span class="nw-daily-icone">${Icon({nome:'calendar'})}</span><span class="nw-daily-copy"><small>PALAVRA DO DIA</small><b id="palavra-dia">LACÓNICO</b><em id="significado-dia">expressão em poucas palavras</em></span><i class="nw-daily-seta">${Icon({nome:'arrow'})}</i></button>`;
@@ -101,7 +101,7 @@ export function DailyChallengeCard():string{
   return `<button class="nw-daily challenge" id="abrir-desafio-dia" type="button"><span class="nw-daily-icone">${Icon({nome:'trophy'})}</span><span class="nw-daily-copy"><small>DESAFIO DO DIA</small><b>15 respostas seguidas</b><span class="nw-progresso"><i><em id="desafio-barra"></em></i><strong id="desafio-valor">0 / 15</strong></span></span><i class="nw-daily-seta">${Icon({nome:'arrow'})}</i></button>`;
 }
 export function BottomNavigation():string{
-  return `<nav class="nw-bottom" aria-label="Navegação"><button id="abrir-recordes" type="button"><span class="nw-nav-icone">${Icon({nome:'chart'})}</span><b>RECORDES</b>${Icon({nome:'chevron',classe:'chevron'})}</button><i class="nw-divisoria"></i><button id="abrir-definicoes" type="button"><span class="nw-nav-icone">${Icon({nome:'settings'})}</span><b>DEFINIÇÕES</b>${Icon({nome:'chevron',classe:'chevron'})}</button></nav>`;
+  return `<nav class="nw-bottom" style="--i:5" aria-label="Navegação"><button id="abrir-recordes" type="button"><span class="nw-nav-icone">${Icon({nome:'chart'})}</span><b>RECORDES</b>${Icon({nome:'chevron',classe:'chevron'})}</button><i class="nw-divisoria"></i><button id="abrir-definicoes" type="button"><span class="nw-nav-icone">${Icon({nome:'settings'})}</span><b>DEFINIÇÕES</b>${Icon({nome:'chevron',classe:'chevron'})}</button></nav>`;
 }
 function Logo():string{
   return `<h1 id="titulo-menu" class="nw-logo"><span class="linha nexus" data-t="NEXUS"><i>NEXUS</i></span><span class="linha word" data-t="WORD"><i>WORD</i></span></h1>`;
@@ -112,22 +112,22 @@ function Folha():string{
 
 export function montarMenu(raiz:HTMLElement):void{
   raiz.innerHTML=`${Cenario()}
-  <header class="nw-top">
+  <header class="nw-top" style="--i:0">
     <span class="nw-marca"><i>N</i><b>NEXUS WORD</b></span>
     <span class="nw-streak">${Icon({nome:'flame'})}<b id="dias">1</b> DIA</span>
   </header>
-  <section class="nw-hero">
+  <section class="nw-hero" style="--i:1">
     <span class="nw-hero-tiles" aria-hidden="true">${Faiscas(4)}${LetterTile('P','green','p')}${LetterTile('R','pink','r')}${LetterTile('S','blue','s')}${LetterTile('A','yellow','a')}</span>
     ${Logo()}
     <p class="nw-tagline">PALAVRAS. RAPIDEZ.</p>
   </section>
   ${StatCard()}
-  <section class="nw-modos" role="list" aria-label="Modos de jogo">
+  <section class="nw-modos" style="--i:3" role="list" aria-label="Modos de jogo">
     ${ModeCard(modos[0],true)}
     <div class="nw-modos-linha">${ModeCard(modos[1])}${ModeCard(modos[2])}</div>
   </section>
-  <section class="nw-dailies">${DailyWordCard()}${DailyChallengeCard()}</section>
+  <section class="nw-dailies" style="--i:4">${DailyWordCard()}${DailyChallengeCard()}</section>
   ${BottomNavigation()}
-  <p class="nw-motto">PENSA <i></i> CLICA <i></i> APRENDE</p>
+  <p class="nw-motto" style="--i:6">PENSA <i></i> CLICA <i></i> APRENDE</p>
   ${Folha()}`;
 }

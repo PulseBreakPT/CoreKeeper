@@ -46,12 +46,21 @@ for (const [w, h] of ECRAS) {
       const r = n.getBoundingClientRect();
       if (r.left < -0.5 || r.right > innerWidth + 0.5) problemas.push(`${n.className} fora do ecrã`);
     }
-    return { problemas, excesso };
+    // O buffer do shader não é preservado, por isso confirma-se que desenhou e que
+    // está por cima do cenário; o brilho em si verifica-se na captura.
+    const tela = raiz.querySelector('.nw-luz');
+    let luz = 'ausente (fallback CSS)';
+    if (tela) {
+      luz = `${tela.dataset.luz || 'sem desenhar'} ${tela.width}x${tela.height}`;
+      if (tela.dataset.luz !== 'activa') problemas.push('camada de luz nunca desenhou');
+      if (!tela.previousElementSibling?.classList.contains('nw-cenario')) problemas.push('camada de luz fora de ordem');
+    }
+    return { problemas, excesso, luz };
   });
   const etiqueta = `${w}x${h}`;
   if (erros.length) { falhas++; console.log(`✗ ${etiqueta} erros JS:`, erros.slice(0, 3)); }
   if (relatorio.problemas.length) { falhas++; console.log(`✗ ${etiqueta}`, relatorio.problemas); }
-  else console.log(`✓ ${etiqueta} (scroll extra ${relatorio.excesso}px)`);
+  else console.log(`✓ ${etiqueta} (scroll extra ${relatorio.excesso}px) · luz ${relatorio.luz}`);
 
   // Interações: folha de recordes, palavra do dia e arranque/regresso de partida.
   const passos = [];
@@ -63,12 +72,45 @@ for (const [w, h] of ECRAS) {
   await pagina.click('#ver-palavra-dia');
   passos.push(['palavra do dia', await pagina.isVisible('.palavra-dia-folha')]);
   await pagina.click('#fechar-folha-x');
+  // A onda de toque tem de nascer no elemento premido e desaparecer sozinha.
+  const cartao = await pagina.locator('[data-modo="singular"]').boundingBox();
+  await pagina.mouse.move(cartao.x + 30, cartao.y + cartao.height - 20);
+  await pagina.mouse.down();
+  await pagina.waitForTimeout(80);
+  passos.push(['onda de toque', await pagina.locator('[data-modo="singular"] .nw-onda').count() === 1]);
+  // Sair do cartão antes de largar, para não disparar o clique e arrancar a partida.
+  await pagina.mouse.move(w / 2, 4);
+  await pagina.mouse.up();
+  await pagina.waitForTimeout(700);
+  passos.push(['onda limpa-se', await pagina.locator('.nw-onda').count() === 0]);
+  passos.push(['toque não arranca jogo', await pagina.isVisible('#menu')]);
+
   await pagina.click('[data-modo="plural"]');
   await pagina.waitForTimeout(400);
   passos.push(['inicia jogo', await pagina.isHidden('#menu') && await pagina.isVisible('#jogo')]);
   await pagina.waitForTimeout(2600);
   await pagina.click('#voltar');
   passos.push(['volta ao menu', await pagina.isVisible('#menu')]);
+  // Desligar ANIMAÇÕES nas definições tem de calar a camada de luz e as ondas.
+  await pagina.click('#abrir-definicoes');
+  await pagina.waitForTimeout(300);
+  await pagina.click('[data-opcao="movimento"]');
+  await pagina.waitForTimeout(250);
+  await pagina.click('#fechar-folha-x');
+  await pagina.waitForTimeout(250);
+  passos.push(['luz cala-se sem animações', await pagina.evaluate(() => {
+    const t = document.querySelector('.nw-luz');
+    return !t || t.style.opacity === '0';
+  })]);
+  const c2 = await pagina.locator('[data-modo="singular"]').boundingBox();
+  await pagina.mouse.move(c2.x + 30, c2.y + c2.height - 20);
+  await pagina.mouse.down();
+  await pagina.waitForTimeout(80);
+  passos.push(['sem onda com movimento reduzido', await pagina.locator('.nw-onda').count() === 0]);
+  await pagina.mouse.move(w / 2, 4);
+  await pagina.mouse.up();
+  await pagina.evaluate(() => localStorage.clear());
+
   const maus = passos.filter(([, ok]) => !ok).map(([n]) => n);
   if (maus.length || erros.length) { falhas++; console.log(`  ✗ interações ${etiqueta}:`, maus, erros.slice(0, 2)); }
   else console.log(`  ✓ interações ${etiqueta}`);

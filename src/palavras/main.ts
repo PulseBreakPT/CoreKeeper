@@ -2,6 +2,7 @@ import './estilo.css';
 import './menu-referencia.css';
 import { PERGUNTAS, PERGUNTAS_RARAS, type Modo, type Pergunta } from './dados';
 import { montarMenu } from './menu';
+import { iniciarLuz, iniciarOndas } from './luz';
 
 type Estado='READY'|'ANSWERING'|'CHECKING'|'CORRECT'|'WRONG'|'GAME_OVER';
 type TipoRonda='normal'|'boss'|'relampago'|'armadilha'|'rara'|'jackpot'|'cadeia';
@@ -23,7 +24,7 @@ function vibrar(p:number|number[]):void{if(estatisticas.vibracao)navigator.vibra
 
 class Som{ctx:AudioContext|null=null;garantir(){if(!this.ctx)this.ctx=new AudioContext();this.ctx.resume().catch(()=>{});}tocar(freq:number,d=.1,tipo:OscillatorType='sine',vol=.035){this.garantir();const c=this.ctx!,o=c.createOscillator(),g=c.createGain();o.type=tipo;o.frequency.setValueAtTime(freq,c.currentTime);g.gain.setValueAtTime(vol,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+d);}certo(perfeito=false){this.tocar(perfeito?880:660,.12);window.setTimeout(()=>this.tocar(perfeito?1174:880,.13),65);}erro(){this.tocar(145,.2,'sawtooth',.025);}evento(tipo:TipoRonda){const f={boss:110,jackpot:920,relampago:720,rara:520,armadilha:420,cadeia:620,normal:360}[tipo];this.tocar(f,.18,tipo==='boss'?'sawtooth':'sine',.03);}}
 const som=new Som();
-const raizMenu=document.getElementById('menu');if(!raizMenu)throw new Error('Falta #menu');montarMenu(raizMenu);
+const raizMenu=document.getElementById('menu');if(!raizMenu)throw new Error('Falta #menu');montarMenu(raizMenu);iniciarLuz(raizMenu);iniciarOndas(raizMenu);
 const menu=el<HTMLElement>('menu'),jogo=el<HTMLElement>('jogo'),input=el<HTMLInputElement>('resposta'),confirmar=el<HTMLButtonElement>('confirmar'),feedback=el<HTMLElement>('feedback'),painel=el<HTMLElement>('painel'),barra=el<HTMLElement>('barra-tempo');
 let modo:Modo=estatisticas.ultimoModo,estado:Estado='READY',fila:Pergunta[]=[],ronda:Ronda|null=null,pontos=0,vidas=3,combo=0,melhorCombo=0,numero=0,certas=0,erradas=0,tempoRespostas=0;
 let inicioPergunta=0,quadro=0,token=0,pausado=false,restantePausa=BASE,duracaoActual=BASE,segundaDisponivel=true,segundaActiva=false,comboFreeze=0,heat=0,onFire=0,finalRushAcertos=0,relampagoRestante=0,perfeitoRun=false,tentativasFalhadas=0;
