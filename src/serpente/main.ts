@@ -724,16 +724,7 @@ function escolherJogoHub(escolha: JogoHub): void {
   config2048.hidden = escolha !== '2048';
   configMinas.hidden = escolha !== 'minas';
   document.querySelectorAll<HTMLButtonElement>('[data-jogo]').forEach((b) => b.classList.toggle('seleccionado', b.dataset.jogo === escolha));
-  const titulo = elemento<HTMLElement>('menu-titulo');
-  titulo.innerHTML = escolha === 'serpente' ? t('titulo') : escolha === 'tetris' ? t('tetrisTitulo') : escolha === 'maze' ? t('mazeTitulo') : escolha === '2048' ? 'Funde o impossível.<br><em>Ascende a 2048.</em>' : 'Cada número conta.<br><em>Cada toque decide.</em>';
-  document.querySelector<HTMLElement>('.cobra-preview')!.hidden = escolha !== 'serpente';
-  botaoEntrar.querySelector('span')!.textContent = escolha === 'tetris' ? t('jogarTetris') : escolha === 'maze' ? t('jogarMaze') : escolha === '2048' ? 'JOGAR 2048' : escolha === 'minas' ? 'JOGAR CAMPO MINADO' : t('entrar');
-  const escolhido = document.querySelector<HTMLButtonElement>(`[data-jogo="${escolha}"]`);
-  const biblioteca = escolhido?.parentElement;
-  if (escolhido && biblioteca) {
-    const alvo = escolhido.offsetLeft - (biblioteca.clientWidth - escolhido.offsetWidth) / 2;
-    biblioteca.scrollTo({ left: Math.max(0, alvo), behavior: 'smooth' });
-  }
+  botaoEntrar.querySelector('span')!.textContent = 'JOGAR';
   vibrar(7);
 }
 
@@ -826,8 +817,9 @@ document.querySelectorAll<HTMLButtonElement>('[data-escolha-modo]').forEach((bot
 document.querySelectorAll<HTMLButtonElement>('[data-menu-categoria]').forEach((botao) => {
   botao.addEventListener('click', () => {
     const categoria = botao.dataset.menuCategoria;
-    document.querySelectorAll<HTMLButtonElement>('[data-menu-categoria]').forEach((b) => b.classList.toggle('activo', b === botao));
+    document.querySelectorAll<HTMLButtonElement>('[data-menu-categoria]').forEach((b) => b.classList.toggle('activo', b.dataset.menuCategoria === categoria));
     document.querySelectorAll<HTMLElement>('[data-menu-painel]').forEach((painel) => painel.classList.toggle('activo', painel.dataset.menuPainel === categoria));
+    botaoEntrar.hidden = categoria !== 'jogo';
     vibrar(6);
   });
 });

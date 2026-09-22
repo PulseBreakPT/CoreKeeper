@@ -2029,3 +2029,113 @@ body { background: radial-gradient(ellipse 80% 42% at 50% -8%, rgba(255,255,255,
   .menu-painel[data-menu-painel='jogo']::after { font-size: 120px; bottom: -20px; }
   .menu-painel[data-menu-painel='jogo']::before { width: 180px; height: 180px; right: -80px; }
 }
+
+/* NEXUS LAUNCHER 7.2 — arquitetura móvel centrada numa única decisão. */
+.menu-principal {
+  background: radial-gradient(circle at 82% -8%, rgba(222,181,76,.09), transparent 31%), #08090b;
+}
+.menu-conteudo.launcher {
+  width: min(100%, 520px);
+  padding: max(16px, env(safe-area-inset-top)) 16px max(12px, env(safe-area-inset-bottom));
+  gap: 12px;
+}
+.launcher .menu-topo::after { display: none; }
+.launcher-topo { flex: 0 0 52px; min-height: 52px; border-bottom: 1px solid #202329; }
+.launcher-topo .marca { gap: 11px; }
+.launcher-topo .marca svg { width: 31px; height: 31px; }
+.launcher-topo .marca span { font-size: 12px; letter-spacing: 2.8px; }
+.launcher-definicoes {
+  width: 40px; height: 40px; display: grid; place-items: center; color: #999b9f;
+  background: #111318; border: 0; border-radius: 13px;
+}
+.launcher-definicoes svg { width: 20px; height: 20px; }
+.launcher-definicoes.activo { color: var(--acento); background: #191816; }
+.launcher-corpo { gap: 10px; overflow: hidden; }
+.launcher .menu-painel { order: 0; }
+.launcher .menu-painel.activo { gap: 12px; overflow-x: hidden; overflow-y: auto; padding: 2px 1px 6px; }
+.launcher .menu-painel[data-menu-painel='jogo'] { isolation: auto; overflow-y: auto; }
+.launcher .menu-painel[data-menu-painel='jogo']::before,
+.launcher .menu-painel[data-menu-painel='jogo']::after { display: none; }
+.launcher-jogos h1 { margin: 2px 0 1px; font-size: 23px; font-weight: 560; letter-spacing: -.7px; }
+.launcher .jogos-hub {
+  display: grid !important; grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+  gap: 9px !important; padding: 0 !important; overflow: visible !important; touch-action: auto;
+}
+.launcher .jogos-hub button {
+  min-width: 0 !important; min-height: 86px !important; padding: 13px !important;
+  display: flex !important; flex: initial !important; flex-direction: column; align-items: flex-start; justify-content: space-between;
+  gap: 9px !important; color: var(--tinta-fraca); text-align: left;
+  background: #111318; border: 1px solid transparent; border-radius: 17px;
+  box-shadow: none; transform: none;
+}
+.launcher .jogos-hub button::after { display: none; }
+.launcher .jogos-hub button > i {
+  width: 30px !important; height: 30px !important; display: grid; place-items: center;
+  color: #d8bd72; background: #1b1c1e; border: 0; border-radius: 9px !important;
+  box-shadow: none; font-size: 15px !important; font-style: normal; font-weight: 750;
+}
+.launcher .jogos-hub button > span { width: 100%; gap: 2px; }
+.launcher .jogos-hub strong { display: block; overflow: hidden; color: #f3f1eb; font-size: 11px !important; font-weight: 620; white-space: nowrap; text-overflow: ellipsis; }
+.launcher .jogos-hub small { display: block; color: #7e8188; font-size: 7px !important; white-space: nowrap; }
+.launcher .jogos-hub button.seleccionado {
+  border-color: #8a7540; background: linear-gradient(145deg, #191816, #111318);
+  box-shadow: inset 0 -2px #d9b957, 0 8px 24px rgba(0,0,0,.22); transform: none;
+}
+.launcher .jogos-hub button.seleccionado > i { color: #17140d; background: var(--acento); }
+.launcher .jogos-hub button:disabled { opacity: .42; }
+.launcher-seleccao { flex: 0 0 auto !important; min-height: 0 !important; overflow: visible !important; }
+.launcher #config-serpente { display: block; }
+.launcher-resumo {
+  min-height: 103px; padding: 14px 4px 13px; display: flex; align-items: center; justify-content: center; gap: 15px;
+  border-top: 1px solid #25272c; text-align: left;
+}
+.launcher-resumo > i {
+  flex: 0 0 48px; width: 48px; height: 48px; display: grid; place-items: center;
+  color: var(--acento); background: #151618; border-radius: 15px; font-size: 23px; font-style: normal; font-weight: 700;
+}
+.launcher-resumo > span { min-width: 0; }
+.launcher-resumo h2 { margin: 0 0 3px; color: var(--tinta); font-size: 20px; font-weight: 630; }
+.launcher-resumo b { display: block; color: var(--acento); font-size: 7px; font-weight: 650; letter-spacing: .7px; text-transform: uppercase; }
+.launcher-resumo p { margin: 7px 0 0; color: var(--tinta-fraca); font-size: 8px; line-height: 1.35; }
+.launcher-modos { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; }
+.launcher-modos button {
+  min-width: 0; min-height: 36px; padding: 7px 9px; display: flex; flex: 1 1 0 !important; grid-template-columns: none; justify-content: space-between; gap: 5px;
+  background: #111318; border-color: transparent; border-radius: 10px;
+}
+.launcher-modos button.seleccionado { border-color: #756538; background: #181714; box-shadow: none; }
+.launcher-modos strong { font-size: 7px; }
+.launcher-modos button > i { flex: 0 0 7px; width: 7px; height: 7px; }
+.launcher-titulo { padding: 10px 2px 14px; border-bottom: 1px solid #24272c; }
+.launcher-titulo small { color: var(--acento); font-size: 7px; letter-spacing: 1.8px; }
+.launcher-titulo h2 { margin: 6px 0 4px; font-size: 25px; }
+.launcher-titulo p { margin: 0; color: var(--tinta-fraca); font-size: 9px; }
+.launcher-perfil, .launcher-carreira { padding-inline: 2px !important; }
+.launcher-perfil .escolha { margin-top: 4px; }
+.launcher-perfil .amostra { border-color: transparent; background: #111318; }
+.launcher-perfil .amostra.seleccionada { border-color: #8a7540; background: #181714; box-shadow: none; }
+.launcher-nav {
+  order: 2; flex: 0 0 62px; min-height: 62px; margin-top: auto; padding: 0;
+  background: transparent; border: 0; border-top: 1px solid #24272c; border-radius: 0;
+}
+.launcher-nav button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; background: transparent !important; box-shadow: none !important; }
+.launcher-nav button svg { width: 20px; height: 20px; color: #777a80; }
+.launcher-nav button b { color: #777a80; font-size: 7px; letter-spacing: .5px; }
+.launcher-nav button.activo svg, .launcher-nav button.activo b { color: var(--acento); }
+.launcher-jogar {
+  position: relative; flex: 0 0 56px; min-height: 56px; margin: 0; padding: 0 19px;
+  color: #18140a; background: linear-gradient(135deg, #f1d27a, #cda844); border: 0; border-radius: 15px;
+  box-shadow: 0 9px 28px rgba(0,0,0,.28); font-size: 10px;
+}
+.launcher-jogar::before, .launcher-jogar::after { display: none; }
+.launcher-jogar span:last-child { color: #19150b; background: rgba(0,0,0,.08); border: 0; }
+@media (max-height: 760px) {
+  .menu-conteudo.launcher { gap: 8px; padding-top: max(10px, env(safe-area-inset-top)); }
+  .launcher-topo { flex-basis: 44px; min-height: 44px; }
+  .launcher .jogos-hub button { min-height: 70px !important; padding: 9px 11px !important; gap: 5px !important; }
+  .launcher .jogos-hub button > i { width: 25px !important; height: 25px !important; font-size: 12px !important; }
+  .launcher-resumo { min-height: 76px; padding-block: 9px; }
+  .launcher-resumo > i { width: 40px; height: 40px; flex-basis: 40px; }
+  .launcher-resumo p { margin-top: 4px; }
+  .launcher-nav { flex-basis: 53px; min-height: 53px; }
+  .launcher-jogar { flex-basis: 50px; min-height: 50px; }
+}

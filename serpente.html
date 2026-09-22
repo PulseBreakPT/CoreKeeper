@@ -13,139 +13,71 @@
   </head>
   <body>
     <section class="menu-principal" id="menu-principal" aria-labelledby="menu-titulo">
-      <div class="menu-conteudo">
-        <header class="menu-topo">
-          <div class="marca" aria-label="Serpente">
+      <div class="menu-conteudo launcher">
+        <header class="menu-topo launcher-topo">
+          <div class="marca" aria-label="Nexus Arcade">
             <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M23 7H12a5 5 0 0 0 0 10h8a5 5 0 0 1 0 10H8" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><circle cx="24" cy="6" r="1.5" fill="currentColor" class="olho-logo"/></svg>
             <span>NEXUS ARCADE</span>
           </div>
-          <span class="versao">MOBILE / 7.1</span>
+          <button class="launcher-definicoes" type="button" data-menu-categoria="visual" aria-label="Abrir definições"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21H9.6v-.09A1.7 1.7 0 0 0 8.5 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.1 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H2V9.6h.4A1.7 1.7 0 0 0 4.1 8.5a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 8.5 4.1a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V2h4v.4A1.7 1.7 0 0 0 15 4.1a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 8.5a1.7 1.7 0 0 0 .6 1 1.7 1.7 0 0 0 1.1.4h.4v4h-.4a1.7 1.7 0 0 0-1.7 1.1Z"/></svg></button>
         </header>
 
-        <div class="menu-hero">
-          <div>
-            <span class="menu-indice" data-i18n="configurar">CONFIGURA A PARTIDA</span>
-            <h1 id="menu-titulo" data-i18n-html="titulo">A tua cobra.<br><em>As tuas regras.</em></h1>
-          </div>
-          <svg class="cobra-preview" viewBox="0 0 180 116" fill="none" aria-hidden="true">
-            <path class="preview-halo" d="M22 92h54a25 25 0 0 0 0-50H61a25 25 0 0 1 0-50h70c18 0 27 11 27 28v18"/>
-            <path class="preview-corpo" d="M22 92h54a25 25 0 0 0 0-50H61a25 25 0 0 1 0-50h70c18 0 27 11 27 28v18"/>
-            <rect class="preview-cabeca" x="145" y="27" width="27" height="32" rx="12"/>
-            <path d="M153 44v4m11-4v4" stroke="#17200f" stroke-width="3.5" stroke-linecap="round"/>
-          </svg>
-        </div>
+        <div class="menu-opcoes launcher-corpo">
+          <section class="menu-painel activo launcher-jogos" data-menu-painel="jogo" aria-label="Jogos">
+            <h1 id="menu-titulo">Escolhe um jogo</h1>
+            <div class="jogos-hub" role="list">
+              <button type="button" data-jogo="serpente" class="seleccionado"><i class="icone-serpente">S</i><span><strong>Serpente</strong><small>3 modos · estratégia</small></span></button>
+              <button type="button" data-jogo="tetris"><i class="icone-blocos">▦</i><span><strong data-i18n="tetrisNome">Blocos</strong><small>Clássico · 10×20</small></span></button>
+              <button type="button" data-jogo="maze"><i class="icone-maze">◎</i><span><strong data-i18n="mazeNome">Labirinto</strong><small>Exploração</small></span></button>
+              <button type="button" data-jogo="2048"><i class="icone-2048">＋</i><span><strong>2048</strong><small>Clássico · 4×4</small></span></button>
+              <button type="button" data-jogo="minas"><i class="icone-minas">✦</i><span><strong>Campo Minado</strong><small>9×12 · 18 minas</small></span></button>
+              <button type="button" disabled><i>?</i><span><strong>Próximo jogo</strong><small>Em breve</small></span></button>
+            </div>
 
-        <div class="menu-opcoes">
-          <nav class="menu-categorias" aria-label="Categorias do menu">
-            <button type="button" data-menu-categoria="jogo" class="activo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 8h10l3 5v5a2 2 0 0 1-3.4 1.4L14.2 17H9.8l-2.4 2.4A2 2 0 0 1 4 18v-5l3-5Z"/><path d="M8 12v4m-2-2h4m6-1h.01m2 2h.01"/></svg><b data-i18n="jogar">Jogar</b></button>
-            <button type="button" data-menu-categoria="visual"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18h1.5a1.7 1.7 0 0 0 .8-3.2 1.7 1.7 0 0 1 .8-3.2H17a4 4 0 0 0 4-4C21 6.4 17 3 12 3Z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/></svg><b data-i18n="visual">Visual</b></button>
+            <div class="launcher-seleccao" id="config-serpente">
+              <div class="launcher-resumo"><i>S</i><span><h2>Serpente</h2><b>3 modos · cor personalizada</b><p>Domina a arena e cresce sem tocar no corpo.</p></span></div>
+              <div class="cartoes-modo launcher-modos" aria-label="Modos disponíveis">
+                <button type="button" data-escolha-modo="classico"><span><strong data-i18n="classico">Clássico</strong></span><i></i></button>
+                <button type="button" data-escolha-modo="relogio"><span><strong data-i18n="relogio">Tempo</strong></span><i></i></button>
+                <button type="button" data-escolha-modo="portais"><span><strong data-i18n="portais">Portais</strong></span><i></i></button>
+              </div>
+            </div>
+            <section class="launcher-seleccao" id="config-tetris" hidden><div class="launcher-resumo"><i>▦</i><span><h2 data-i18n="tetrisNome">Blocos</h2><b>Clássico · 10×20</b><p>Completa linhas, cria combos e controla o ritmo.</p></span></div></section>
+            <section class="launcher-seleccao" id="config-maze" hidden><div class="launcher-resumo"><i>◎</i><span><h2 data-i18n="mazeNome">Labirinto</h2><b>Exploração</b><p>Recolhe a energia e domina cada rota.</p></span></div></section>
+            <section class="launcher-seleccao" id="config-2048" hidden><div class="launcher-resumo"><i>＋</i><span><h2>2048</h2><b>Clássico · 4×4</b><p>Desliza, funde e constrói o maior número.</p></span></div></section>
+            <section class="launcher-seleccao" id="config-minas" hidden><div class="launcher-resumo"><i>✦</i><span><h2>Campo Minado</h2><b>9×12 · 18 minas</b><p>Encontra todas as casas seguras.</p></span></div></section>
+          </section>
+
+          <section class="menu-painel launcher-perfil" data-menu-painel="visual" aria-label="Perfil e definições">
+            <div class="launcher-titulo"><small>PERFIL</small><h2>Personalização</h2><p>Escolhe as cores dos personagens e o idioma.</p></div>
+            <fieldset class="escolha"><legend data-i18n="corCobra">COR DA COBRA</legend><div class="paleta cobras" id="paleta-cobra">
+              <button class="amostra cobra-lima" type="button" data-cobra="83"><i></i><span data-i18n="lima">Lima</span></button><button class="amostra cobra-ciano" type="button" data-cobra="188"><i></i><span data-i18n="ciano">Ciano</span></button><button class="amostra cobra-rosa" type="button" data-cobra="330"><i></i><span data-i18n="rosa">Rosa</span></button><button class="amostra cobra-dourada" type="button" data-cobra="42"><i></i><span data-i18n="dourada">Dourada</span></button>
+            </div></fieldset>
+            <fieldset class="escolha"><legend data-i18n="corNucleo">COR DO PERSONAGEM DO LABIRINTO</legend><div class="paleta" id="paleta-maze">
+              <button class="amostra cobra-lima" type="button" data-maze-cor="83"><i></i><span data-i18n="lima">Lima</span></button><button class="amostra cobra-ciano" type="button" data-maze-cor="188"><i></i><span data-i18n="ciano">Ciano</span></button><button class="amostra cobra-rosa" type="button" data-maze-cor="330"><i></i><span data-i18n="rosa">Rosa</span></button><button class="amostra cobra-dourada" type="button" data-maze-cor="42"><i></i><span data-i18n="dourada">Dourada</span></button>
+            </div></fieldset>
+            <fieldset class="escolha escolha-idioma"><legend data-i18n="idioma">IDIOMA / LANGUAGE</legend><div class="paleta idiomas" id="paleta-idioma">
+              <button class="amostra" type="button" data-idioma="pt-PT"><b>PT</b><span>Portugal</span></button><button class="amostra" type="button" data-idioma="en"><b>EN</b><span>English</span></button><button class="amostra" type="button" data-idioma="es"><b>ES</b><span>Español</span></button><button class="amostra" type="button" data-idioma="pt-BR"><b>BR</b><span>Brasil</span></button>
+            </div></fieldset>
+          </section>
+
+          <section class="menu-painel launcher-carreira" data-menu-painel="carreira" aria-label="Carreira e progressão">
+            <div class="launcher-titulo"><small>CARREIRA</small><h2>O teu percurso</h2><p>Recordes, missões e conquistas guardados neste dispositivo.</p></div>
+            <section class="carreira"><button type="button" id="abrir-carreira"><span><small data-i18n="carreira">CARREIRA</small><strong id="carreira-contagem"><b id="stat-partidas">0</b> partidas · <b id="stat-comidas">0</b> luzes</strong></span><span class="nivel"><small data-i18n="nivel">NÍVEL</small><b id="stat-nivel">1</b></span></button></section>
+            <div class="carreira-destaques"><span><b id="menu-recorde">0</b><small data-i18n="recordeAtual">RECORDE ATUAL</small></span><span><b id="menu-conquistas">0/10</b><small data-i18n="conquistas">CONQUISTAS</small></span></div>
+            <div class="carreira-saldo"><span><b id="menu-moedas">0</b><small data-i18n="moedas">MOEDAS</small></span><span><b id="menu-xp">0</b><small>XP</small></span></div>
+            <div class="carreira-acoes"><button type="button" id="abrir-loja"><span>◇</span><b data-i18n="loja">Loja</b></button><button type="button" id="abrir-ranking"><span>♜</span><b data-i18n="ranking">Ranking</b></button><button type="button" id="abrir-definicoes"><span>⚙</span><b data-i18n="definicoes">Definições</b></button></div>
+            <div class="objetivos-diarios" id="objetivos-diarios"></div>
+          </section>
+
+          <nav class="menu-categorias launcher-nav" aria-label="Navegação principal">
+            <button type="button" data-menu-categoria="jogo" class="activo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 8h10l3 5v5a2 2 0 0 1-3.4 1.4L14.2 17H9.8l-2.4 2.4A2 2 0 0 1 4 18v-5l3-5Z"/><path d="M8 12v4m-2-2h4m6-1h.01m2 2h.01"/></svg><b>Jogos</b></button>
             <button type="button" data-menu-categoria="carreira"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 4h8v3a4 4 0 0 1-8 0V4Z"/><path d="M8 6H5v1a4 4 0 0 0 4 4m7-5h3v1a4 4 0 0 1-4 4m-3 0v5m-4 4h8m-6-4h4"/></svg><b data-i18n="carreira">Carreira</b></button>
+            <button type="button" data-menu-categoria="visual"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.8 21a7.4 7.4 0 0 1 14.4 0"/></svg><b>Perfil</b></button>
           </nav>
-
-          <section class="menu-painel" data-menu-painel="visual" aria-label="Personalização visual">
-          <fieldset class="escolha">
-            <legend data-i18n="corCobra">COR DA COBRA</legend>
-            <div class="paleta cobras" id="paleta-cobra">
-              <button class="amostra cobra-lima" type="button" data-cobra="83"><i></i><span data-i18n="lima">Lima</span></button>
-              <button class="amostra cobra-ciano" type="button" data-cobra="188"><i></i><span data-i18n="ciano">Ciano</span></button>
-              <button class="amostra cobra-rosa" type="button" data-cobra="330"><i></i><span data-i18n="rosa">Rosa</span></button>
-              <button class="amostra cobra-dourada" type="button" data-cobra="42"><i></i><span data-i18n="dourada">Dourada</span></button>
-            </div>
-          </fieldset>
-
-          <fieldset class="escolha">
-            <legend data-i18n="corNucleo">COR DO PERSONAGEM DO LABIRINTO</legend>
-            <div class="paleta" id="paleta-maze">
-              <button class="amostra cobra-lima" type="button" data-maze-cor="83"><i></i><span data-i18n="lima">Lima</span></button>
-              <button class="amostra cobra-ciano" type="button" data-maze-cor="188"><i></i><span data-i18n="ciano">Ciano</span></button>
-              <button class="amostra cobra-rosa" type="button" data-maze-cor="330"><i></i><span data-i18n="rosa">Rosa</span></button>
-              <button class="amostra cobra-dourada" type="button" data-maze-cor="42"><i></i><span data-i18n="dourada">Dourada</span></button>
-            </div>
-          </fieldset>
-
-          <fieldset class="escolha escolha-idioma">
-            <legend data-i18n="idioma">IDIOMA / LANGUAGE</legend>
-            <div class="paleta idiomas" id="paleta-idioma">
-              <button class="amostra" type="button" data-idioma="pt-PT"><b>PT</b><span>Portugal</span></button>
-              <button class="amostra" type="button" data-idioma="en"><b>EN</b><span>English</span></button>
-              <button class="amostra" type="button" data-idioma="es"><b>ES</b><span>Español</span></button>
-              <button class="amostra" type="button" data-idioma="pt-BR"><b>BR</b><span>Brasil</span></button>
-            </div>
-          </fieldset>
-          </section>
-
-          <section class="menu-painel activo" data-menu-painel="jogo" aria-label="Modos de jogo">
-          <fieldset class="escolha biblioteca-jogos">
-            <legend data-i18n="escolherJogo">ESCOLHE O JOGO</legend>
-            <div class="jogos-hub">
-              <button type="button" data-jogo="serpente" class="seleccionado"><i class="icone-serpente">S</i><span><strong>Serpente</strong><small>Instinto · estratégia · velocidade</small></span><b>01</b></button>
-              <button type="button" data-jogo="tetris"><i class="icone-blocos">▦</i><span><strong data-i18n="tetrisNome">Blocos</strong><small data-i18n="tetrisDesc">Encaixa · limpa · domina</small></span><b>02</b></button>
-              <button type="button" data-jogo="maze"><i class="icone-maze">◉</i><span><strong data-i18n="mazeNome">Labirinto</strong><small data-i18n="mazeDesc">Explora · engana · conquista</small></span><b>03</b></button>
-              <button type="button" data-jogo="2048"><i class="icone-2048">＋</i><span><strong>2048</strong><small>Desliza · funde · ascende</small></span><b>04</b></button>
-              <button type="button" data-jogo="minas"><i class="icone-minas">✦</i><span><strong>Minas</strong><small>Analisa · marca · limpa</small></span><b>05</b></button>
-            </div>
-          </fieldset>
-          <div id="config-serpente">
-          <fieldset class="escolha modos-menu">
-            <legend data-i18n="escolherModo">ESCOLHE O MODO</legend>
-            <div class="cartoes-modo" aria-label="Modos disponíveis">
-              <button type="button" data-escolha-modo="classico">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 13c0-5 3-9 8-9s8 4 8 9-3 7-8 7-8-2-8-7Z"/><path d="M8 12h3m-1.5-1.5v3M15.5 12h.01"/></svg>
-                <span><strong data-i18n="classico">Clássico</strong><small data-i18n="classicoDesc">Sem limite. Só instinto.</small></span><i></i>
-              </button>
-              <button type="button" data-escolha-modo="relogio">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg>
-                <span><strong data-i18n="relogio">Contra o tempo</strong><small data-i18n="relogioDesc">10 segundos por luz.</small></span><i></i>
-              </button>
-              <button type="button" data-escolha-modo="portais">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 4h5v16H5M19 4h-5v16h5"/><path d="m8 12 3-3m-3 3 3 3m5-3-3-3m3 3-3 3"/></svg>
-                <span><strong data-i18n="portais">Portais</strong><small data-i18n="portaisDesc">Atravessa as margens.</small></span><i></i>
-              </button>
-            </div>
-          </fieldset>
-
-          </div>
-          <section class="config-tetris" id="config-tetris" hidden>
-            <div class="tetris-destaque"><i>▦</i><span><small>ARCADE / 02</small><h2 data-i18n="tetrisNome">Blocos</h2><p data-i18n="tetrisFrase">Sete peças. Dez colunas. Decisões infinitas.</p></span></div>
-            <div class="tetris-recursos"><span><b>7-BAG</b><small data-i18n="tetrisPecas">Peças equilibradas</small></span><span><b>HOLD</b><small data-i18n="tetrisReserva">Reserva estratégica</small></span><span><b>GHOST</b><small data-i18n="tetrisProjecao">Projeção precisa</small></span></div>
-          </section>
-          <section class="config-tetris config-maze" id="config-maze" hidden>
-            <div class="tetris-destaque maze-destaque"><i>◉</i><span><small>ARCADE / 03</small><h2 data-i18n="mazeNome">Labirinto</h2><p data-i18n="mazeFrase">Recolhe a energia. Lê os sentinelas. Domina cada rota.</p></span></div>
-            <div class="tetris-recursos"><span><b>4 IAs</b><small data-i18n="mazeIas">Personalidades próprias</small></span><span><b>PULSO</b><small data-i18n="mazePulso">Inverte a perseguição</small></span><span><b>ROTAS</b><small data-i18n="mazeRotas">Labirinto original</small></span></div>
-          </section>
-          <section class="config-tetris config-2048" id="config-2048" hidden>
-            <div class="tetris-destaque destaque-2048"><i>＋</i><span><small>ARCADE / 04</small><h2>2048</h2><p>Funde valores. Constrói a matriz perfeita.</p></span></div>
-            <div class="tetris-recursos"><span><b>4 × 4</b><small>Matriz de precisão</small></span><span><b>UNDO</b><small>Uma jogada atrás</small></span><span><b>2048</b><small>Núcleo máximo</small></span></div>
-          </section>
-          <section class="config-tetris config-minas" id="config-minas" hidden>
-            <div class="tetris-destaque destaque-minas"><i>✦</i><span><small>ARCADE / 05</small><h2>Campo Minado</h2><p>Lê os sinais. Marca o perigo. Limpa o campo.</p></span></div>
-            <div class="tetris-recursos"><span><b>9 × 12</b><small>Campo mobile</small></span><span><b>18 MINAS</b><small>Pressão equilibrada</small></span><span><b>SAFE</b><small>Primeiro toque seguro</small></span></div>
-          </section>
-          </section>
-
-          <section class="menu-painel" data-menu-painel="carreira" aria-label="Carreira e progressão">
-            <div class="carreira-resumo"><small data-i18n="progressao">PROGRESSÃO LOCAL</small><h2 data-i18n="percurso">O teu percurso.</h2><p data-i18n="percursoDesc">Recordes, missões e conquistas ficam guardados neste dispositivo.</p></div>
-          <section class="carreira" aria-label="Carreira">
-            <button type="button" id="abrir-carreira">
-              <span><small data-i18n="carreira">CARREIRA</small><strong id="carreira-contagem"><b id="stat-partidas">0</b> partidas · <b id="stat-comidas">0</b> luzes</strong></span>
-              <span class="nivel"><small data-i18n="nivel">NÍVEL</small><b id="stat-nivel">1</b></span>
-            </button>
-          </section>
-          <div class="carreira-destaques">
-            <span><b id="menu-recorde">0</b><small data-i18n="recordeAtual">RECORDE ATUAL</small></span>
-            <span><b id="menu-conquistas">0/10</b><small data-i18n="conquistas">CONQUISTAS</small></span>
-          </div>
-          <div class="carreira-saldo"><span><b id="menu-moedas">0</b><small data-i18n="moedas">MOEDAS</small></span><span><b id="menu-xp">0</b><small>XP</small></span></div>
-          <div class="carreira-acoes">
-            <button type="button" id="abrir-loja"><span>◇</span><b data-i18n="loja">Loja</b></button>
-            <button type="button" id="abrir-ranking"><span>♜</span><b data-i18n="ranking">Ranking</b></button>
-            <button type="button" id="abrir-definicoes"><span>⚙</span><b data-i18n="definicoes">Definições</b></button>
-          </div>
-          <div class="objetivos-diarios" id="objetivos-diarios"></div>
-          </section>
         </div>
 
-        <button class="entrar" id="entrar" type="button"><span data-i18n="entrar">ENTRAR NA ARENA</span><span aria-hidden="true">→</span></button>
+        <button class="entrar launcher-jogar" id="entrar" type="button"><span>JOGAR</span><span aria-hidden="true">→</span></button>
       </div>
     </section>
 
