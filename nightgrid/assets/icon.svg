@@ -4,7 +4,6 @@
     <path d="M0 128h512M0 256h512M0 384h512M128 0v512M256 0v512M384 0v512"/>
   </g>
   <path d="M256 72 L404 156 L404 324 L256 440 L108 324 L108 156 Z" fill="none" stroke="#ff7a35" stroke-width="18" stroke-linejoin="round"/>
-  <path d="M256 150 L340 198 L340 300 L256 358 L172 300 L172 198 Z" fill="#12track" />
   <path d="M256 150 L340 198 L340 300 L256 358 L172 300 L172 198 Z" fill="#14202b"/>
   <circle cx="256" cy="254" r="44" fill="#ff7a35"/>
   <circle cx="256" cy="254" r="18" fill="#0b0e12"/>

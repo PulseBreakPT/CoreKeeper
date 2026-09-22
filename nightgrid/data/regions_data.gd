@@ -57,7 +57,7 @@ static func difficulty_profile(d: int) -> Dictionary:
 static func regions() -> Array:
 	return [
 		{
-			"id": "harbour_reach", "name": "Harbour Reach",
+			"id": "harbour_reach", "short": "HARBOUR", "name": "Harbour Reach",
 			"subtitle": "Container terminals and flooded slipways on the city's north lip.",
 			"faction": "dock_syndicate", "rec_level": 1, "seed": 1207,
 			"unlock_player_level": 1, "unlock_after": "",
@@ -65,7 +65,7 @@ static func regions() -> Array:
 			"resources": ["materials", "fuel"],
 		},
 		{
-			"id": "sable_quarter", "name": "Sable Quarter",
+			"id": "sable_quarter", "short": "SABLE", "name": "Sable Quarter",
 			"subtitle": "Gambling floors, private clinics and a great deal of laundered money.",
 			"faction": "velvet_cartel", "rec_level": 6, "seed": 2411,
 			"unlock_player_level": 4, "unlock_after": "harbour_reach",
@@ -73,7 +73,7 @@ static func regions() -> Array:
 			"resources": ["cash", "supplies"],
 		},
 		{
-			"id": "iron_verge", "name": "Iron Verge",
+			"id": "iron_verge", "short": "IRON", "name": "Iron Verge",
 			"subtitle": "Rolling mills that never cooled down and a union that never disbanded.",
 			"faction": "slagworks_union", "rec_level": 13, "seed": 3617,
 			"unlock_player_level": 8, "unlock_after": "sable_quarter",
@@ -81,7 +81,7 @@ static func regions() -> Array:
 			"resources": ["materials", "fuel", "cash"],
 		},
 		{
-			"id": "null_district", "name": "Null District",
+			"id": "null_district", "short": "NULL", "name": "Null District",
 			"subtitle": "Blocks that do not appear on any municipal map, and are maintained anyway.",
 			"faction": "quietline", "rec_level": 21, "seed": 4903,
 			"unlock_player_level": 13, "unlock_after": "iron_verge",
@@ -89,7 +89,7 @@ static func regions() -> Array:
 			"resources": ["intel", "supplies"],
 		},
 		{
-			"id": "ashline_basin", "name": "Ashline Basin",
+			"id": "ashline_basin", "short": "ASHLINE", "name": "Ashline Basin",
 			"subtitle": "Where the fires were left burning on purpose. The Court holds the basin floor.",
 			"faction": "ash_court", "rec_level": 30, "seed": 6113,
 			"unlock_player_level": 19, "unlock_after": "null_district",

@@ -6,6 +6,11 @@ instala-se como aplicação (PWA) e tem também build Android nativa (APK) via C
 
 > *"Everything buried was buried for a reason."*
 
+> **Este repositório tem mais do que um jogo.** O Hollow Star é o primeiro e é
+> o que este README descreve. Há também o [**Nightgrid**](nightgrid/) — um
+> 4X / base-building / expedition RPG para Android feito em Godot 4, com
+> README e ferramentas de compilação próprios.
+
 ---
 
 ## A premissa

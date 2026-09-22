@@ -100,6 +100,8 @@ static func draw_icon(c: CanvasItem, name: String, rect: Rect2, col: Color, w: f
 			c.draw_polyline(PackedVector2Array([
 				o + s * Vector2(0.24, 0.62), o + s * Vector2(0.5, 0.36),
 				o + s * Vector2(0.76, 0.62)]), col, w * 1.2)
+		"minus":
+			c.draw_line(o + s * Vector2(0.22, 0.5), o + s * Vector2(0.78, 0.5), col, w * 1.2)
 		"plus":
 			c.draw_line(o + s * Vector2(0.5, 0.22), o + s * Vector2(0.5, 0.78), col, w * 1.2)
 			c.draw_line(o + s * Vector2(0.22, 0.5), o + s * Vector2(0.78, 0.5), col, w * 1.2)
@@ -141,6 +143,3 @@ static func draw_icon(c: CanvasItem, name: String, rect: Rect2, col: Color, w: f
 					o + s * 0.5 + Vector2(cos(a), sin(a)) * s.x * 0.42, col, w)
 		_:
 			c.draw_arc(o + s * 0.5, s.x * 0.3, 0, TAU, 20, col, w)
-
-static func resource_icon(res: String) -> String:
-	return res

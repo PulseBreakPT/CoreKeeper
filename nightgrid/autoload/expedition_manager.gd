@@ -162,8 +162,6 @@ func deploy_blocked_reason(team: int, kind: String, target_id: String) -> String
 			return "Location not discovered"
 		if MapManager.is_locked(target_id):
 			return MapManager.lock_reason(target_id)
-		if not MapManager.is_cleared(target_id) and false:
-			return ""
 	if team_busy_on(target_id) >= 0:
 		return "Another team is already there"
 	if not ResourceManager.has_energy(int(info.get("energy", 0))):
