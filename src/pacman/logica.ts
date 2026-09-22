@@ -65,7 +65,8 @@ export class Labirinto {
   iniciar(): void { if (this.estado === 'pronto') this.estado = 'jogar'; }
   pausar(): void { if (this.estado === 'jogar') this.estado = 'pausa'; else if (this.estado === 'pausa') this.estado = 'jogar'; }
   pedir(d: DirecaoMaze): void { if (this.estado === 'pronto') this.iniciar(); if (this.estado === 'jogar') this.desejada = d; }
-  intervalo(): number { return Math.max(72, 138 - (this.nivel - 1) * 7); }
+  /** Ritmo pensado para gestos num ecrã tátil: começa legível e acelera sem se tornar caótico. */
+  intervalo(): number { return Math.max(140, 200 - (this.nivel - 1) * 5); }
 
   private destino(p: Posicao, d: DirecaoMaze): Posicao {
     let x = p.x + V[d].x, y = p.y + V[d].y;
