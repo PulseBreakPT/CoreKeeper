@@ -34,7 +34,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      # Sem `packages` a acção pede `tools`, que já não existe no repositório do
+      # SDK e faz o sdkmanager sair com erro. Pedimos só o que o build usa.
       - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
       - run: npm ci
       - run: npm run build
       - run: npx cap sync android
@@ -45,3 +49,63 @@ jobs:
         with:
           name: the-hollow-star-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+
+  apk-palavras:
+    name: APK do Nexus Word
+    runs-on: ubuntu-latest
+    needs: verificar
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
+      - run: npm ci
+      - run: npm run palavras:build
+      - name: Sincronizar Capacitor
+        working-directory: palavras-app
+        run: npx cap sync android
+      - name: Compilar APK
+        working-directory: palavras-app/android
+        run: ./gradlew assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nexus-word-apk
+          path: palavras-app/android/app/build/outputs/apk/debug/app-debug.apk
+
+  apk-serpente:
+    name: APK da Serpente
+    runs-on: ubuntu-latest
+    needs: verificar
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
+      - run: npm ci
+      - run: npm run serpente:build
+      - name: Sincronizar Capacitor
+        working-directory: serpente-app
+        run: npx cap sync android
+      - name: Compilar APK
+        working-directory: serpente-app/android
+        run: ./gradlew assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: serpente-apk
+          path: serpente-app/android/app/build/outputs/apk/debug/app-debug.apk

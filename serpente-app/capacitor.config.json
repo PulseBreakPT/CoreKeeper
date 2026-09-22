@@ -1,0 +1,12 @@
+{
+  "appId": "pt.pulsebreak.serpente",
+  "appName": "Serpente",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#04060C",
+    "allowMixedContent": false
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

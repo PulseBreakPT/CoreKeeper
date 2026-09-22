@@ -1,0 +1,7 @@
+{
+  "appId": "pt.pulsebreak.palavras",
+  "appName": "Nexus Word",
+  "webDir": "www",
+  "android": { "backgroundColor": "#070707", "allowMixedContent": false },
+  "server": { "androidScheme": "https" }
+}

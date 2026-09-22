@@ -1,0 +1,39 @@
+/* Base partilhada pelo launcher e pelo ecrã de jogo do Nexus Word. */
+
+@font-face{font-family:Baloo;src:url('../assets/fontes/baloo2-latin.woff2') format('woff2');font-weight:400 800;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2212,U+FEFF,U+FFFD}
+@font-face{font-family:Baloo;src:url('../assets/fontes/baloo2-latin-ext.woff2') format('woff2');font-weight:400 800;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:Nunito;src:url('../assets/fontes/nunito-latin.woff2') format('woff2');font-weight:400 900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2212,U+FEFF,U+FFFD}
+@font-face{font-family:Nunito;src:url('../assets/fontes/nunito-latin-ext.woff2') format('woff2');font-weight:400 900;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+2C60-2C7F,U+A720-A7FF}
+
+:root{--nw-navy:#132867;--nw-ink:#1a2a5e;--altura-app:100dvh}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#8ee1fb;color:var(--nw-ink);font-family:Nunito,system-ui,sans-serif}
+button,input{font:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+#app{width:min(100%,520px);height:var(--altura-app);margin:auto}
+.reduzir-movimento *{animation:none!important;transition:none!important}
+
+/* ---------- folha deslizante (recordes, definições, palavra do dia) ---------- */
+.folha{position:fixed;z-index:50;inset:0}
+.folha-fundo{position:absolute;inset:0;width:100%;background:rgba(17,35,72,.42);border:0;backdrop-filter:blur(5px)}
+.folha-painel{position:absolute;right:0;bottom:0;left:0;max-height:76vh;overflow-y:auto;overscroll-behavior:contain;padding:10px 20px max(25px,env(safe-area-inset-bottom));background:#fff9e4;border:3px solid #6f5772;border-bottom:0;border-radius:26px 26px 0 0;box-shadow:0 -8px 0 rgba(55,36,69,.14);scrollbar-width:none;animation:subir .25s ease-out}
+.folha-painel::-webkit-scrollbar{display:none}
+.folha-painel>i{display:block;width:44px;height:4px;margin:0 auto 16px;background:#c3a488;border-radius:4px}
+.folha-painel header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.folha-painel header small{color:#7251b7;font-family:Baloo;font-size:10px;font-weight:800;letter-spacing:.12em}
+.folha-painel h2{margin:2px 0 0;color:var(--nw-navy);font-family:Baloo;font-size:27px;font-weight:800}
+.folha-painel header button{width:38px;height:38px;color:var(--nw-navy);background:#fff;border:2.5px solid #bda188;border-radius:13px;font-size:20px}
+.linha-folha,.opcao-folha{width:100%;min-height:58px;padding:10px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--nw-ink);background:#fff;border:2px solid #e5d0ae;border-radius:16px;text-align:left}
+.linha-folha+.linha-folha,.opcao-folha+.opcao-folha{margin-top:7px}
+.linha-folha span,.opcao-folha span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.linha-folha b,.opcao-folha b{font-family:Baloo;font-size:12px;font-weight:800;letter-spacing:.04em}
+.linha-folha small,.opcao-folha small{color:#7c7069;font-size:9px;font-weight:700}
+.linha-folha>strong,.opcao-folha>strong{color:#1167c0;font-family:Baloo;font-size:16px;font-weight:800;white-space:nowrap}
+.opcao-folha>strong{font-size:11px}
+.palavra-dia-folha{padding:24px 15px;text-align:center;background:radial-gradient(circle,#fff5b7,transparent 58%)}
+.palavra-dia-folha small{color:#a08a5e;font-family:Baloo;font-size:10px;font-weight:800;letter-spacing:.1em}
+.palavra-dia-folha h3{margin:6px 0 4px;color:#6e3fc0;font-family:Baloo;font-size:clamp(24px,7vw,32px);font-weight:800}
+.palavra-dia-folha p{margin:0;color:var(--nw-ink);font-size:13px;font-weight:700}
+.palavra-dia-folha span{display:block;margin-top:12px;color:#796e65;font-size:10px}
+@keyframes subir{from{transform:translateY(30%);opacity:0}}

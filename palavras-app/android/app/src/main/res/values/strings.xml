@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Nexus Word</string>
+    <string name="title_activity_main">Nexus Word</string>
+    <string name="package_name">pt.pulsebreak.palavras</string>
+    <string name="custom_url_scheme">pt.pulsebreak.palavras</string>
+</resources>
