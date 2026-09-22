@@ -6,8 +6,8 @@
     <meta name="theme-color" content="#070707" />
     <meta name="mobile-web-app-capable" content="yes" />
     <title>Palavra</title>
-    <script type="module" crossorigin src="./assets/palavras-B-eJsiWX.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/palavras-OttL73jr.css">
+    <script type="module" crossorigin src="./assets/palavras-DYENHzkQ.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/palavras-LWR2JBUo.css">
   </head>
   <body>
     <main id="app">
@@ -35,7 +35,9 @@
         </header>
 
         <div class="tempo" aria-label="Tempo restante"><i id="barra-tempo"></i></div>
-        <div class="ronda"><span id="modo-etiqueta">PLURAL</span><b id="numero-pergunta">01</b></div>
+        <div class="heat"><i id="heat-barra"></i><span id="heat-texto">HEAT 0%</span></div>
+        <div class="ronda"><span id="modo-etiqueta">PLURAL</span><em id="evento-ronda">RONDA NORMAL</em><b id="numero-pergunta">01</b></div>
+        <div class="fantasma-recorde"><i id="fantasma-barra"></i><span id="fantasma-recorde">RECORDE ±0</span></div>
 
         <section class="pergunta">
           <p id="instrucao">Escreve o plural</p>
@@ -45,6 +47,7 @@
             <span id="estado-input">A TUA RESPOSTA</span>
           </div>
           <button class="confirmar" id="confirmar" type="button"><span>CONFIRMAR</span><b>→</b></button>
+          <div class="historico" id="historico" aria-label="Respostas anteriores"></div>
         </section>
 
         <div class="feedback" id="feedback" hidden><strong id="feedback-titulo">CERTO</strong><span id="feedback-texto">+145 PONTOS</span></div>
@@ -53,11 +56,13 @@
         <section class="painel" id="painel" hidden>
           <small id="painel-etiqueta">PARTIDA TERMINADA</small>
           <h2 id="painel-titulo">1 250</h2>
-          <p id="painel-texto">NOVO RECORDE</p><div class="resumo"><span><b id="resumo-certas">0</b><small>CERTAS</small></span><span><b id="resumo-erradas">0</b><small>ERRADAS</small></span><span><b id="resumo-combo">0</b><small>MELHOR COMBO</small></span><span><b id="resumo-tempo">0,0s</b><small>TEMPO MÉDIO</small></span></div>
+          <p id="painel-texto">NOVO RECORDE</p><div class="medalha-perfeita" id="medalha-perfeita" hidden>◆ PERFECT RUN</div><div class="resumo"><span><b id="resumo-certas">0</b><small>CERTAS</small></span><span><b id="resumo-erradas">0</b><small>ERRADAS</small></span><span><b id="resumo-combo">0</b><small>MELHOR COMBO</small></span><span><b id="resumo-tempo">0,0s</b><small>TEMPO MÉDIO</small></span></div>
+          <button id="rever-erros" type="button">REVER ERROS <b>›</b></button>
           <button id="jogar-novamente" type="button">JOGAR NOVAMENTE <b>↻</b></button>
           <button id="ir-menu" type="button">ESCOLHER OUTRO MODO</button>
         </section>
       </section>
+      <section class="revisao" id="revisao" hidden><header><button id="fechar-revisao" type="button">‹</button><span><small>DESEMPENHO</small><h2>Palavras a rever</h2></span></header><div id="lista-erros"></div></section>
     </main>
   </body>
 </html>

@@ -22,3 +22,14 @@ const contrario: Pergunta[] = [
 ].map(([word,answer])=>({word,answer,acceptedAnswers:[answer]}));
 
 export const PERGUNTAS: Record<Modo,Pergunta[]> = { plural, singular, contrario };
+
+const rarosPlural: Pergunta[] = [
+  ['cônsul','cônsules'],['mal','males'],['carácter','caráteres'],['espécimen','espécimenes'],['júnior','juniores'],
+  ['sénior','seniores'],['álcool','álcoois'],['projétil','projéteis'],['réptil','répteis'],['qualquer','quaisquer'],
+].map(([word,answer])=>({word,answer,acceptedAnswers:[answer]}));
+const rarosSingular: Pergunta[] = rarosPlural.map(({word,answer})=>({word:answer,answer:word,acceptedAnswers:[word]}));
+const rarosContrario: Pergunta[] = [
+  ['efémero','duradouro'],['tácito','explícito'],['benevolente','malévolo'],['abundante','escasso'],['austero','luxuoso'],
+  ['célere','moroso'],['hostil','amistoso'],['íntegro','corrupto'],['nítido','difuso'],['prudente','imprudente'],
+].map(([word,answer])=>({word,answer,acceptedAnswers:[answer]}));
+export const PERGUNTAS_RARAS: Record<Modo,Pergunta[]>={plural:rarosPlural,singular:rarosSingular,contrario:rarosContrario};
