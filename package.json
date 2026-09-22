@@ -8,7 +8,7 @@
     "dev": "vite",
     "serpente": "vite --open /serpente.html",
     "serpente:build": "vite build --config vite.serpente.config.ts",
-    "palavras:build": "vite build --config vite.palavras.config.ts",
+    "palavras:build": "vite build --config vite.palavras.config.ts && cp palavras-app/www/palavras.html palavras-app/www/index.html",
     "serpente:apk": "npm run serpente:build && cd serpente-app && npx cap sync android && cd android && ./gradlew assembleDebug",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host",
@@ -22,7 +22,8 @@
     "icones:serpente": "node scripts/gerar-icones-serpente.mjs",
     "apk": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug",
     "cintilacao": "node scripts/cintilacao.mjs",
-    "fumo:estados": "node scripts/fumo-estados.mjs"
+    "fumo:estados": "node scripts/fumo-estados.mjs",
+    "fumo:palavras": "npm run palavras:build && node scripts/fumo-palavras.mjs"
   },
   "devDependencies": {
     "@capacitor/android": "^6.2.2",
