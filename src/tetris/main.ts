@@ -62,13 +62,13 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
   }
 
   function desenhar(): void {
-    const tamanho = canvas.width / COLUNAS, tema = matizTema(), claro = document.documentElement.dataset.aparencia === 'claro', agora = performance.now();
+    const tamanho = canvas.width / COLUNAS, tema = matizTema(), agora = performance.now();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const fundo = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    fundo.addColorStop(0, `hsl(${tema} 24% ${claro ? 98 : 7}%)`); fundo.addColorStop(1, `hsl(${tema} 28% ${claro ? 89 : 3}%)`); ctx.fillStyle = fundo; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    fundo.addColorStop(0, '#111419'); fundo.addColorStop(1, '#07080a'); ctx.fillStyle = fundo; ctx.fillRect(0, 0, canvas.width, canvas.height);
     const aura = ctx.createRadialGradient(canvas.width * .5, canvas.height * .78, 0, canvas.width * .5, canvas.height * .78, canvas.width * .8);
-    aura.addColorStop(0, `hsl(${tema} 90% 58% / ${claro ? .12 : .1})`); aura.addColorStop(1, `hsl(${tema} 90% 40% / 0)`); ctx.fillStyle = aura; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = `hsl(${tema} 30% ${claro ? 28 : 45}% / ${claro ? .12 : .085})`; ctx.lineWidth = 1;
+    aura.addColorStop(0, `hsl(${tema} 90% 58% / .055)`); aura.addColorStop(1, `hsl(${tema} 90% 40% / 0)`); ctx.fillStyle = aura; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = `hsl(${tema} 30% 45% / .075)`; ctx.lineWidth = 1;
     for (let x = 1; x < COLUNAS; x++) { ctx.beginPath(); ctx.moveTo(x * tamanho, 0); ctx.lineTo(x * tamanho, canvas.height); ctx.stroke(); }
     for (let y = 1; y < LINHAS - OCULTAS; y++) { ctx.beginPath(); ctx.moveTo(0, y * tamanho); ctx.lineTo(canvas.width, y * tamanho); ctx.stroke(); }
     // Zona superior de risco e scanline dão leitura imediata à altura da pilha.

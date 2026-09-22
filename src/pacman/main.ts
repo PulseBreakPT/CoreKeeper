@@ -46,17 +46,17 @@ export function montarMaze(aoMenu:()=>void):{activar():void;desactivar():void}{
   }
 
   function desenhar(p:number):void{
-    const h=tema(),hp=matizJogador(),claro=document.documentElement.dataset.aparencia==='claro';
+    const h=tema(),hp=matizJogador();
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
     const bg=ctx.createRadialGradient(canvas.width*.5,canvas.height*.44,20,canvas.width*.5,canvas.height*.5,canvas.height*.76);
-    bg.addColorStop(0,`hsl(${h} 34% ${claro?97:10}%)`);
-    bg.addColorStop(.62,`hsl(${h} 30% ${claro?91:5}%)`);
-    bg.addColorStop(1,`hsl(${h} 42% ${claro?84:2}%)`);
+    bg.addColorStop(0,'#14171c');
+    bg.addColorStop(.62,'#0b0d10');
+    bg.addColorStop(1,'#060709');
     ctx.fillStyle=bg;ctx.fillRect(0,0,canvas.width,canvas.height);
 
     // Circuito técnico subtil por baixo do labirinto.
-    ctx.save();ctx.globalAlpha=claro ? .09 : .12;ctx.strokeStyle=`hsl(${h} 80% ${claro?30:64}%)`;ctx.lineWidth=.7;
+    ctx.save();ctx.globalAlpha=.09;ctx.strokeStyle=`hsl(${h} 80% 64%)`;ctx.lineWidth=.7;
     for(let x=cel*.5;x<canvas.width;x+=cel){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();}
     for(let y=cel*.5;y<canvas.height;y+=cel){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
     ctx.restore();
@@ -65,12 +65,12 @@ export function montarMaze(aoMenu:()=>void):{activar():void;desactivar():void}{
       if(MAPA_BASE[y][x]==='#'){
         const px=x*cel,py=y*cel,m=2.2;
         const parede=ctx.createLinearGradient(px,py,px+cel,py+cel);
-        parede.addColorStop(0,`hsl(${h} 48% ${claro?90:15}%)`);
-        parede.addColorStop(.55,`hsl(${h} 42% ${claro?82:8}%)`);
-        parede.addColorStop(1,`hsl(${h} 55% ${claro?76:5}%)`);
+        parede.addColorStop(0,'#20242b');
+        parede.addColorStop(.55,'#12151a');
+        parede.addColorStop(1,'#0a0c0f');
         ctx.fillStyle=parede;ctx.beginPath();ctx.roundRect(px+m,py+m,cel-m*2,cel-m*2,cel*.18);ctx.fill();
-        ctx.strokeStyle=`hsla(${h},92%,${claro?36:68}%,${claro ? .42 : .36})`;ctx.lineWidth=1.25;ctx.stroke();
-        ctx.strokeStyle=`hsla(${h},100%,${claro?98:82}%,.15)`;ctx.lineWidth=.75;ctx.beginPath();ctx.moveTo(px+cel*.24,py+cel*.22);ctx.lineTo(px+cel*.76,py+cel*.22);ctx.stroke();
+        ctx.strokeStyle=`hsla(${h},92%,68%,.32)`;ctx.lineWidth=1.25;ctx.stroke();
+        ctx.strokeStyle=`hsla(${h},100%,82%,.12)`;ctx.lineWidth=.75;ctx.beginPath();ctx.moveTo(px+cel*.24,py+cel*.22);ctx.lineTo(px+cel*.76,py+cel*.22);ctx.stroke();
       }else{
         const tipo=jogo.mapa[y][x],cx=(x+.5)*cel,cy=(y+.5)*cel;
         if(tipo==='.'){
@@ -98,7 +98,7 @@ export function montarMaze(aoMenu:()=>void):{activar():void;desactivar():void}{
     const g=ctx.createRadialGradient(-5,-6,1,0,0,cel*.42);g.addColorStop(0,'white');g.addColorStop(.27,`hsl(${hp} 98% 82%)`);g.addColorStop(.7,`hsl(${hp} 88% 56%)`);g.addColorStop(1,`hsl(${hp} 82% 36%)`);
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,cel*.32,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
     ctx.fillStyle=`hsl(${hp} 48% 12%)`;ctx.beginPath();ctx.arc(v[0]*6-v[1]*4,v[1]*6+v[0]*4,2.1,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle=`hsla(${(hp+70)%360},95%,${claro?34:82}%,${energia ? .98 : .48})`;ctx.lineWidth=energia?3:1.5;ctx.beginPath();ctx.arc(0,0,cel*(.4+Math.sin(tempo*.012)*.024),tempo*.004,tempo*.004+Math.PI*1.35);ctx.stroke();ctx.restore();
+    ctx.strokeStyle=`hsla(${(hp+70)%360},95%,82%,${energia ? .98 : .48})`;ctx.lineWidth=energia?3:1.5;ctx.beginPath();ctx.arc(0,0,cel*(.4+Math.sin(tempo*.012)*.024),tempo*.004,tempo*.004+Math.PI*1.35);ctx.stroke();ctx.restore();
 
     ctx.save();ctx.globalCompositeOperation='lighter';for(const q of particulas){ctx.globalAlpha=Math.max(0,q.vida/700);ctx.fillStyle=`hsl(${q.matiz} 95% 70%)`;ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=7;ctx.beginPath();ctx.arc(q.x,q.y,q.tamanho,0,Math.PI*2);ctx.fill();}ctx.restore();
   }
