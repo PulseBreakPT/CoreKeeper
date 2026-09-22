@@ -66,7 +66,7 @@ export class Labirinto {
   pausar(): void { if (this.estado === 'jogar') this.estado = 'pausa'; else if (this.estado === 'pausa') this.estado = 'jogar'; }
   pedir(d: DirecaoMaze): void { if (this.estado === 'pronto') this.iniciar(); if (this.estado === 'jogar') this.desejada = d; }
   /** Ritmo pensado para gestos num ecrã tátil: começa legível e acelera sem se tornar caótico. */
-  intervalo(): number { return Math.max(140, 200 - (this.nivel - 1) * 5); }
+  intervalo(): number { return Math.max(180, 320 - (this.nivel - 1) * 8); }
 
   private destino(p: Posicao, d: DirecaoMaze): Posicao {
     let x = p.x + V[d].x, y = p.y + V[d].y;
@@ -144,7 +144,8 @@ export class Labirinto {
     if(this.colisao(ev)) return ev;
     for(const f of this.fantasmas){
       if(f.estado==='olhos'&&f.x===f.casa.x&&f.y===f.casa.y)f.estado='normal';
-      const maisLento=f.estado==='assustado'&&this.passos%2===0;
+      const vantagemInicial = this.nivel <= 2 && (this.passos + f.id) % 4 === 0;
+      const maisLento=(f.estado==='assustado'&&this.passos%2===0) || vantagemInicial;
       if(!maisLento)this.mover(f,this.escolherFantasma(f));else f.anterior={x:f.x,y:f.y};
     }
     this.colisao(ev);

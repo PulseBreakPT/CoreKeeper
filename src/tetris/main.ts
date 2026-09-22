@@ -22,6 +22,7 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
   type Fragmento = { x: number; y: number; vx: number; vy: number; giro: number; vg: number; vida: number; total: number; tamanho: number; matiz: number };
   const fragmentos: Fragmento[] = [];
   const ondas: { y: number; vida: number; total: number }[] = [];
+  const impactos: { y: number; vida: number; total: number; matiz: number }[] = [];
   try { jogo.recorde = Number(localStorage.getItem(CHAVE_RECORDE)) || 0; } catch { /* sessão */ }
 
   function matizTema(): number { return Number(getComputedStyle(document.documentElement).getPropertyValue('--tema')) || 188; }
@@ -31,13 +32,19 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
     c.save(); c.globalAlpha = alpha;
     const px = x * tamanho + m, py = y * tamanho + m, lado = tamanho - m * 2;
     c.beginPath(); c.roundRect(px, py, lado, lado, raio);
-    if (fantasma) { c.strokeStyle = `hsl(${h} 85% 70%)`; c.lineWidth = Math.max(1.5, tamanho * .065); c.stroke(); }
+    if (fantasma) {
+      c.fillStyle = `hsl(${h} 85% 60% / .07)`; c.fill(); c.setLineDash([tamanho * .16, tamanho * .1]);
+      c.strokeStyle = `hsl(${h} 95% 72%)`; c.lineWidth = Math.max(1.5, tamanho * .065); c.stroke(); c.setLineDash([]);
+    }
     else {
       const g = c.createLinearGradient(px, py, px + lado, py + lado);
-      g.addColorStop(0, `hsl(${h} 92% 76%)`); g.addColorStop(.42, `hsl(${h} 78% 57%)`); g.addColorStop(1, `hsl(${h} 72% 36%)`);
-      c.fillStyle = g; c.shadowColor = `hsl(${h} 90% 60% / .32)`; c.shadowBlur = tamanho * .28; c.fill();
-      c.shadowBlur = 0; c.strokeStyle = `hsl(${h} 95% 88% / .55)`; c.lineWidth = 1; c.stroke();
-      c.fillStyle = 'rgba(255,255,255,.13)'; c.fillRect(px + lado * .16, py + lado * .13, lado * .55, Math.max(1, lado * .075));
+      g.addColorStop(0, `hsl(${h} 98% 82%)`); g.addColorStop(.34, `hsl(${h} 88% 62%)`); g.addColorStop(.72, `hsl(${h} 78% 48%)`); g.addColorStop(1, `hsl(${h} 74% 29%)`);
+      c.fillStyle = g; c.shadowColor = `hsl(${h} 100% 62% / .42)`; c.shadowBlur = tamanho * .34; c.fill();
+      c.shadowBlur = 0; c.strokeStyle = `hsl(${h} 100% 92% / .65)`; c.lineWidth = 1; c.stroke();
+      const interno = tamanho * .17;
+      c.beginPath(); c.roundRect(px + interno, py + interno, lado - interno * 2, lado - interno * 2, raio * .55);
+      c.fillStyle = `hsl(${h} 58% 20% / .16)`; c.fill(); c.strokeStyle = `hsl(${h} 100% 94% / .2)`; c.lineWidth = .75; c.stroke();
+      c.fillStyle = 'rgba(255,255,255,.32)'; c.beginPath(); c.arc(px + lado * .25, py + lado * .23, Math.max(.8, lado * .045), 0, Math.PI * 2); c.fill();
     }
     c.restore();
   }
@@ -55,13 +62,18 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
   }
 
   function desenhar(): void {
-    const tamanho = canvas.width / COLUNAS, tema = matizTema(), claro = document.documentElement.dataset.aparencia === 'claro';
+    const tamanho = canvas.width / COLUNAS, tema = matizTema(), claro = document.documentElement.dataset.aparencia === 'claro', agora = performance.now();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const fundo = ctx.createLinearGradient(0, 0, 0, canvas.height);
     fundo.addColorStop(0, `hsl(${tema} 24% ${claro ? 98 : 7}%)`); fundo.addColorStop(1, `hsl(${tema} 28% ${claro ? 89 : 3}%)`); ctx.fillStyle = fundo; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const aura = ctx.createRadialGradient(canvas.width * .5, canvas.height * .78, 0, canvas.width * .5, canvas.height * .78, canvas.width * .8);
+    aura.addColorStop(0, `hsl(${tema} 90% 58% / ${claro ? .12 : .1})`); aura.addColorStop(1, `hsl(${tema} 90% 40% / 0)`); ctx.fillStyle = aura; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = `hsl(${tema} 30% ${claro ? 28 : 45}% / ${claro ? .12 : .085})`; ctx.lineWidth = 1;
     for (let x = 1; x < COLUNAS; x++) { ctx.beginPath(); ctx.moveTo(x * tamanho, 0); ctx.lineTo(x * tamanho, canvas.height); ctx.stroke(); }
     for (let y = 1; y < LINHAS - OCULTAS; y++) { ctx.beginPath(); ctx.moveTo(0, y * tamanho); ctx.lineTo(canvas.width, y * tamanho); ctx.stroke(); }
+    // Zona superior de risco e scanline dão leitura imediata à altura da pilha.
+    const perigo = ctx.createLinearGradient(0, 0, 0, tamanho * 4); perigo.addColorStop(0, 'rgba(255,72,91,.12)'); perigo.addColorStop(1, 'rgba(255,72,91,0)'); ctx.fillStyle = perigo; ctx.fillRect(0, 0, canvas.width, tamanho * 4);
+    ctx.strokeStyle = 'rgba(255,105,119,.28)'; ctx.setLineDash([5, 7]); ctx.beginPath(); ctx.moveTo(0, tamanho * 3); ctx.lineTo(canvas.width, tamanho * 3); ctx.stroke(); ctx.setLineDash([]);
     jogo.grelha.slice(OCULTAS).forEach((linha, y) => linha.forEach((tipo, x) => { if (tipo) bloco(ctx, x, y, tamanho, tipo); }));
     if (jogo.estado !== 'fim') {
       blocos(jogo.fantasma()).forEach((b) => { if (b.y >= OCULTAS) bloco(ctx, b.x, b.y - OCULTAS, tamanho, jogo.peca.tipo, .42, true); });
@@ -83,7 +95,14 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
       ctx.shadowColor = `hsl(${f.matiz} 100% 68%)`; ctx.shadowBlur = 10 * a; ctx.fillStyle = `hsl(${f.matiz} 92% ${58 + a * 22}%)`;
       ctx.fillRect(-f.tamanho / 2, -f.tamanho / 2, f.tamanho, f.tamanho); ctx.restore();
     }
+    for (const impacto of impactos) {
+      const p = 1 - impacto.vida / impacto.total, a = Math.max(0, 1 - p);
+      ctx.globalAlpha = a; ctx.strokeStyle = `hsl(${impacto.matiz} 100% 76%)`; ctx.lineWidth = 2.2 * a;
+      ctx.beginPath(); ctx.ellipse(canvas.width / 2, impacto.y, canvas.width * (.08 + p * .48), tamanho * (.16 + p * .38), 0, 0, Math.PI * 2); ctx.stroke();
+    }
     ctx.restore();
+    const scanY = (agora * .055) % (canvas.height + 70) - 35;
+    const scan = ctx.createLinearGradient(0, scanY - 28, 0, scanY + 28); scan.addColorStop(0, 'rgba(255,255,255,0)'); scan.addColorStop(.5, `hsl(${tema} 100% 80% / .055)`); scan.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = scan; ctx.fillRect(0, scanY - 28, canvas.width, 56);
     mini(hold, [jogo.reserva]); mini(next, jogo.fila.slice(0, 4));
   }
 
@@ -112,6 +131,7 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
       if (f.vida <= 0) fragmentos.splice(i, 1);
     }
     for (let i = ondas.length - 1; i >= 0; i--) { ondas[i].vida -= dt; if (ondas[i].vida <= 0) ondas.splice(i, 1); }
+    for (let i = impactos.length - 1; i >= 0; i--) { impactos[i].vida -= dt; if (impactos[i].vida <= 0) impactos.splice(i, 1); }
   }
 
   function hud(): void {
@@ -139,7 +159,11 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
     let ok = false;
     if (tipo === 'left') ok = jogo.mover(-1, 0); else if (tipo === 'right') ok = jogo.mover(1, 0);
     else if (tipo === 'down') ok = jogo.mover(0, 1, true); else if (tipo === 'rotate') ok = jogo.rodar();
-    else if (tipo === 'hold') ok = jogo.reservar(); else if (tipo === 'drop') { resultado(jogo.quedaTotal()); ok = true; }
+    else if (tipo === 'hold') ok = jogo.reservar(); else if (tipo === 'drop') {
+      const fantasma = jogo.fantasma(), fundo = Math.max(...blocos(fantasma).map((b) => b.y - OCULTAS + 1));
+      impactos.push({ y: fundo * (canvas.width / COLUNAS), vida: 360, total: 360, matiz: CORES[jogo.peca.tipo] });
+      resultado(jogo.quedaTotal()); ok = true;
+    }
     if (ok) vibrar(tipo === 'drop' ? 18 : 5);
     desenhar(); hud();
   }
