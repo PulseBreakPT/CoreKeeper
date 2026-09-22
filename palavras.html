@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-PT">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+    <meta name="theme-color" content="#070707" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>Palavra</title>
+  </head>
+  <body>
+    <main id="app">
+      <section class="menu" id="menu" aria-labelledby="titulo-menu">
+        <div class="palavras-fundo" aria-hidden="true"><span>PALAVRAS</span><span>RÁPIDO</span><span>CONTRÁRIO</span></div>
+        <header class="marca"><span class="marca-selo">N</span><span>NEXUS WORD</span><small class="sequencia">◆ <b id="dias">1</b> DIA</small></header>
+        <div class="hero"><h1 id="titulo-menu">NEXUS WORD</h1><p>PALAVRAS. RAPIDEZ.</p><span class="melhor-sequencia">MELHOR SEQUÊNCIA <b id="melhor-sequencia">0</b></span><button id="jogar-agora" type="button">JOGAR AGORA <b>→</b></button></div>
+        <div class="modos" role="list" aria-label="Modos de jogo">
+          <button class="seleccionado" type="button" data-modo="plural" role="listitem"><i>01</i><strong>PLURAL</strong><span class="exemplo"><b data-exemplo-origem>ÁRVORE</b><em>→</em><b data-exemplo-destino>?</b></span><small>Uma torna-se várias</small><span class="recorde-menu" data-recorde="plural">RECORDE —</span><span class="jogar-card">JOGAR <b>→</b></span></button>
+          <button type="button" data-modo="singular" role="listitem"><i>02</i><strong>SINGULAR</strong><span class="exemplo"><b data-exemplo-origem>CARROS</b><em>→</em><b data-exemplo-destino>?</b></span><small>Várias tornam-se uma</small><span class="recorde-menu" data-recorde="singular">RECORDE —</span><span class="jogar-card">JOGAR <b>→</b></span></button>
+          <button type="button" data-modo="contrario" role="listitem"><i>03</i><strong>CONTRÁRIO</strong><span class="exemplo"><b data-exemplo-origem>QUENTE</b><em>↔</em><b data-exemplo-destino>?</b></span><small>Encontra o oposto</small><span class="recorde-menu" data-recorde="contrario">RECORDE —</span><span class="jogar-card">JOGAR <b>→</b></span></button>
+        </div>
+        <div class="faixa-diaria"><span><small>PALAVRA DO DIA</small><b id="palavra-dia">PERSPICAZ</b><em id="significado-dia">que compreende depressa</em></span><span><small>DESAFIO DO DIA</small><b>15 respostas seguidas</b><strong id="desafio-valor">0 / 15</strong></span><i><em id="desafio-barra"></em></i></div>
+        <footer><button id="abrir-recordes" type="button"><b>♜</b><span>RECORDES</span></button><button id="abrir-definicoes" type="button"><b>⚙</b><span>DEFINIÇÕES</span></button></footer>
+        <section class="folha" id="folha" hidden><button class="folha-fundo" id="fechar-folha" aria-label="Fechar"></button><div class="folha-painel"><i></i><header><span><small id="folha-etiqueta">NEXUS WORD</small><h2 id="folha-titulo">Recordes</h2></span><button id="fechar-folha-x" type="button">×</button></header><div id="folha-conteudo"></div></div></section>
+      </section>
+
+      <section class="jogo" id="jogo" hidden aria-live="polite">
+        <header class="topo">
+          <button id="voltar" type="button" aria-label="Voltar ao menu">‹</button>
+          <div><small>PONTOS</small><strong id="pontos">0</strong></div>
+          <div><small>VIDAS</small><strong id="vidas" class="vidas">♥ ♥ ♥</strong></div>
+          <div><small>COMBO</small><strong id="combo">×0</strong></div>
+          <button id="pausa" type="button" aria-label="Pausar">Ⅱ</button>
+        </header>
+
+        <div class="tempo" aria-label="Tempo restante"><i id="barra-tempo"></i></div>
+        <div class="ronda"><span id="modo-etiqueta">PLURAL</span><b id="numero-pergunta">01</b></div>
+
+        <section class="pergunta">
+          <p id="instrucao">Escreve o plural</p>
+          <h1 id="palavra">ÁRVORE</h1>
+          <div class="resposta-wrap" id="resposta-wrap">
+            <input id="resposta" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" maxlength="32" aria-label="Resposta" />
+            <span id="estado-input">A TUA RESPOSTA</span>
+          </div>
+          <button class="confirmar" id="confirmar" type="button"><span>CONFIRMAR</span><b>→</b></button>
+        </section>
+
+        <div class="feedback" id="feedback" hidden><strong id="feedback-titulo">CERTO</strong><span id="feedback-texto">+145 PONTOS</span></div>
+        <div class="contagem" id="contagem" hidden><small id="contagem-modo">PLURAL</small><span>PREPARA-TE</span><b id="contagem-numero">3</b></div>
+
+        <section class="painel" id="painel" hidden>
+          <small id="painel-etiqueta">PARTIDA TERMINADA</small>
+          <h2 id="painel-titulo">1 250</h2>
+          <p id="painel-texto">NOVO RECORDE</p><div class="resumo"><span><b id="resumo-certas">0</b><small>CERTAS</small></span><span><b id="resumo-erradas">0</b><small>ERRADAS</small></span><span><b id="resumo-combo">0</b><small>MELHOR COMBO</small></span><span><b id="resumo-tempo">0,0s</b><small>TEMPO MÉDIO</small></span></div>
+          <button id="jogar-novamente" type="button">JOGAR NOVAMENTE <b>↻</b></button>
+          <button id="ir-menu" type="button">ESCOLHER OUTRO MODO</button>
+        </section>
+      </section>
+    </main>
+    <script type="module" src="/src/palavras/main.ts"></script>
+  </body>
+</html>

@@ -8,6 +8,7 @@
     "dev": "vite",
     "serpente": "vite --open /serpente.html",
     "serpente:build": "vite build --config vite.serpente.config.ts",
+    "palavras:build": "vite build --config vite.palavras.config.ts",
     "serpente:apk": "npm run serpente:build && cd serpente-app && npx cap sync android && cd android && ./gradlew assembleDebug",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host",
