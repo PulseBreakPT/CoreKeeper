@@ -1687,3 +1687,151 @@ body { background: radial-gradient(ellipse 80% 42% at 50% -8%, rgba(255,255,255,
 .maze-arena.maze-impacto { animation: kinetic-impacto .42s cubic-bezier(.2,.8,.2,1); }
 @keyframes kinetic-direccao { 45% { transform: scale(.997); filter: brightness(1.08); } }
 @keyframes kinetic-impacto { 18% { transform: translateX(-3px) scale(.998); } 40% { transform: translateX(3px); filter: brightness(1.16); } 70% { transform: translateX(-1px); } }
+
+/* NEXUS SIGNATURE 6.9 — apresentação editorial e transições de produto premium. */
+.menu-painel[data-menu-painel='jogo'] {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.menu-painel[data-menu-painel='jogo']::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: 250px;
+  height: 250px;
+  right: -106px;
+  bottom: 10px;
+  border: 1px solid rgba(255,225,145,.055);
+  border-radius: 50%;
+  box-shadow: 0 0 0 34px rgba(255,225,145,.014), 0 0 0 72px rgba(255,255,255,.008);
+}
+.menu-painel[data-menu-painel='jogo']::after {
+  content: '01';
+  position: absolute;
+  z-index: -1;
+  right: -4px;
+  bottom: -30px;
+  color: rgba(255,255,255,.018);
+  font-size: 168px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -13px;
+}
+.menu-principal.tetris-seleccionado .menu-painel[data-menu-painel='jogo']::after { content: '02'; }
+.menu-principal.maze-seleccionado .menu-painel[data-menu-painel='jogo']::after { content: '03'; }
+.jogos-hub button {
+  position: relative;
+  overflow: hidden;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.jogos-hub button::after {
+  content: '';
+  position: absolute;
+  left: 13px;
+  right: 13px;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #555d69, transparent);
+  opacity: .35;
+}
+.jogos-hub button.seleccionado {
+  transform: translateY(-2px);
+  border-color: #8a7540;
+  box-shadow: inset 0 1px rgba(255,255,255,.075), 0 10px 24px rgba(0,0,0,.3), 0 0 22px rgba(222,181,76,.055);
+}
+.jogos-hub button.seleccionado::after { height: 2px; background: var(--acento); opacity: .9; box-shadow: 0 0 9px var(--acento); }
+.cartoes-modo button {
+  backdrop-filter: blur(12px);
+  background: linear-gradient(145deg, rgba(25,29,35,.94), rgba(11,13,17,.88));
+}
+.cartoes-modo button.seleccionado {
+  background: linear-gradient(145deg, #1c2026, #101216);
+  border-color: #8a7540;
+  box-shadow: inset 3px 0 var(--acento), inset 0 1px rgba(255,255,255,.07), 0 16px 32px rgba(0,0,0,.28);
+}
+.menu-categorias { border-color: #323741; background: rgba(10,12,15,.94); }
+.menu-categorias button.activo { background: linear-gradient(145deg, #1d2128, #111318); }
+.entrar { background: linear-gradient(145deg, #1d2128, #101216); border-color: #806e40; }
+.entrar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 0 44%, rgba(255,255,255,.07) 49%, transparent 54%);
+  transform: translateX(-120%);
+  animation: signature-cta 5.5s ease-in-out infinite 1.8s;
+}
+
+.inicio,
+.fim,
+.tetris-overlay,
+.maze-overlay { overflow: hidden; isolation: isolate; }
+.inicio::after,
+.tetris-overlay::before,
+.maze-overlay::before {
+  position: absolute;
+  z-index: -1;
+  right: -15px;
+  bottom: -32px;
+  color: rgba(255,255,255,.025);
+  font-size: clamp(110px, 32vw, 175px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -10px;
+}
+.inicio::after { content: '01'; }
+.tetris-overlay::before { content: '02'; }
+.maze-overlay::before { content: '03'; }
+.inicio > *,
+.tetris-overlay > *,
+.maze-overlay > * { position: relative; z-index: 1; }
+.inicio-marca::after,
+.tetris-overlay h1::after,
+.maze-overlay h1::after {
+  content: '';
+  display: block;
+  width: 42px;
+  height: 2px;
+  margin-top: 14px;
+  background: linear-gradient(90deg, var(--acento), transparent);
+  box-shadow: 0 0 12px var(--acento);
+}
+.tetris-overlay h1::after,
+.maze-overlay h1::after { margin-inline: auto; }
+.fim {
+  background: radial-gradient(circle at 50% 36%, rgba(255,255,255,.055), transparent 31%), rgba(6,7,9,.965);
+  border-radius: inherit;
+}
+.fim::after {
+  content: 'NEXUS';
+  position: absolute;
+  right: -10px;
+  bottom: 2%;
+  color: rgba(255,255,255,.022);
+  font-size: 72px;
+  font-weight: 700;
+  letter-spacing: -5px;
+}
+.fim-numeros {
+  background: linear-gradient(145deg, #171a20, #0b0d10);
+  border-color: #3b414b;
+  box-shadow: inset 0 1px rgba(255,255,255,.065), 0 16px 34px rgba(0,0,0,.32);
+}
+.fim .jogar,
+.fim .partilhar { border-radius: 15px; }
+.fim .partilhar { background: #101318; border: 1px solid #363c46; }
+.fim.aparecer-fim { animation: signature-fim .42s cubic-bezier(.2,.8,.2,1); }
+
+@keyframes signature-cta {
+  0%, 67% { transform: translateX(-120%); }
+  84%, 100% { transform: translateX(120%); }
+}
+@keyframes signature-fim {
+  from { opacity: 0; transform: scale(.975); filter: blur(5px); }
+  to { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+@media (max-height: 720px) {
+  .menu-painel[data-menu-painel='jogo']::after { font-size: 120px; bottom: -20px; }
+  .menu-painel[data-menu-painel='jogo']::before { width: 180px; height: 180px; right: -80px; }
+}
