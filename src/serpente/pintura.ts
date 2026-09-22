@@ -428,6 +428,17 @@ export class Pintor {
     c.save();
     c.clip();
 
+    // Placas diagonais quase negras criam escala sem transformar o chão num tema colorido.
+    c.save();
+    c.translate(L * .5, L * .5);
+    c.rotate(-Math.PI / 14);
+    for (let i = -3; i <= 3; i++) {
+      const faixa = L * .19;
+      c.fillStyle = i % 2 ? 'rgba(255,255,255,.009)' : 'rgba(0,0,0,.07)';
+      c.fillRect(i * faixa - faixa * .44, -L, faixa * .72, L * 2);
+    }
+    c.restore();
+
     // Luz ambiental em duas profundidades: mantém o centro legível e evita um
     // chão plano mesmo quando o ambiente escolhido é muito escuro.
     const aura = c.createRadialGradient(L * 0.38, L * 0.31, 0, L * 0.38, L * 0.31, L * 0.7);
@@ -475,6 +486,15 @@ export class Pintor {
         c.arc(x * cel, y * cel, r, 0, Math.PI * 2);
         c.fill();
       }
+    }
+
+    // Quatro nós de navegação dão à arena uma assinatura de instrumento de precisão.
+    for (const [x, y] of [[.18, .18], [.82, .18], [.18, .82], [.82, .82]]) {
+      c.strokeStyle = `hsla(${matiz}, 82%, 72%, .13)`;
+      c.lineWidth = 1;
+      c.beginPath(); c.arc(L * x, L * y, cel * .32, 0, Math.PI * 2); c.stroke();
+      c.fillStyle = `hsla(${matiz}, 90%, 78%, .24)`;
+      c.beginPath(); c.arc(L * x, L * y, Math.max(.7, cel * .04), 0, Math.PI * 2); c.fill();
     }
 
     // Mira central técnica, suficientemente subtil para nunca parecer um alvo.

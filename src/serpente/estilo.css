@@ -1483,3 +1483,141 @@ body {
   background: #171a20;
   border-color: #3c414b;
 }
+
+/* NEXUS OBSIDIAN 6.7 — acabamento comum de consola premium. */
+:root {
+  --obsidiana-0: #050608;
+  --obsidiana-1: #0b0d11;
+  --obsidiana-2: #12151a;
+  --metal: #353b46;
+  --metal-claro: #59616d;
+}
+body { background: radial-gradient(ellipse 80% 42% at 50% -8%, rgba(255,255,255,.055), transparent 64%), var(--obsidiana-0); }
+.jogo,
+.tetris-jogo,
+.maze-jogo { isolation: isolate; }
+.jogo::before,
+.tetris-jogo::before,
+.maze-jogo::before {
+  content: '';
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(255,255,255,.028), transparent 23%),
+    linear-gradient(118deg, transparent 0 42%, rgba(255,255,255,.012) 42.2% 42.5%, transparent 42.7%);
+}
+.topo,
+.tetris-topo,
+.maze-topo { position: relative; }
+.topo::after,
+.tetris-topo::after,
+.maze-topo::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -5px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--acento), rgba(255,255,255,.12) 28%, transparent 74%);
+  opacity: .5;
+}
+.marca svg,
+.tetris-topo .marca i,
+.maze-topo .marca i { filter: drop-shadow(0 0 12px var(--brilho)); }
+.botao-icone,
+.tetris-topo .botao-icone,
+.maze-topo .botao-icone {
+  border-color: var(--metal);
+  border-radius: 16px;
+  background: linear-gradient(145deg, #1a1e24, #0e1014);
+  box-shadow: inset 0 1px rgba(255,255,255,.09), inset 0 -1px rgba(0,0,0,.6), 0 10px 25px rgba(0,0,0,.32);
+}
+.hud,
+.tetris-hud,
+.maze-hud {
+  border-color: var(--metal);
+  background: linear-gradient(112deg, #15181e, #0a0c10 48%, #12151a);
+  box-shadow: inset 0 1px rgba(255,255,255,.075), inset 0 -1px rgba(0,0,0,.8), 0 16px 34px rgba(0,0,0,.3);
+}
+.hud::before,
+.tetris-hud::before,
+.maze-hud::before { opacity: .85; }
+.hud .valor,
+.tetris-hud b,
+.maze-hud b { font-variant-numeric: tabular-nums; text-shadow: 0 0 20px rgba(255,255,255,.08); }
+.consola,
+.tetris-arena,
+.maze-arena {
+  border-color: #665936;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.025),
+    0 0 0 4px #0b0d10,
+    0 0 0 5px #2e333c,
+    0 28px 70px rgba(0,0,0,.5),
+    0 0 36px rgba(222,181,76,.07);
+}
+.arena,
+.tetris-arena,
+.maze-arena { position: relative; }
+.arena::after,
+.tetris-arena::after,
+.maze-arena::after {
+  pointer-events: none;
+  border-color: rgba(255,233,170,.13);
+  background: linear-gradient(180deg, transparent 0 42%, rgba(255,239,196,.025) 49%, rgba(255,255,255,.055) 50%, rgba(255,239,196,.025) 51%, transparent 58%);
+  background-size: 100% 240%;
+  box-shadow: inset 0 0 34px rgba(0,0,0,.5), inset 0 1px rgba(255,255,255,.06);
+}
+.tetris-arena::after,
+.maze-arena::after { animation: obsidiana-varrimento 6.5s linear infinite; }
+.partida-info,
+.tetris-estado,
+.maze-mensagem { position: relative; z-index: 2; }
+.missao-partida,
+.tetris-corpo aside > div {
+  background: linear-gradient(145deg, #15181d, #0a0c0f);
+  border-color: var(--metal);
+  box-shadow: inset 0 1px rgba(255,255,255,.055), 0 9px 22px rgba(0,0,0,.22);
+}
+.telemetria { border-color: #252a31; }
+.telemetria span:first-child i { box-shadow: 0 0 12px var(--acento); }
+.progresso progress { border-radius: 999px; overflow: hidden; }
+.tetris-controlos,
+.maze-controlos { filter: drop-shadow(0 12px 24px rgba(0,0,0,.26)); }
+.tetris-controlos button,
+.maze-controlos button,
+.maze-controlos i {
+  border-color: #414852;
+  background: linear-gradient(155deg, #1b1f25, #101216 60%, #090b0e);
+  box-shadow: inset 0 1px rgba(255,255,255,.09), inset 0 -2px rgba(0,0,0,.5), 0 7px 15px rgba(0,0,0,.22);
+}
+.tetris-controlos .principal,
+.maze-controlos i { border-color: #78683d; background: linear-gradient(145deg, #211f19, #121318); }
+.tetris-corpo aside > div { border-radius: 13px; }
+.tetris-combo.activo { background: #181711; }
+.tetris-arena { border-radius: 12px; }
+.maze-arena { border-radius: 17px; }
+.tetris-overlay,
+.maze-overlay,
+.inicio {
+  backdrop-filter: blur(12px) saturate(.8);
+  background-image:
+    radial-gradient(circle at 50% 40%, rgba(255,255,255,.045), transparent 36%),
+    linear-gradient(135deg, rgba(255,255,255,.018), transparent 48%);
+}
+.tetris-overlay h1,
+.maze-overlay h1,
+.inicio h1 { letter-spacing: -1.7px; text-shadow: 0 18px 38px rgba(0,0,0,.55); }
+.tetris-overlay button,
+.maze-overlay button,
+.comecar {
+  background: linear-gradient(145deg, #1d2128, #111319);
+  border-color: #78683d;
+  box-shadow: inset 0 1px rgba(255,255,255,.08), 0 13px 30px rgba(0,0,0,.38), 0 0 26px rgba(222,181,76,.055);
+}
+@keyframes obsidiana-varrimento {
+  0%, 15% { background-position: 0 -120px; }
+  70%, 100% { background-position: 0 1200px; }
+}

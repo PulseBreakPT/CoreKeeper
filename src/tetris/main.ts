@@ -38,13 +38,17 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
     }
     else {
       const g = c.createLinearGradient(px, py, px + lado, py + lado);
-      g.addColorStop(0, `hsl(${h} 98% 82%)`); g.addColorStop(.34, `hsl(${h} 88% 62%)`); g.addColorStop(.72, `hsl(${h} 78% 48%)`); g.addColorStop(1, `hsl(${h} 74% 29%)`);
-      c.fillStyle = g; c.shadowColor = `hsl(${h} 100% 62% / .42)`; c.shadowBlur = tamanho * .34; c.fill();
-      c.shadowBlur = 0; c.strokeStyle = `hsl(${h} 100% 92% / .65)`; c.lineWidth = 1; c.stroke();
+      g.addColorStop(0, `hsl(${h} 100% 88%)`); g.addColorStop(.22, `hsl(${h} 92% 68%)`); g.addColorStop(.68, `hsl(${h} 82% 46%)`); g.addColorStop(1, `hsl(${h} 72% 24%)`);
+      c.fillStyle = g; c.shadowColor = `hsl(${h} 100% 62% / .5)`; c.shadowBlur = tamanho * .42; c.fill();
+      c.shadowBlur = 0; c.strokeStyle = `hsl(${h} 100% 94% / .72)`; c.lineWidth = 1; c.stroke();
       const interno = tamanho * .17;
       c.beginPath(); c.roundRect(px + interno, py + interno, lado - interno * 2, lado - interno * 2, raio * .55);
-      c.fillStyle = `hsl(${h} 58% 20% / .16)`; c.fill(); c.strokeStyle = `hsl(${h} 100% 94% / .2)`; c.lineWidth = .75; c.stroke();
-      c.fillStyle = 'rgba(255,255,255,.32)'; c.beginPath(); c.arc(px + lado * .25, py + lado * .23, Math.max(.8, lado * .045), 0, Math.PI * 2); c.fill();
+      const miolo = c.createLinearGradient(px + interno, py + interno, px + lado - interno, py + lado - interno);
+      miolo.addColorStop(0, `hsl(${h} 96% 86% / .2)`); miolo.addColorStop(1, `hsl(${h} 55% 8% / .3)`);
+      c.fillStyle = miolo; c.fill(); c.strokeStyle = `hsl(${h} 100% 94% / .24)`; c.lineWidth = .75; c.stroke();
+      c.strokeStyle = 'rgba(255,255,255,.34)'; c.lineWidth = Math.max(.7, tamanho * .025); c.beginPath();
+      c.moveTo(px + lado * .18, py + lado * .12); c.lineTo(px + lado * .72, py + lado * .12); c.stroke();
+      c.fillStyle = 'rgba(255,255,255,.62)'; c.beginPath(); c.arc(px + lado * .25, py + lado * .23, Math.max(.8, lado * .045), 0, Math.PI * 2); c.fill();
     }
     c.restore();
   }
@@ -68,9 +72,16 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
     fundo.addColorStop(0, '#111419'); fundo.addColorStop(1, '#07080a'); ctx.fillStyle = fundo; ctx.fillRect(0, 0, canvas.width, canvas.height);
     const aura = ctx.createRadialGradient(canvas.width * .5, canvas.height * .78, 0, canvas.width * .5, canvas.height * .78, canvas.width * .8);
     aura.addColorStop(0, `hsl(${tema} 90% 58% / .055)`); aura.addColorStop(1, `hsl(${tema} 90% 40% / 0)`); ctx.fillStyle = aura; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const feixe = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    feixe.addColorStop(0, 'rgba(255,255,255,.018)'); feixe.addColorStop(.28, 'rgba(255,255,255,0)'); feixe.addColorStop(.72, 'rgba(255,255,255,.012)'); feixe.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = feixe; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = `hsl(${tema} 30% 45% / .075)`; ctx.lineWidth = 1;
     for (let x = 1; x < COLUNAS; x++) { ctx.beginPath(); ctx.moveTo(x * tamanho, 0); ctx.lineTo(x * tamanho, canvas.height); ctx.stroke(); }
     for (let y = 1; y < LINHAS - OCULTAS; y++) { ctx.beginPath(); ctx.moveTo(0, y * tamanho); ctx.lineTo(canvas.width, y * tamanho); ctx.stroke(); }
+    ctx.fillStyle = `hsl(${tema} 92% 74% / .19)`;
+    for (let y = 1; y < LINHAS - OCULTAS; y += 4) for (let x = 1; x < COLUNAS; x += 2) {
+      ctx.beginPath(); ctx.arc(x * tamanho, y * tamanho, .65, 0, Math.PI * 2); ctx.fill();
+    }
     // Zona superior de risco e scanline dão leitura imediata à altura da pilha.
     const perigo = ctx.createLinearGradient(0, 0, 0, tamanho * 4); perigo.addColorStop(0, 'rgba(255,72,91,.12)'); perigo.addColorStop(1, 'rgba(255,72,91,0)'); ctx.fillStyle = perigo; ctx.fillRect(0, 0, canvas.width, tamanho * 4);
     ctx.strokeStyle = 'rgba(255,105,119,.28)'; ctx.setLineDash([5, 7]); ctx.beginPath(); ctx.moveTo(0, tamanho * 3); ctx.lineTo(canvas.width, tamanho * 3); ctx.stroke(); ctx.setLineDash([]);

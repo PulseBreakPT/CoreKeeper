@@ -61,6 +61,13 @@ export function montarMaze(aoMenu:()=>void):{activar():void;desactivar():void}{
     for(let y=cel*.5;y<canvas.height;y+=cel){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
     ctx.restore();
 
+    // Constelação técnica fixa: profundidade visual sem ruído em movimento.
+    ctx.fillStyle=`hsl(${h} 88% 72% / .13)`;
+    for(let i=0;i<46;i++){
+      const x=((Math.sin(i*73.17)+1)*.5)*canvas.width,y=((Math.sin(i*41.31+1.7)+1)*.5)*canvas.height;
+      ctx.beginPath();ctx.arc(x,y,i%7===0?1.2:.55,0,Math.PI*2);ctx.fill();
+    }
+
     for(let y=0;y<LINHAS_MAZE;y++)for(let x=0;x<COLUNAS_MAZE;x++){
       if(MAPA_BASE[y][x]==='#'){
         const px=x*cel,py=y*cel,m=2.2;
@@ -71,6 +78,7 @@ export function montarMaze(aoMenu:()=>void):{activar():void;desactivar():void}{
         ctx.fillStyle=parede;ctx.beginPath();ctx.roundRect(px+m,py+m,cel-m*2,cel-m*2,cel*.18);ctx.fill();
         ctx.strokeStyle=`hsla(${h},92%,68%,.32)`;ctx.lineWidth=1.25;ctx.stroke();
         ctx.strokeStyle=`hsla(${h},100%,82%,.12)`;ctx.lineWidth=.75;ctx.beginPath();ctx.moveTo(px+cel*.24,py+cel*.22);ctx.lineTo(px+cel*.76,py+cel*.22);ctx.stroke();
+        if((x*7+y*11)%13===0){ctx.fillStyle=`hsla(${h},96%,76%,.34)`;ctx.beginPath();ctx.arc(px+cel*.76,py+cel*.7,1.2,0,Math.PI*2);ctx.fill();}
       }else{
         const tipo=jogo.mapa[y][x],cx=(x+.5)*cel,cy=(y+.5)*cel;
         if(tipo==='.'){
@@ -97,6 +105,7 @@ export function montarMaze(aoMenu:()=>void):{activar():void;desactivar():void}{
     ctx.globalAlpha=1;ctx.shadowColor=`hsl(${hp} 100% 58%)`;ctx.shadowBlur=20;
     const g=ctx.createRadialGradient(-5,-6,1,0,0,cel*.42);g.addColorStop(0,'white');g.addColorStop(.27,`hsl(${hp} 98% 82%)`);g.addColorStop(.7,`hsl(${hp} 88% 56%)`);g.addColorStop(1,`hsl(${hp} 82% 36%)`);
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,cel*.32,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+    ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(-cel*.07,-cel*.08,cel*.17,Math.PI*1.08,Math.PI*1.7);ctx.stroke();
     ctx.fillStyle=`hsl(${hp} 48% 12%)`;ctx.beginPath();ctx.arc(v[0]*6-v[1]*4,v[1]*6+v[0]*4,2.1,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle=`hsla(${(hp+70)%360},95%,82%,${energia ? .98 : .48})`;ctx.lineWidth=energia?3:1.5;ctx.beginPath();ctx.arc(0,0,cel*(.4+Math.sin(tempo*.012)*.024),tempo*.004,tempo*.004+Math.PI*1.35);ctx.stroke();ctx.restore();
 
