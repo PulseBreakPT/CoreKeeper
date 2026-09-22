@@ -93,7 +93,7 @@ ficheiro gigante.
 ```
 nightgrid/
 ├── project.godot            # retrato bloqueado, 1080×1920, GL Compatibility
-├── export_presets.cfg       # Android (arm64-v8a + x86_64) e Linux
+├── export_presets.cfg       # Android, Android arm64 e Linux
 ├── autoload/                # 14 gestores, sem interface lá dentro
 │   ├── game_data.gd         # tabelas estáticas, formatação de números
 │   ├── save_manager.gd      # escrita atómica, cópia de segurança, autosave
@@ -183,6 +183,18 @@ $GODOT --headless --path . --export-debug "Android" build/game-debug.apk
 O primeiro comando é obrigatório num clone novo: é ele que cria `.godot/` com
 os recursos importados e o índice de `class_name`. Sem isso a exportação falha.
 
+### Variante mais pequena
+
+O preset `Android` traz arm64-v8a e x86_64 (telemóveis e emuladores), e dá
+cerca de 49 MB. Se só quiseres instalar num telemóvel:
+
+```bash
+$GODOT --headless --path nightgrid --export-debug "Android arm64" \
+  nightgrid/build/game-debug-arm64.apk     # ~23 MB, arm64-v8a só
+```
+
+arm64-v8a cobre qualquer aparelho Android de 2016 para cá.
+
 ### Instalar no telemóvel
 
 ```bash
@@ -203,7 +215,7 @@ aparelho mas não serve para a Play Store.
 | Godot | 4.3-stable (editor headless + modelos de exportação) |
 | JDK | 17 ou mais recente (só para `apksigner`/`keytool`) |
 | Android SDK | `build-tools;34.0.0` e `platforms;android-34` |
-| Alvo | minSdk 21, targetSdk 34, arm64-v8a + x86_64 |
+| Alvo | minSdk 21, targetSdk 34, arm64-v8a + x86_64 (ou só arm64) |
 
 Não é preciso Gradle nem Android Studio: a exportação usa o modelo de APK
 pré-compilado do Godot e assina-o com o `apksigner` do SDK.
