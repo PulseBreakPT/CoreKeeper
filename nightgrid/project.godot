@@ -1,0 +1,61 @@
+; Engine configuration file.
+; NIGHTGRID — Clandestine Operations
+; Godot 4.3 · Android · portrait
+
+config_version=5
+
+[application]
+
+config/name="Nightgrid"
+config/description="Nightgrid — Clandestine Operations. Single-player 4X / base-building / expedition RPG."
+config/version="0.1.0"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.3", "GL Compatibility")
+config/quit_on_go_back=false
+boot_splash/bg_color=Color(0.043, 0.051, 0.071, 1)
+boot_splash/show_image=false
+config/icon="res://assets/icon.svg"
+
+[autoload]
+
+GameData="*res://autoload/game_data.gd"
+SaveManager="*res://autoload/save_manager.gd"
+ResourceManager="*res://autoload/resource_manager.gd"
+BuildingManager="*res://autoload/building_manager.gd"
+CharacterManager="*res://autoload/character_manager.gd"
+SquadManager="*res://autoload/squad_manager.gd"
+MapManager="*res://autoload/map_manager.gd"
+ExpeditionManager="*res://autoload/expedition_manager.gd"
+CombatManager="*res://autoload/combat_manager.gd"
+LootManager="*res://autoload/loot_manager.gd"
+MissionManager="*res://autoload/mission_manager.gd"
+EventManager="*res://autoload/event_manager.gd"
+UIManager="*res://autoload/ui_manager.gd"
+GameManager="*res://autoload/game_manager.gd"
+
+[display]
+
+window/size/viewport_width=1080
+window/size/viewport_height=1920
+window/size/resizable=true
+window/handheld/orientation=1
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/vsync/vsync_mode=1
+
+[input_devices]
+
+pointing/emulate_mouse_from_touch=true
+pointing/emulate_touch_from_mouse=true
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/canvas_textures/default_texture_filter=1
+anti_aliasing/quality/msaa_2d=0
+environment/defaults/default_clear_color=Color(0.043, 0.051, 0.071, 1)
+
+[physics]
+
+common/physics_ticks_per_second=60

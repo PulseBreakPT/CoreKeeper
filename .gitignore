@@ -21,3 +21,10 @@ android/app/src/main/assets/capacitor.plugins.json
 *.apk
 *.aab
 *.keystore
+
+# Godot
+nightgrid/.godot/
+nightgrid/android/build/
+nightgrid/build/
+*.apk
+*.aab
