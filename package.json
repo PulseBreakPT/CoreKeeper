@@ -20,7 +20,8 @@
     "icones": "node scripts/gerar-icones.mjs",
     "icones:serpente": "node scripts/gerar-icones-serpente.mjs",
     "apk": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug",
-    "cintilacao": "node scripts/cintilacao.mjs"
+    "cintilacao": "node scripts/cintilacao.mjs",
+    "fumo:estados": "node scripts/fumo-estados.mjs"
   },
   "devDependencies": {
     "@capacitor/android": "^6.2.2",

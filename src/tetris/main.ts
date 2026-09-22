@@ -1,3 +1,4 @@
+import { registarMotor } from '../serpente/diagnostico';
 import { Tetris, blocos, COLUNAS, LINHAS, OCULTAS, type EventoTetris, type Peca, type TipoPeca } from './logica';
 
 const CORES: Record<TipoPeca, number> = { I: 188, O: 48, T: 282, S: 112, Z: 350, J: 220, L: 25 };
@@ -218,7 +219,7 @@ export function montarTetris(aoMenu: () => void, aoResultado: (xp: number, moeda
   });
 
   let toque: { x: number; y: number; t: number } | null = null;
-  canvas.addEventListener('pointerdown', (e) => { toque = { x: e.clientX, y: e.clientY, t: performance.now() }; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointerdown', (e) => { toque = { x: e.clientX, y: e.clientY, t: performance.now() }; try { canvas.setPointerCapture(e.pointerId); } catch { /* o ponteiro já saiu; o gesto segue à mesma */ } });
   canvas.addEventListener('pointerup', (e) => {
     if (!toque) return; const dx = e.clientX - toque.x, dy = e.clientY - toque.y, dt = performance.now() - toque.t; toque = null;
     if (Math.abs(dx) < 14 && Math.abs(dy) < 14) accao('rotate');
@@ -246,6 +247,7 @@ export function montarTetris(aoMenu: () => void, aoResultado: (xp: number, moeda
     }
     requestAnimationFrame(quadro);
   }
+  registarMotor('tetris', jogo);
   requestAnimationFrame(quadro); hud(); desenhar();
   return {
     activar() { activo = true; raiz.hidden = false; ultimo = performance.now(); },

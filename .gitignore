@@ -9,6 +9,7 @@ coverage/
 # Saídas de testes visuais e de desempenho
 .fumo/
 .fumo-serpente/
+.fumo-estados/
 
 # Artefactos de compilação Android
 serpente-app/www/

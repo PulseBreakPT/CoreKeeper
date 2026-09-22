@@ -1,7 +1,10 @@
+import { registarMotor } from '../serpente/diagnostico';
+import { aceitaJogada } from '../serpente/estados';
+
 type Estado = 'pronto' | 'jogar' | 'venceu' | 'perdeu';
 type Celula = { mina: boolean; aberta: boolean; bandeira: boolean; vizinhas: number };
 
-const COLUNAS = 9, LINHAS = 12, MINAS = 18;
+export const COLUNAS = 9, LINHAS = 12, MINAS = 18;
 const CHAVE_RECORDE = 'nexus:minas:recorde:v1';
 
 function el<T extends HTMLElement>(id: string): T {
@@ -10,7 +13,7 @@ function el<T extends HTMLElement>(id: string): T {
   return e as T;
 }
 
-class CampoMinado {
+export class CampoMinado {
   grelha: Celula[][] = [];
   estado: Estado = 'pronto';
   inicio = 0;
@@ -19,6 +22,8 @@ class CampoMinado {
   abertas = 0;
   explosao: { x: number; y: number } | null = null;
   recentes: { x: number; y: number }[] = [];
+  /** Instante em que a aplicação passou a segundo plano, ou 0 se está à vista. */
+  private ausenteDesde = 0;
 
   constructor() {
     try { this.recorde = Number(localStorage.getItem(CHAVE_RECORDE)) || 0; } catch { /* sessão */ }
@@ -27,7 +32,7 @@ class CampoMinado {
 
   reiniciar(): void {
     this.grelha = Array.from({ length: LINHAS }, () => Array.from({ length: COLUNAS }, () => ({ mina: false, aberta: false, bandeira: false, vizinhas: 0 })));
-    this.estado = 'pronto'; this.inicio = 0; this.tempoFinal = 0; this.abertas = 0; this.explosao = null; this.recentes = [];
+    this.estado = 'pronto'; this.inicio = 0; this.tempoFinal = 0; this.abertas = 0; this.explosao = null; this.recentes = []; this.ausenteDesde = 0;
   }
 
   private dentro(x: number, y: number): boolean { return x >= 0 && x < COLUNAS && y >= 0 && y < LINHAS; }
@@ -90,10 +95,32 @@ class CampoMinado {
 
   bandeira(x: number, y: number): boolean {
     if (!this.dentro(x, y) || this.grelha[y][x].aberta || this.estado === 'venceu' || this.estado === 'perdeu') return false;
-    this.grelha[y][x].bandeira = !this.grelha[y][x].bandeira; return true;
+    const celula = this.grelha[y][x];
+    // Tirar uma bandeira é sempre legal; pôr só enquanto houver minas por
+    // marcar. Sem este tecto marcava-se o tabuleiro inteiro e o contador de
+    // minas restantes ficava preso no zero a mentir ao jogador.
+    if (!celula.bandeira && this.bandeiras() >= MINAS) return false;
+    celula.bandeira = !celula.bandeira; return true;
   }
   bandeiras(): number { return this.grelha.flat().filter((c) => c.bandeira).length; }
-  tempo(): number { return this.estado === 'pronto' ? 0 : this.estado === 'jogar' ? Math.floor((performance.now() - this.inicio) / 1000) : this.tempoFinal; }
+
+  /**
+   * Minimizar a aplicação não pode inflacionar o tempo nem envenenar o
+   * recorde: o relógio pára à saída e o arranque desliza o tempo que esteve
+   * fora quando se volta.
+   */
+  suspender(): void { if (this.estado === 'jogar' && !this.ausenteDesde) this.ausenteDesde = performance.now(); }
+  retomar(): void {
+    if (!this.ausenteDesde) return;
+    this.inicio += performance.now() - this.ausenteDesde;
+    this.ausenteDesde = 0;
+  }
+  tempo(): number {
+    if (this.estado === 'pronto') return 0;
+    if (this.estado !== 'jogar') return this.tempoFinal;
+    const agora = this.ausenteDesde || performance.now();
+    return Math.floor((agora - this.inicio) / 1000);
+  }
 }
 
 export function montarMinas(aoMenu: () => void, aoResultado: (xp: number, moedas: number) => void): { activar(): void; desactivar(): void } {
@@ -152,6 +179,7 @@ export function montarMinas(aoMenu: () => void, aoResultado: (xp: number, moedas
     iniciar.innerHTML = 'NOVA PARTIDA <span>↻</span>'; overlay.hidden = false;
   }
   function agir(x: number, y: number, marcar = false): void {
+    if (!aceitaJogada(jogo.estado)) return;
     if (marcar) { if (jogo.bandeira(x, y)) { navigator.vibrate?.(8); mensagem.textContent = jogo.grelha[y][x].bandeira ? 'BANDEIRA COLOCADA' : 'BANDEIRA REMOVIDA'; } }
     else { const r = jogo.abrir(x, y); if (r !== 'nada') { impacto = 0; navigator.vibrate?.(r === 'explodiu' ? [35,25,65] : r === 'venceu' ? [12,20,12,20,40] : 5); mensagem.textContent = r === 'abriu' ? 'ZONA SEGURA' : r === 'venceu' ? 'CAMPO LIMPO' : 'NÚCLEO DETONADO'; if (r === 'venceu' || r === 'explodiu') terminar(); } }
     hud(); desenhar();
@@ -168,13 +196,18 @@ export function montarMinas(aoMenu: () => void, aoResultado: (xp: number, moedas
     };
   }
   let toque: { x: number; y: number; longo: number; marcou: boolean } | null = null;
-  canvas.addEventListener('pointerdown', (e) => { const p = coordenada(e); toque = { ...p, marcou: false, longo: window.setTimeout(() => { if (!toque) return; toque.marcou = true; agir(toque.x, toque.y, true); }, 430) }; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointerdown', (e) => { const p = coordenada(e); toque = { ...p, marcou: false, longo: window.setTimeout(() => { if (!toque) return; toque.marcou = true; agir(toque.x, toque.y, true); }, 430) }; try { canvas.setPointerCapture(e.pointerId); } catch { /* o ponteiro já saiu; o gesto segue à mesma */ } });
   canvas.addEventListener('pointerup', (e) => { if (!toque) return; clearTimeout(toque.longo); const p = coordenada(e), marcou = toque.marcou; toque = null; if (!marcou) agir(p.x, p.y); });
   canvas.addEventListener('pointercancel', () => { if (toque) clearTimeout(toque.longo); toque = null; });
   el('novo-minas').addEventListener('click', () => { jogo.reiniciar(); overlay.hidden = true; mensagem.textContent = 'NOVO CAMPO'; hud(); desenhar(); });
   el('menu-minas').addEventListener('click', aoMenu);
   iniciar.addEventListener('click', () => { if (jogo.estado === 'venceu' || jogo.estado === 'perdeu') jogo.reiniciar(); overlay.hidden = true; mensagem.textContent = 'PRIMEIRO TOQUE SEGURO'; hud(); });
   function quadro(agora: number): void { const dt = Math.min(50, agora - ultimo); ultimo = agora; if (activo) { impacto = Math.min(1, impacto + dt / 1000); hud(); desenhar(); } requestAnimationFrame(quadro); }
+  document.addEventListener('visibilitychange', () => {
+    if (!activo) return;
+    if (document.hidden) jogo.suspender(); else jogo.retomar();
+  });
+  registarMotor('minas', jogo);
   requestAnimationFrame(quadro); hud(); desenhar();
   return { activar() { activo = true; raiz.hidden = false; ultimo = performance.now(); }, desactivar() { activo = false; raiz.hidden = true; } };
 }

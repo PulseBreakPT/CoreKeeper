@@ -1,3 +1,5 @@
+import { registarMotor } from '../serpente/diagnostico';
+import { aceitaJogada } from '../serpente/estados';
 import { COLUNAS_MAZE, Labirinto, LINHAS_MAZE, MAPA_BASE, type DirecaoMaze, type Entidade, type Fantasma } from './logica';
 
 const CHAVE = 'nexus:maze:recorde:v1';
@@ -142,7 +144,18 @@ export function montarMaze(aoMenu:()=>void,aoResultado:(xp:number,moedas:number)
     hud();
   }
 
-  function direcao(d:DirecaoMaze):void{audio.acordar();const arrancou=jogo.estado==='pronto';jogo.pedir(d);if(arrancou)acumulado=jogo.intervalo();overlay.hidden=true;vibrar(4);}
+  function direcao(d:DirecaoMaze):void{
+    audio.acordar();
+    // Pausado ou terminado não aceita direcções — e, sobretudo, não pode
+    // esconder o ecrã de fim, que era o que acontecia: uma seta tirava o
+    // cartão do caminho e deixava o jogador a olhar para um circuito morto.
+    if(!aceitaJogada(jogo.estado))return;
+    const arrancou=jogo.estado==='pronto';
+    jogo.pedir(d);
+    if(arrancou)acumulado=jogo.intervalo();
+    overlay.hidden=true;
+    vibrar(4);
+  }
   let toque:{x:number;y:number}|null=null;
   const lerGesto=(e:PointerEvent,final=false):void=>{
     if(!toque)return;const dx=e.clientX-toque.x,dy=e.clientY-toque.y;
@@ -150,7 +163,7 @@ export function montarMaze(aoMenu:()=>void,aoResultado:(xp:number,moedas:number)
     direcao(Math.abs(dx)>Math.abs(dy)?dx>0?'direita':'esquerda':dy>0?'baixo':'cima');
     toque=final?null:{x:e.clientX,y:e.clientY};
   };
-  canvas.addEventListener('pointerdown',e=>{toque={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});
+  canvas.addEventListener('pointerdown',e=>{toque={x:e.clientX,y:e.clientY};try{canvas.setPointerCapture(e.pointerId);}catch{/* o ponteiro já saiu; o gesto segue à mesma */}});
   canvas.addEventListener('pointermove',e=>lerGesto(e));
   canvas.addEventListener('pointerup',e=>lerGesto(e,true));
   canvas.addEventListener('pointercancel',()=>{toque=null;});
@@ -159,6 +172,7 @@ export function montarMaze(aoMenu:()=>void,aoResultado:(xp:number,moedas:number)
   el('maze-pausa').addEventListener('click',()=>{jogo.pausar();anunciar(jogo.estado==='pausa'?'EM PAUSA':`CIRCUITO ${jogo.nivel}`);});el('maze-menu').addEventListener('click',()=>{if(jogo.estado==='jogar')jogo.pausar();aoMenu();});
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&activo&&jogo.estado==='jogar')jogo.pausar();});
   function quadro(agora:number):void{const dt=Math.min(50,agora-ultimo);ultimo=agora;tempo=agora;if(activo){if(jogo.estado==='jogar'){acumulado+=dt;let guarda=4;while(acumulado>=jogo.intervalo()&&guarda-->0){acumulado-=jogo.intervalo();tratar();}raiz.classList.toggle('alerta',emPerigo());}else raiz.classList.remove('alerta');actualizarParticulas(dt);if(mensagemAte&&agora>mensagemAte){mensagem.textContent=jogo.estado==='pausa'?'EM PAUSA':`CIRCUITO ${jogo.nivel}`;mensagem.classList.remove('impacto');mensagemAte=0;}desenhar(Math.min(1,acumulado/jogo.intervalo()));}requestAnimationFrame(quadro);}
+  registarMotor('maze', jogo);
   requestAnimationFrame(quadro);hud();desenhar(1);
   return{activar(){activo=true;raiz.hidden=false;ultimo=performance.now();},desactivar(){activo=false;raiz.hidden=true;if(jogo.estado==='jogar')jogo.pausar();}};
 }
