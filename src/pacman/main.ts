@@ -119,11 +119,21 @@ export function montarMaze(aoMenu:()=>void):{activar():void;desactivar():void}{
     hud();
   }
 
-  function direcao(d:DirecaoMaze):void{audio.acordar();jogo.pedir(d);overlay.hidden=true;vibrar(4);}
+  function direcao(d:DirecaoMaze):void{audio.acordar();const arrancou=jogo.estado==='pronto';jogo.pedir(d);if(arrancou)acumulado=jogo.intervalo();overlay.hidden=true;vibrar(4);}
   document.querySelectorAll<HTMLButtonElement>('[data-maze]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();direcao(b.dataset.maze as DirecaoMaze);}));
-  let toque:{x:number;y:number}|null=null;canvas.addEventListener('pointerdown',e=>{toque={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});canvas.addEventListener('pointerup',e=>{if(!toque)return;const dx=e.clientX-toque.x,dy=e.clientY-toque.y;toque=null;if(Math.hypot(dx,dy)<12)return;direcao(Math.abs(dx)>Math.abs(dy)?dx>0?'direita':'esquerda':dy>0?'baixo':'cima');});
+  let toque:{x:number;y:number}|null=null;
+  const lerGesto=(e:PointerEvent,final=false):void=>{
+    if(!toque)return;const dx=e.clientX-toque.x,dy=e.clientY-toque.y;
+    if(Math.hypot(dx,dy)<10){if(final)toque=null;return;}
+    direcao(Math.abs(dx)>Math.abs(dy)?dx>0?'direita':'esquerda':dy>0?'baixo':'cima');
+    toque=final?null:{x:e.clientX,y:e.clientY};
+  };
+  canvas.addEventListener('pointerdown',e=>{toque={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});
+  canvas.addEventListener('pointermove',e=>lerGesto(e));
+  canvas.addEventListener('pointerup',e=>lerGesto(e,true));
+  canvas.addEventListener('pointercancel',()=>{toque=null;});
   window.addEventListener('keydown',e=>{if(!activo)return;const m:Record<string,DirecaoMaze>={ArrowUp:'cima',KeyW:'cima',ArrowDown:'baixo',KeyS:'baixo',ArrowLeft:'esquerda',KeyA:'esquerda',ArrowRight:'direita',KeyD:'direita'};if(m[e.code]){e.preventDefault();direcao(m[e.code]);}});
-  iniciar.addEventListener('click',()=>{audio.acordar();if(jogo.estado==='fim')jogo.reiniciar();jogo.iniciar();overlay.hidden=true;acumulado=0;anunciar(`CIRCUITO ${jogo.nivel}`);hud();});
+  iniciar.addEventListener('click',()=>{audio.acordar();if(jogo.estado==='fim')jogo.reiniciar();jogo.iniciar();overlay.hidden=true;acumulado=jogo.intervalo();anunciar(`CIRCUITO ${jogo.nivel}`);hud();});
   el('maze-pausa').addEventListener('click',()=>{jogo.pausar();anunciar(jogo.estado==='pausa'?'EM PAUSA':`CIRCUITO ${jogo.nivel}`);});el('maze-menu').addEventListener('click',()=>{if(jogo.estado==='jogar')jogo.pausar();aoMenu();});
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&activo&&jogo.estado==='jogar')jogo.pausar();});
   function quadro(agora:number):void{const dt=Math.min(50,agora-ultimo);ultimo=agora;tempo=agora;if(activo){if(jogo.estado==='jogar'){acumulado+=dt;let guarda=4;while(acumulado>=jogo.intervalo()&&guarda-->0){acumulado-=jogo.intervalo();tratar();}}actualizarParticulas(dt);if(mensagemAte&&agora>mensagemAte){mensagem.textContent=jogo.estado==='pausa'?'EM PAUSA':`CIRCUITO ${jogo.nivel}`;mensagem.classList.remove('impacto');mensagemAte=0;}desenhar(Math.min(1,acumulado/jogo.intervalo()));}requestAnimationFrame(quadro);}

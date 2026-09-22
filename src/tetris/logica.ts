@@ -143,11 +143,11 @@ export class Tetris {
   actualizar(ms: number): EventoTetris | null {
     if (this.estado !== 'jogar') return null;
     this.quedaMs += ms;
-    const intervalo = Math.max(55, 900 * Math.pow(.82, this.nivel - 1));
+    const intervalo = Math.max(150, 1250 * Math.pow(.9, this.nivel - 1));
     if (this.quedaMs >= intervalo) { this.quedaMs %= intervalo; if (!this.mover(0, 1)) this.bloqueioMs += ms; }
     else if (this.colide({ ...this.peca, y: this.peca.y + 1 })) this.bloqueioMs += ms;
     else this.bloqueioMs = 0;
-    return this.bloqueioMs >= 480 ? this.fixar() : null;
+    return this.bloqueioMs >= 750 ? this.fixar() : null;
   }
 
   private tSpin(): boolean {
@@ -170,7 +170,7 @@ export class Tetris {
     if (n && this.combo > 0) this.pontos += 50 * this.combo * this.nivel;
     if (n && this.grelha.every((linha) => linha.every((c) => !c))) this.pontos += 3500 * this.nivel;
     if (dificil) this.backToBack = true; else if (n) this.backToBack = false;
-    this.linhas += n; this.nivel = 1 + Math.floor(this.linhas / 10);
+    this.linhas += n; this.nivel = 1 + Math.floor(this.linhas / 12);
     this.criarPeca();
     const nomes = spin ? `T-SPIN${n ? ` ×${n}` : ''}` : n === 4 ? 'TETRIS' : n ? `${n} LINHA${n > 1 ? 'S' : ''}` : '';
     return { linhas: n, pontos: this.pontos - antes, nome: nomes, terminou: this.estado === 'fim', nivelSubiu: this.nivel > nivelAntes, limpas };

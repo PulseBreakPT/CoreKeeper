@@ -1,7 +1,7 @@
 /** Montagem do jogo da serpente: estado, ciclo de quadros, HUD e fim de partida. */
 
 import './estilo.css';
-import { Jogo, LADO, SEGUNDOS_RELOGIO, type Direcao, type Modo } from './logica';
+import { Jogo, LADO, PASSO_INICIAL, SEGUNDOS_RELOGIO, type Direcao, type Modo } from './logica';
 import { Pintor } from './pintura';
 import { Som } from './audio';
 import { ligarControlos } from './controlos';
@@ -19,7 +19,6 @@ import {
 import {
   definirIdioma,
   idiomaActual,
-  nomeDiario,
   nomeModo,
   t,
   textoConquista,
@@ -43,6 +42,7 @@ const CHAVE_RECORDE: Record<Modo, string> = {
   dupla: 'serpente:recorde:dupla:v1',
 };
 const CHAVE_MODO = 'serpente:modo:v1';
+const MODOS_DISPONIVEIS: Modo[] = ['classico', 'relogio', 'portais'];
 const CHAVE_COR_INTERFACE = 'nexus:cor-interface:v1';
 const CHAVE_APARENCIA = 'nexus:aparencia:v1';
 const CHAVE_MAZE_COR = 'nexus:maze:cor:v1';
@@ -102,7 +102,7 @@ function gravarRecorde(modo: Modo, n: number): void {
 function lerModo(): Modo {
   try {
     const modo = localStorage.getItem(CHAVE_MODO) as Modo | null;
-    return modo && modo in CHAVE_RECORDE ? modo : 'classico';
+    return modo && MODOS_DISPONIVEIS.includes(modo) ? modo : 'classico';
   } catch {
     return 'classico';
   }
@@ -336,8 +336,6 @@ function actualizarCarreira(): void {
   elemento('stat-partidas').textContent = String(d.partidas);
   elemento('stat-comidas').textContent = String(d.comidas);
   elemento('stat-nivel').textContent = String(carreira.nivel());
-  elemento('diario-titulo').textContent = nomeDiario();
-  elemento('diario-recorde').textContent = String(lerRecorde('diario'));
   elemento('menu-recorde').textContent = String(jogo.recorde);
   elemento('menu-conquistas').textContent = `${d.conquistas.length}/${CONQUISTAS.length}`;
   elemento('menu-moedas').textContent = String(d.moedas);
@@ -413,6 +411,7 @@ function escolherIdioma(idioma: Idioma): void {
 }
 
 function escolherModo(modo: Modo): void {
+  if (!MODOS_DISPONIVEIS.includes(modo)) return;
   if (jogo.modo === modo) return;
   jogo.modo = modo;
   jogo.recorde = lerRecorde(modo);
@@ -447,7 +446,7 @@ function actualizarHud(): void {
   elemento('marco-texto').textContent = `${jogo.pontos} / ${marco}`;
   progresso.value = jogo.pontos % 10;
   elemento('comprimento').textContent = String(jogo.corpo.length);
-  elemento('velocidade').textContent = `${(150 / jogo.passoMs()).toFixed(2)}× ${t('ritmo')}`;
+  elemento('velocidade').textContent = `${(PASSO_INICIAL / jogo.passoMs()).toFixed(2)}× ${t('ritmo')}`;
   combo.hidden = jogo.combo < 2;
   comboValor.textContent = `×${jogo.combo}`;
   // O tipo tem de estar no literal: só depois do filtro, o TypeScript já perdeu o par.

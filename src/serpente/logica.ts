@@ -30,11 +30,11 @@ export interface ItemArena extends Ponto {
 /** Lado da arena em células. Quadrada e fixa, para o jogo ser igual em todos os ecrãs. */
 export const LADO = 21;
 /** Milissegundos por passo no início. */
-export const PASSO_INICIAL = 150;
+export const PASSO_INICIAL = 200;
 /** Milissegundos por passo no limite da velocidade. */
-export const PASSO_MINIMO = 74;
+export const PASSO_MINIMO = 92;
 /** Quanto do intervalo restante desaparece a cada comida (aceleração suave e com tecto). */
-export const DECAIMENTO = 0.972;
+export const DECAIMENTO = 0.976;
 /** De quantas comidas em quantas soa o marco de pontuação. */
 export const MARCO = 10;
 /** Três intenções absorvem sequências rápidas sem transformar um gesto numa curva automática. */
@@ -592,24 +592,6 @@ export class Jogo {
     }
   }
 
-  private moverComida(atrair: boolean): void {
-    const cabeca = this.corpo[0];
-    const ocupadas = new Set([
-      ...this.corpo.map((p) => p.y * this.lado + p.x),
-      ...this.obstaculos.map((p) => p.y * this.lado + p.x),
-      ...(this.item ? [this.item.y * this.lado + this.item.x] : []),
-    ]);
-    const opcoes = DIRECCOES.map((d) => this.vizinho(this.comida.x, this.comida.y, d))
-      .filter((p): p is Ponto => Boolean(p) && !ocupadas.has(p!.y * this.lado + p!.x));
-    if (opcoes.length === 0) return;
-    opcoes.sort((a, b) => {
-      const da = Math.abs(a.x - cabeca.x) + Math.abs(a.y - cabeca.y);
-      const db = Math.abs(b.x - cabeca.x) + Math.abs(b.y - cabeca.y);
-      return atrair ? da - db : db - da;
-    });
-    this.comida = { ...opcoes[0], tipo: this.comida.tipo };
-  }
-
   private moverObstaculo(): void {
     if (!this.temObstaculos() || this.obstaculos.length === 0) return;
     const indice = Math.floor(this.sortear() * this.obstaculos.length);
@@ -696,7 +678,7 @@ export class Jogo {
     this.dobro = Math.max(0, this.dobro - 1);
     this.inversao = Math.max(0, this.inversao - 1);
     if (this.item && --this.item.expira <= 0) this.item = null;
-    if (this.passosTotais % (this.ima > 0 ? 2 : 7) === 0) this.moverComida(this.ima > 0);
+    // A comida permanece sempre fixa: o jogador pode planear uma rota com confiança.
     if (this.passosTotais % 28 === 0) this.moverObstaculo();
     if (this.modo === 'portais' && this.passosTotais % 24 === 0) this.portalOffset = (this.portalOffset + 3) % this.lado;
 
@@ -722,7 +704,8 @@ export class Jogo {
       }
     }
 
-    const comeu = cabeca.x === this.comida.x && cabeca.y === this.comida.y;
+    const distanciaComida = Math.abs(cabeca.x - this.comida.x) + Math.abs(cabeca.y - this.comida.y);
+    const comeu = (cabeca.x === this.comida.x && cabeca.y === this.comida.y) || (this.ima > 0 && distanciaComida <= 2);
     let remover = 0;
     if (comeu && this.comida.tipo === 'leve') remover = Math.min(2, Math.max(0, this.corpo.length - 2));
     else if (!comeu && this.crescimentoPendente > 0) this.crescimentoPendente--;

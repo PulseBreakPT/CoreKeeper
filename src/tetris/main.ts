@@ -74,10 +74,25 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
     // Zona superior de risco e scanline dão leitura imediata à altura da pilha.
     const perigo = ctx.createLinearGradient(0, 0, 0, tamanho * 4); perigo.addColorStop(0, 'rgba(255,72,91,.12)'); perigo.addColorStop(1, 'rgba(255,72,91,0)'); ctx.fillStyle = perigo; ctx.fillRect(0, 0, canvas.width, tamanho * 4);
     ctx.strokeStyle = 'rgba(255,105,119,.28)'; ctx.setLineDash([5, 7]); ctx.beginPath(); ctx.moveTo(0, tamanho * 3); ctx.lineTo(canvas.width, tamanho * 3); ctx.stroke(); ctx.setLineDash([]);
+    const projecao = jogo.grelha.map((linha) => linha.map(Boolean));
+    if (jogo.estado !== 'fim') for (const b of blocos(jogo.fantasma())) if (b.y >= 0 && b.y < LINHAS) projecao[b.y][b.x] = true;
+    const linhasPrevistas = projecao.map((linha, y) => linha.every(Boolean) ? y - OCULTAS : -1).filter((y) => y >= 0);
+    arena.classList.toggle('linha-pronta', linhasPrevistas.length > 0);
+    for (const y of linhasPrevistas) {
+      const pulso = .42 + Math.sin(agora * .012) * .16, py = y * tamanho;
+      const clarao = ctx.createLinearGradient(0, py, canvas.width, py + tamanho);
+      clarao.addColorStop(0, 'rgba(255,211,55,.08)'); clarao.addColorStop(.5, `rgba(255,238,145,${pulso})`); clarao.addColorStop(1, 'rgba(255,211,55,.08)');
+      ctx.fillStyle = clarao; ctx.shadowColor = '#ffd43b'; ctx.shadowBlur = 18; ctx.fillRect(0, py + 1, canvas.width, tamanho - 2); ctx.shadowBlur = 0;
+      ctx.fillStyle = '#fff4b0'; ctx.fillRect(0, py, canvas.width, 1.5); ctx.fillRect(0, py + tamanho - 1.5, canvas.width, 1.5);
+    }
     jogo.grelha.slice(OCULTAS).forEach((linha, y) => linha.forEach((tipo, x) => { if (tipo) bloco(ctx, x, y, tamanho, tipo); }));
     if (jogo.estado !== 'fim') {
       blocos(jogo.fantasma()).forEach((b) => { if (b.y >= OCULTAS) bloco(ctx, b.x, b.y - OCULTAS, tamanho, jogo.peca.tipo, .42, true); });
       blocos(jogo.peca).forEach((b) => { if (b.y >= OCULTAS) bloco(ctx, b.x, b.y - OCULTAS, tamanho, jogo.peca.tipo); });
+    }
+    for (const y of linhasPrevistas) {
+      ctx.save(); ctx.globalCompositeOperation = 'screen'; ctx.strokeStyle = `rgba(255,235,128,${.65 + Math.sin(agora * .012) * .2})`; ctx.lineWidth = 2;
+      ctx.shadowColor = '#ffd43b'; ctx.shadowBlur = 16; ctx.strokeRect(1, y * tamanho + 2, canvas.width - 2, tamanho - 4); ctx.restore();
     }
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
@@ -171,7 +186,7 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
   document.querySelectorAll<HTMLButtonElement>('[data-tetris]').forEach((b) => {
     let atraso = 0, repeticao = 0;
     const parar = () => { clearTimeout(atraso); clearInterval(repeticao); };
-    b.addEventListener('pointerdown', (e) => { e.preventDefault(); accao(b.dataset.tetris!); if (['left','right','down'].includes(b.dataset.tetris!)) atraso = window.setTimeout(() => { repeticao = window.setInterval(() => accao(b.dataset.tetris!), 58); }, 180); });
+    b.addEventListener('pointerdown', (e) => { e.preventDefault(); accao(b.dataset.tetris!); if (['left','right','down'].includes(b.dataset.tetris!)) atraso = window.setTimeout(() => { repeticao = window.setInterval(() => accao(b.dataset.tetris!), 85); }, 220); });
     ['pointerup','pointercancel','pointerleave'].forEach((nome) => b.addEventListener(nome, parar));
   });
 
@@ -180,8 +195,8 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
   canvas.addEventListener('pointerup', (e) => {
     if (!toque) return; const dx = e.clientX - toque.x, dy = e.clientY - toque.y, dt = performance.now() - toque.t; toque = null;
     if (Math.abs(dx) < 14 && Math.abs(dy) < 14) accao('rotate');
-    else if (Math.abs(dx) > Math.abs(dy)) { const n = Math.max(1, Math.round(Math.abs(dx) / 28)); for (let i=0;i<n;i++) accao(dx > 0 ? 'right' : 'left'); }
-    else if (dy > 65 && dt < 420) accao('drop'); else if (dy > 0) { const n = Math.max(1, Math.round(dy / 25)); for (let i=0;i<n;i++) accao('down'); } else accao('hold');
+    else if (Math.abs(dx) > Math.abs(dy)) { const n = Math.max(1, Math.round(Math.abs(dx) / 34)); for (let i=0;i<n;i++) accao(dx > 0 ? 'right' : 'left'); }
+    else if (dy > 90 && dt < 480) accao('drop'); else if (dy > 0) { const n = Math.max(1, Math.round(dy / 32)); for (let i=0;i<n;i++) accao('down'); } else accao('hold');
   });
 
   window.addEventListener('keydown', (e) => {

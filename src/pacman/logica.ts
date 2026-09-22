@@ -40,6 +40,7 @@ export class Labirinto {
   private pausaPassos = 0;
   private modoPassos = 0;
   private perseguir = false;
+  private filaDirecoes: DirecaoMaze[] = [];
   private frutaApareceu = new Set<number>();
 
   constructor(private aleatorio: () => number = Math.random) { this.reiniciar(); }
@@ -51,7 +52,7 @@ export class Labirinto {
   private carregarNivel(): void {
     this.mapa = MAPA_BASE.map((r) => [...r].map((c) => c === '.' || c === 'o' ? c : c === '#' ? '#' : ' '));
     this.pellets = this.mapa.flat().filter((c) => c === '.' || c === 'o').length;
-    this.frutaApareceu.clear(); this.fruta = null; this.energia = 0; this.comboFantasmas = 0; this.passos = 0; this.modoPassos = 0; this.perseguir = false;
+    this.frutaApareceu.clear(); this.fruta = null; this.energia = 0; this.comboFantasmas = 0; this.passos = 0; this.modoPassos = 0; this.perseguir = false; this.filaDirecoes = [];
     this.reporPosicoes();
   }
 
@@ -59,12 +60,18 @@ export class Labirinto {
     this.jogador = { x:9, y:15, anterior:{x:9,y:15}, direcao:'esquerda' }; this.desejada = 'esquerda';
     const casas = [{x:9,y:11},{x:8,y:11},{x:10,y:11},{x:7,y:11}];
     this.fantasmas = casas.map((c,id) => ({ ...c, anterior:{...c}, direcao: id % 2 ? 'direita':'esquerda', id, estado:'normal', casa:{...c} }));
-    this.pausaPassos = 7;
+    this.pausaPassos = 0;
   }
 
   iniciar(): void { if (this.estado === 'pronto') this.estado = 'jogar'; }
   pausar(): void { if (this.estado === 'jogar') this.estado = 'pausa'; else if (this.estado === 'pausa') this.estado = 'jogar'; }
-  pedir(d: DirecaoMaze): void { if (this.estado === 'pronto') this.iniciar(); if (this.estado === 'jogar') this.desejada = d; }
+  pedir(d: DirecaoMaze): void {
+    if (this.estado === 'pronto') this.iniciar();
+    if (this.estado !== 'jogar') return;
+    if (this.filaDirecoes[this.filaDirecoes.length - 1] !== d) this.filaDirecoes.push(d);
+    if (this.filaDirecoes.length > 3) this.filaDirecoes.shift();
+    this.desejada = d;
+  }
   /** Ritmo pensado para gestos num ecrã tátil: começa legível e acelera sem se tornar caótico. */
   intervalo(): number { return Math.max(180, 320 - (this.nivel - 1) * 8); }
 
@@ -111,7 +118,9 @@ export class Labirinto {
     if (!opcoes.length) opcoes = DIRECOES.filter((d) => this.pode(f,d));
     if (f.estado === 'assustado') return opcoes[Math.floor(this.aleatorio()*opcoes.length)] ?? OPOSTA[f.direcao];
     const alvo = f.estado === 'olhos' ? f.casa : this.alvoFantasma(f);
-    return opcoes.sort((a,b) => this.distancia(this.destino(f,a),alvo)-this.distancia(this.destino(f,b),alvo))[0] ?? f.direcao;
+    const ordenadas = opcoes.sort((a,b) => this.distancia(this.destino(f,a),alvo)-this.distancia(this.destino(f,b),alvo));
+    const margemErro = f.estado === 'olhos' ? 0 : Math.max(.06, .26 - this.nivel * .025);
+    return ordenadas.length > 1 && this.aleatorio() < margemErro ? ordenadas[1] : ordenadas[0] ?? f.direcao;
   }
 
   private colisao(ev: EventoMaze): boolean {
@@ -126,12 +135,19 @@ export class Labirinto {
 
   passo(): EventoMaze {
     const ev=vazio(); if (this.estado!=='jogar') return ev;
-    if (this.pausaPassos>0) { this.pausaPassos--; return ev; }
+    if (this.pausaPassos>0) {
+      this.pausaPassos--;
+      this.jogador.anterior={x:this.jogador.x,y:this.jogador.y};
+      for(const f of this.fantasmas)f.anterior={x:f.x,y:f.y};
+      return ev;
+    }
     this.passos++; this.modoPassos++;
     if (this.modoPassos >= (this.perseguir ? 150 : 52)) { this.perseguir=!this.perseguir; this.modoPassos=0; for (const f of this.fantasmas) if (f.estado==='normal') f.direcao=OPOSTA[f.direcao]; }
     if (this.energia>0 && --this.energia===0) { this.comboFantasmas=0; for (const f of this.fantasmas) if(f.estado==='assustado') f.estado='normal'; }
 
-    if (this.pode(this.jogador,this.desejada)) this.jogador.direcao=this.desejada;
+    const indiceDirecao=this.filaDirecoes.findIndex((d)=>this.pode(this.jogador,d));
+    if(indiceDirecao>=0){this.jogador.direcao=this.filaDirecoes[indiceDirecao];this.filaDirecoes.splice(0,indiceDirecao+1);}
+    else if (this.pode(this.jogador,this.desejada)) this.jogador.direcao=this.desejada;
     if (this.pode(this.jogador,this.jogador.direcao)) this.mover(this.jogador,this.jogador.direcao); else this.jogador.anterior={x:this.jogador.x,y:this.jogador.y};
     const celula=this.mapa[this.jogador.y][this.jogador.x];
     if (celula==='.' || celula==='o') {
@@ -144,12 +160,13 @@ export class Labirinto {
     if(this.colisao(ev)) return ev;
     for(const f of this.fantasmas){
       if(f.estado==='olhos'&&f.x===f.casa.x&&f.y===f.casa.y)f.estado='normal';
-      const vantagemInicial = this.nivel <= 2 && (this.passos + f.id) % 4 === 0;
-      const maisLento=(f.estado==='assustado'&&this.passos%2===0) || vantagemInicial;
+      const aguardaSaida = f.id > 0 && this.passos < 5 + f.id * 6;
+      const vantagemInicial = this.nivel <= 2 && (this.passos + f.id) % 3 === 0;
+      const maisLento=(f.estado==='assustado'&&this.passos%2===0) || vantagemInicial || aguardaSaida;
       if(!maisLento)this.mover(f,this.escolherFantasma(f));else f.anterior={x:f.x,y:f.y};
     }
     this.colisao(ev);
-    if(this.pellets<=0){this.nivel++;ev.nivel=true;this.estado='nivel';this.carregarNivel();this.estado='jogar';this.pausaPassos=12;}
+    if(this.pellets<=0){this.nivel++;ev.nivel=true;this.estado='nivel';this.carregarNivel();this.estado='jogar';this.pausaPassos=3;}
     if(this.pontos>this.recorde)this.recorde=this.pontos;
     return ev;
   }

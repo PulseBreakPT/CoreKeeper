@@ -776,12 +776,12 @@ export class Pintor {
     ctx.restore();
   }
 
-  private comida(c: Ponto & { tipo?: TipoComida }, cel: number, tempo: number, estado: string): void {
+  private comida(c: Ponto & { tipo?: TipoComida }, cel: number, _tempo: number, estado: string): void {
     if (estado === 'completo') return;
     const ctx = this.ctx;
     const cx = (c.x + 0.5) * cel;
     const cy = (c.y + 0.5) * cel;
-    const pulso = 0.5 + 0.5 * Math.sin(tempo / 230);
+    const pulso = 0.5;
     const tipo = c.tipo ?? 'normal';
     const [cor, borda] = CORES_COMIDA[tipo];
     const raio = cel * ((tipo === 'gigante' ? 0.38 : tipo === 'leve' ? 0.265 : 0.31) + 0.025 * pulso);
@@ -805,7 +805,7 @@ export class Pintor {
 
     // Rosa energética de oito pontas e órbita dupla. Cada raridade muda a
     // velocidade e o número de satélites, por isso reconhece-se sem texto.
-    const rotacao = tempo / (tipo === 'leve' ? 720 : tipo === 'ouro' ? 1150 : 1550);
+    const rotacao = 0;
     ctx.save();
     ctx.rotate(rotacao);
     ctx.fillStyle = borda;
