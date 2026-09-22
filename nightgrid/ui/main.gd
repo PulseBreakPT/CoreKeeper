@@ -164,7 +164,7 @@ func _layout_content() -> void:
 	var n := nav.size.y
 	content.offset_top = h
 	content.offset_bottom = -n
-	toasts.set_top_offset(h + 172.0)
+	toasts.set_top_offset(h + 200.0)
 	for k in screens.keys():
 		(screens[k] as Control).size = content.size
 
