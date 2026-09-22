@@ -1,3 +1,4 @@
+import { registarMotor } from '../serpente/diagnostico';
 import { Tetris, blocos, COLUNAS, LINHAS, OCULTAS, type EventoTetris, type Peca, type TipoPeca } from './logica';
 
 const CORES: Record<TipoPeca, number> = { I: 188, O: 48, T: 282, S: 112, Z: 350, J: 220, L: 25 };
@@ -6,7 +7,7 @@ const CHAVE_RECORDE = 'nexus:tetris:recorde:v1';
 function el<T extends HTMLElement>(id: string): T { const e = document.getElementById(id); if (!e) throw new Error(`#${id}`); return e as T; }
 function vibrar(p: number | number[]): void { if ('vibrate' in navigator) navigator.vibrate(p); }
 
-export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(): void } {
+export function montarTetris(aoMenu: () => void, aoResultado: (xp: number, moedas: number) => void): { activar(): void; desactivar(): void } {
   const raiz = el<HTMLElement>('tetris-jogo');
   const canvas = el<HTMLCanvasElement>('tetris-canvas');
   const ctx = canvas.getContext('2d')!;
@@ -189,6 +190,7 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
     if (nome) { estado.textContent = nome; estado.classList.add('impacto'); mensagemAte = performance.now() + 1050; vibrar(nome === 'TETRIS' ? [18,25,18,25,45] : 14); }
     if (nivelSubiu) vibrar([12,20,12]);
     if (terminou) {
+      aoResultado(Math.round(jogo.pontos / 30) + jogo.linhas * 2, Math.round(jogo.pontos / 200) + 1);
       overlay.querySelector('small')!.textContent = 'PARTIDA TERMINADA'; overlay.querySelector('h1')!.innerHTML = `${jogo.pontos.toLocaleString()}<br><em>pontos.</em>`;
       overlay.querySelector('p')!.textContent = `${jogo.linhas} linhas · nível ${jogo.nivel}`; iniciar.innerHTML = 'JOGAR OUTRA VEZ <span>↻</span>'; overlay.hidden = false;
     }
@@ -217,7 +219,7 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
   });
 
   let toque: { x: number; y: number; t: number } | null = null;
-  canvas.addEventListener('pointerdown', (e) => { toque = { x: e.clientX, y: e.clientY, t: performance.now() }; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointerdown', (e) => { toque = { x: e.clientX, y: e.clientY, t: performance.now() }; try { canvas.setPointerCapture(e.pointerId); } catch { /* o ponteiro já saiu; o gesto segue à mesma */ } });
   canvas.addEventListener('pointerup', (e) => {
     if (!toque) return; const dx = e.clientX - toque.x, dy = e.clientY - toque.y, dt = performance.now() - toque.t; toque = null;
     if (Math.abs(dx) < 14 && Math.abs(dy) < 14) accao('rotate');
@@ -245,6 +247,7 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
     }
     requestAnimationFrame(quadro);
   }
+  registarMotor('tetris', jogo);
   requestAnimationFrame(quadro); hud(); desenhar();
   return {
     activar() { activo = true; raiz.hidden = false; ultimo = performance.now(); },

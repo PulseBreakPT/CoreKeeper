@@ -13,6 +13,8 @@ export const MAPA_BASE = [
   '##.#.#.#####.#.#.##', '#.....#..#..#.....#', '#.#######.#######.#', '#.................#',
   '###################',
 ] as const;
+/** Passos parados depois de perder uma vida, antes de tudo voltar a andar. */
+export const PAUSA_MORTE = 6;
 export const COLUNAS_MAZE = 19;
 export const LINHAS_MAZE = MAPA_BASE.length;
 const V: Record<DirecaoMaze, Posicao> = { cima:{x:0,y:-1}, baixo:{x:0,y:1}, esquerda:{x:-1,y:0}, direita:{x:1,y:0} };
@@ -128,7 +130,15 @@ export class Labirinto {
       const cruzou = (f.x===this.jogador.x && f.y===this.jogador.y) || (f.x===this.jogador.anterior.x && f.y===this.jogador.anterior.y && f.anterior.x===this.jogador.x && f.anterior.y===this.jogador.y);
       if (!cruzou || f.estado === 'olhos') continue;
       if (f.estado === 'assustado') { f.estado='olhos'; this.comboFantasmas++; ev.fantasma = 200 * 2 ** (this.comboFantasmas-1); this.pontos += ev.fantasma; f.direcao=OPOSTA[f.direcao]; }
-      else { this.vidas--; ev.morreu=true; this.energia=0; this.comboFantasmas=0; if (this.vidas<=0) { this.estado='fim'; ev.terminou=true; } else this.reporPosicoes(); return true; }
+      else {
+        this.vidas--; ev.morreu=true; this.energia=0; this.comboFantasmas=0;
+        if (this.vidas<=0) { this.estado='fim'; ev.terminou=true; }
+        // Sem esta pausa o circuito recomeçava no mesmo instante da morte: as
+        // sentinelas andavam logo no passo seguinte e o jogador não tinha como
+        // reagir. Congelar tudo devolve-lhe a partida antes de a retomar.
+        else { this.reporPosicoes(); this.pausaPassos = PAUSA_MORTE; }
+        return true;
+      }
     }
     return false;
   }

@@ -69,6 +69,7 @@ const estado = () =>
     return {
       estado: j.estado,
       pontos: j.pontos,
+      comidas: j.comidas,
       recorde: j.recorde,
       comprimento: j.corpo.length,
       direcao: j.direcao,
@@ -97,11 +98,29 @@ await pagina.waitForTimeout(600);
 const paradoDepois = await estado();
 await verificar(paradoDepois.corpo.join('|') === e.corpo.join('|'), 'não anda antes da primeira ordem');
 
-await pagina.keyboard.press('ArrowUp');
-await pagina.waitForTimeout(220);
-e = await estado();
-await verificar(e.estado === 'a-jogar' && e.direcao === 'cima', 'a seta arranca o jogo e vira para cima');
+// Entra no jogo pela porta da frente: o cartão do launcher fecha o menu e
+// arranca a partida, que é o que acontece a um jogador. Conduzir o jogo com o
+// launcher aberto por cima não é um cenário real — e tapa os botões do jogo.
+await pagina.click('[data-jogo="serpente"]');
+// O cartão expande-se durante 250 ms e o menu ainda desvanece 280 ms a seguir.
+await pagina.waitForTimeout(900);
+await verificar(await pagina.isHidden('#menu-principal'), 'o cartão fecha o launcher e entra no jogo');
+// Primeira entrada na serpente: o tutorial aparece e um jogador salta-o.
+if (await pagina.isVisible('#tutorial')) {
+  await pagina.click('#tutorial-saltar');
+  await pagina.waitForTimeout(150);
+  await verificar(await pagina.isHidden('#tutorial'), 'o tutorial fecha-se ao saltar');
+}
+await verificar((await estado()).estado === 'a-jogar', 'entrar pelo cartão arranca a partida');
 await verificar(await pagina.isHidden('#dica'), 'a dica desaparece ao arrancar');
+
+await pagina.keyboard.press('ArrowUp');
+// A seta entra numa fila e só se aplica no primeiro passo, que por sua vez
+// espera pela contagem de 3-2-1. Esperar menos do que isso mede o estado
+// errado: a direcção ainda é a inicial.
+await pagina.waitForTimeout(2400);
+e = await estado();
+await verificar(e.estado === 'a-jogar' && e.direcao === 'cima', 'a seta vira a serpente para cima');
 
 // Inversão impossível: para cima, carregar para baixo não pode virar.
 await pagina.keyboard.press('ArrowDown');
@@ -134,10 +153,16 @@ const partida = await pagina.evaluate(async () => {
 
 e = await estado();
 await verificar(partida.pontos >= 12, `comeu 12 vezes (ficou em ${partida.pontos})`);
-await verificar(e.comprimento === 3 + e.pontos, 'cada comida faz crescer exactamente um segmento');
+// Com o combo, cada comida já não vale um ponto: o corpo cresce com as
+// comidas, não com a pontuação.
+await verificar(e.comprimento === 3 + e.comidas, 'cada comida faz crescer exactamente um segmento');
 await verificar(new Set(e.corpo).size === e.corpo.length, 'não há segmentos sobrepostos');
 await verificar(!e.corpo.includes(e.comida), 'a comida continua a nascer fora da serpente');
-await verificar(e.passoMs < 150 && e.passoMs > 70, `a velocidade subiu de forma controlada (${Math.round(e.passoMs)} ms/passo)`);
+// A curva de velocidade foi suavizada (92 + 108 × 0,976^progresso): ao fim de
+// doze comidas já não se chega aos 150 ms da janela antiga. O que interessa
+// continua a ser o mesmo — acelerou face aos 200 ms iniciais e nunca passa o
+// tecto dos 92 ms.
+await verificar(e.passoMs < 200 && e.passoMs >= 92, `a velocidade subiu e respeita o tecto (${Math.round(e.passoMs)} ms/passo)`);
 await verificar((await pagina.textContent('#pontos')) === String(e.pontos), 'o HUD mostra a pontuação certa');
 await verificar((await pagina.textContent('#recorde')) === String(e.recorde), 'o HUD mostra o recorde');
 await pagina.screenshot({ path: join(saida, '2-a-jogar.png') });
@@ -200,6 +225,11 @@ await pagina.reload({ waitUntil: 'networkidle' });
 await pagina.waitForTimeout(300);
 await verificar((await pagina.textContent('#recorde')) === String(morto.recorde), 'o recorde reaparece depois de recarregar');
 
+// Depois de recarregar volta-se ao launcher: para mexer nos botões do jogo é
+// preciso entrar nele outra vez, tal como faria um jogador.
+await pagina.click('[data-jogo="serpente"]');
+await pagina.waitForTimeout(900);
+
 // Botão de som.
 await verificar((await pagina.getAttribute('#som', 'aria-pressed')) === 'true', 'o som começa ligado');
 await pagina.click('#som');
@@ -233,6 +263,17 @@ vigiar(pagina);
 await pagina.goto(URL_JOGO, { waitUntil: 'networkidle' });
 await pagina.waitForTimeout(400);
 
+// Contexto novo, launcher aberto: entra-se no jogo pelo cartão, salta-se o
+// tutorial e espera-se a contagem, senão os gestos caem em cima do menu.
+await pagina.tap('[data-jogo="serpente"]');
+await pagina.waitForTimeout(900);
+if (await pagina.isVisible('#tutorial')) {
+  await pagina.tap('#tutorial-saltar');
+  await pagina.waitForTimeout(150);
+}
+await verificar(await pagina.isHidden('#menu-principal'), 'no telemóvel o cartão também abre o jogo');
+await pagina.waitForTimeout(2200);
+
 const cdp = await ctxMovel.newCDPSession(pagina);
 async function deslizar(dx, dy) {
   const c = await pagina.evaluate(() => {
@@ -247,7 +288,7 @@ async function deslizar(dx, dy) {
     });
   }
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-  await pagina.waitForTimeout(140);
+  await pagina.waitForTimeout(320);
 }
 
 await deslizar(0, -70);
@@ -300,7 +341,13 @@ const tablet = await pagina.evaluate(() => {
   const t = document.getElementById('tela').getBoundingClientRect();
   return { l: t.width, a: t.height };
 });
-await verificar(Math.abs(tablet.l - tablet.a) < 1.5 && tablet.l > 500, 'a arena cresce no tablet sem deformar');
+// A coluna da serpente é limitada a 520 px por desenho (`.jogo { width:
+// min(100%, 520px) }`): é um jogo pensado para o polegar, não para encher um
+// tablet. O tabuleiro fica quadrado e ocupa a coluna toda, que é o que conta.
+await verificar(
+  Math.abs(tablet.l - tablet.a) < 1.5 && tablet.l >= 480,
+  `a arena cresce no tablet sem deformar (${Math.round(tablet.l)} px)`,
+);
 
 // Fluidez: o jogo tem de manter uma taxa de quadros confortável enquanto anda.
 await pagina.setViewportSize({ width: 390, height: 844 });

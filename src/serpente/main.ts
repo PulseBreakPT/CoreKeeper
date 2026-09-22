@@ -1,7 +1,7 @@
 /** Montagem do jogo da serpente: estado, ciclo de quadros, HUD e fim de partida. */
 
 import './estilo.css';
-import { Jogo, LADO, PASSO_INICIAL, SEGUNDOS_RELOGIO, type Direcao, type Modo } from './logica';
+import { Jogo, LADO, SEGUNDOS_RELOGIO, type Direcao, type Modo } from './logica';
 import { Pintor } from './pintura';
 import { Som } from './audio';
 import { ligarControlos } from './controlos';
@@ -9,9 +9,18 @@ import { montarTetris } from '../tetris/main';
 import { montarMaze } from '../pacman/main';
 import { montar2048 } from '../game2048/main';
 import { montarMinas } from '../minesweeper/main';
-import { montarPreviews } from './previews';
+import { montarPrisma } from '../prisma/main';
+import {
+  CATALOGO,
+  animarCapas,
+  ficha as fichaJogo,
+  ligarCapa,
+  recordeDe,
+  type JogoId,
+} from './arcade';
 import {
   CONQUISTAS,
+  PATENTES,
   Carreira,
   criarMissao,
   partilharResultado,
@@ -146,7 +155,6 @@ const estado = elemento<HTMLElement>('estado');
 const hudModo = elemento<HTMLElement>('hud-modo');
 const progresso = elemento<HTMLProgressElement>('progresso');
 const menuPrincipal = elemento<HTMLElement>('menu-principal');
-const botaoEntrar = elemento<HTMLButtonElement>('entrar');
 const botaoAbrirMenu = elemento<HTMLButtonElement>('abrir-menu');
 const combo = elemento<HTMLDivElement>('combo');
 const comboValor = elemento<HTMLElement>('combo-valor');
@@ -163,13 +171,35 @@ const poderesActivos = elemento<HTMLElement>('poderes-ativos');
 const botaoReviver = elemento<HTMLButtonElement>('reviver');
 const tutorial = elemento<HTMLElement>('tutorial');
 const vistaSerpente = document.querySelector<HTMLElement>('main.jogo')!;
-const configSerpente = elemento<HTMLElement>('config-serpente');
-const configTetris = elemento<HTMLElement>('config-tetris');
-const configMaze = elemento<HTMLElement>('config-maze');
-const config2048 = elemento<HTMLElement>('config-2048');
-const configMinas = elemento<HTMLElement>('config-minas');
-type JogoHub = 'serpente' | 'tetris' | 'maze' | '2048' | 'minas';
-let jogoHub: JogoHub = 'serpente';
+const grelhaJogos = elemento<HTMLDivElement>('grelha-jogos');
+const destaque = elemento<HTMLElement>('destaque');
+const destaqueCapa = elemento<HTMLCanvasElement>('destaque-capa');
+const painelFicha = elemento<HTMLElement>('ficha');
+const fichaCapa = elemento<HTMLCanvasElement>('ficha-capa');
+const fichaConteudo = elemento<HTMLElement>('ficha-conteudo');
+const fichaModos = elemento<HTMLElement>('ficha-modos');
+const transicao = elemento<HTMLElement>('transicao');
+const campoNome = elemento<HTMLInputElement>('nome-jogador');
+
+const CHAVE_ULTIMO = 'nexus:ultimo-jogo:v1';
+const CHAVE_NOME = 'nexus:nome:v1';
+
+function lerUltimoJogo(): JogoId {
+  try {
+    const guardado = localStorage.getItem(CHAVE_ULTIMO) as JogoId | null;
+    if (guardado && CATALOGO.some((j) => j.id === guardado)) return guardado;
+  } catch { /* sessão sem armazenamento */ }
+  return 'serpente';
+}
+
+function lerNome(): string {
+  try { return (localStorage.getItem(CHAVE_NOME) ?? '').slice(0, 14); } catch { return ''; }
+}
+
+let jogoHub: JogoId = lerUltimoJogo();
+let jogoFicha: JogoId = jogoHub;
+let abaFicha: 'desafios' | 'estatisticas' = 'desafios';
+let nomeJogador = lerNome();
 let pausado = false;
 let estadoAplicado = '';
 let cobraEscolhida = lerCobra();
@@ -177,7 +207,6 @@ let mazeCorEscolhida = lerCor(CHAVE_MAZE_COR, 42);
 let idiomaEscolhido = idiomaActual();
 let definicoes = lerDefinicoes();
 definirIdioma(idiomaEscolhido);
-montarPreviews();
 
 const modoInicial = lerModo();
 const jogo = new Jogo({ lado: LADO, recorde: lerRecorde(modoInicial), modo: modoInicial });
@@ -300,7 +329,7 @@ function aplicarIdioma(idioma: Idioma): void {
   actualizarCarreira();
   actualizarHud();
   sincronizarEstado();
-  escolherJogoHub(jogoHub);
+  actualizarLauncher();
 }
 
 function actualizarCarreira(): void {
@@ -327,7 +356,22 @@ function actualizarCarreira(): void {
   const hoje = new Date().toDateString();
   const partidasHoje = d.historico.filter((r) => new Date(r.data).toDateString() === hoje);
   const pontosHoje = partidasHoje.reduce((s, r) => s + r.pontos, 0);
-  elemento('objetivos-diarios').innerHTML = `<small>${t('objetivosHoje')}</small><div><span class="${partidasHoje.length >= 3 ? 'feito' : ''}"><b>${Math.min(3, partidasHoje.length)}/3</b> Partidas</span><span class="${pontosHoje >= 50 ? 'feito' : ''}"><b>${Math.min(50, pontosHoje)}/50</b> ${t('pontos')}</span></div>`;
+  elemento('objetivos-diarios').innerHTML = `<small>${t('objetivosHoje')}</small><div><span class="${partidasHoje.length >= 3 ? 'feito' : ''}"><b>${Math.min(3, partidasHoje.length)}/3</b> ${t('desafioD1')}</span><span class="${pontosHoje >= 50 ? 'feito' : ''}"><b>${Math.min(50, pontosHoje)}/50</b> ${t('pontos')}</span></div>`;
+  actualizarPatente();
+}
+
+/** O Arcade Rank: a mesma escada para os cinco jogos. */
+function actualizarPatente(): void {
+  const patente = carreira.patente();
+  elemento('patente-grande').textContent = patente.nome;
+  elemento('patente-seguinte').textContent = patente.seguinte
+    ? t('proximaPatente', { n: patente.faltam, patente: patente.seguinte })
+    : t('patenteMaxima');
+  elemento('patente-barra').style.width = `${Math.round(patente.progresso * 100)}%`;
+  const alcancada = PATENTES.filter((p) => carreira.dados.xp >= p.xp).length;
+  elemento('patente-escada').innerHTML = PATENTES
+    .map((p, i) => `<span class="${i < alcancada ? 'feita' : ''}${i === alcancada - 1 ? ' actual' : ''}">${p.nome}</span>`)
+    .join('');
 }
 
 function escolherMazeCor(matiz: number): void {
@@ -371,6 +415,8 @@ function actualizarMissao(): void {
   const valor = Math.min(missao.alvo, valorMissao(missao, jogo));
   missaoTexto.textContent = textoMissao(missao);
   missaoProgresso.textContent = `${valor}/${missao.alvo}`;
+  progresso.max = missao.alvo;
+  progresso.value = valor;
   missaoPartida.classList.toggle('cumprida', missaoCumprida);
   if (!missaoCumprida && valor >= missao.alvo) {
     missaoCumprida = true;
@@ -387,11 +433,6 @@ function actualizarHud(): void {
   alvoPontos.textContent = String(jogo.pontos);
   alvoRecorde.textContent = String(jogo.recorde);
   coroa.hidden = !(jogo.pontos > 0 && jogo.pontos === jogo.recorde);
-  const marco = (Math.floor(jogo.pontos / 10) + 1) * 10;
-  elemento('marco-texto').textContent = `${jogo.pontos} / ${marco}`;
-  progresso.value = jogo.pontos % 10;
-  elemento('comprimento').textContent = String(jogo.corpo.length);
-  elemento('velocidade').textContent = `${(PASSO_INICIAL / jogo.passoMs()).toFixed(2)}× ${t('ritmo')}`;
   combo.hidden = jogo.combo < 2;
   comboValor.textContent = `×${jogo.combo}`;
   // O tipo tem de estar no literal: só depois do filtro, o TypeScript já perdeu o par.
@@ -410,7 +451,7 @@ function medirArena(): void {
   const deitado = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
   const movel = window.matchMedia('(max-width: 800px)').matches;
   const topo = palco.getBoundingClientRect().top;
-  const reserva = deitado ? 42 : movel ? (window.innerHeight <= 720 ? 122 : 170) : 191;
+  const reserva = deitado ? 40 : movel ? (window.innerHeight <= 720 ? 108 : 146) : 164;
   const lado = Math.max(100, Math.floor(Math.min(palco.clientWidth, window.innerHeight - topo - reserva)));
   if (tela.style.width === `${lado}px`) return;
   pintor.redimensionar(lado);
@@ -700,34 +741,252 @@ function sincronizarBotaoSom(): void {
   botaoSom.title = som.ligado ? t('somDesligar') : t('somLigar');
 }
 
-function abrirHub(): void {
+/* -------------------------------------------------------------------------
+ * Launcher — a consola: abrir, ver os jogos, entrar num deles.
+ * ---------------------------------------------------------------------- */
+
+function voltarAoArcade(): void {
   tetrisHub.desactivar();
   mazeHub.desactivar();
   hub2048.desactivar();
   minasHub.desactivar();
+  prismaHub.desactivar();
   vistaSerpente.hidden = false;
+  reiniciar();
+  reporCorNexus();
+  actualizarLauncher();
+  animarCapas(true);
   menuPrincipal.classList.remove('fechado');
 }
 
-const tetrisHub = montarTetris(abrirHub);
-const mazeHub = montarMaze(abrirHub);
-const hub2048 = montar2048(abrirHub);
-const minasHub = montarMinas(abrirHub);
+/** Fecho de partida de um jogo que não é a serpente: a carreira é uma só. */
+function registarSessao(id: JogoId): (xp: number, moedas: number) => void {
+  return (xp, moedas) => {
+    carreira.registarSessao(id, xp, moedas);
+    actualizarCarreira();
+  };
+}
 
-function escolherJogoHub(escolha: JogoHub): void {
-  jogoHub = escolha;
-  menuPrincipal.classList.toggle('tetris-seleccionado', escolha === 'tetris');
-  menuPrincipal.classList.toggle('maze-seleccionado', escolha === 'maze');
-  menuPrincipal.classList.toggle('jogo-2048-seleccionado', escolha === '2048');
-  menuPrincipal.classList.toggle('minas-seleccionado', escolha === 'minas');
-  configSerpente.hidden = escolha !== 'serpente';
-  configTetris.hidden = escolha !== 'tetris';
-  configMaze.hidden = escolha !== 'maze';
-  config2048.hidden = escolha !== '2048';
-  configMinas.hidden = escolha !== 'minas';
-  document.querySelectorAll<HTMLButtonElement>('[data-jogo]').forEach((b) => b.classList.toggle('seleccionado', b.dataset.jogo === escolha));
-  botaoEntrar.querySelector('span')!.textContent = 'JOGAR';
-  vibrar(7);
+const tetrisHub = montarTetris(voltarAoArcade, registarSessao('tetris'));
+const mazeHub = montarMaze(voltarAoArcade, registarSessao('maze'));
+const hub2048 = montar2048(voltarAoArcade, registarSessao('2048'));
+const minasHub = montarMinas(voltarAoArcade, registarSessao('minas'));
+const prismaHub = montarPrisma(voltarAoArcade, registarSessao('prisma'));
+
+function nomeJogo(id: JogoId): string {
+  const chaves: Partial<Record<JogoId, ChaveTexto>> = {
+    tetris: 'tetrisNome', maze: 'mazeNome', minas: 'minasNome', serpente: 'serpenteNome',
+    prisma: 'prismaNome',
+  };
+  const chave = chaves[id];
+  return chave ? t(chave) : fichaJogo(id).nome;
+}
+
+/** A cor secundária do jogo entra na interface; o dourado Nexus fica sempre. */
+function aplicarCorDoJogo(id: JogoId): void {
+  document.documentElement.dataset.jogo = id;
+  document.documentElement.style.setProperty('--jogo', String(fichaJogo(id).matiz));
+}
+
+function reporCorNexus(): void {
+  delete document.documentElement.dataset.jogo;
+  document.documentElement.style.setProperty('--cobra', String(cobraEscolhida));
+  document.documentElement.style.setProperty('--tema', String(MATIZ_INTERFACE));
+  matizAplicada = cobraEscolhida;
+}
+
+/** O fundo do launcher reage ao jogo que estás a tocar. */
+function realcar(id: JogoId | null): void {
+  menuPrincipal.style.setProperty('--realce', String(id ? fichaJogo(id).matiz : MATIZ_INTERFACE));
+  menuPrincipal.classList.toggle('com-realce', id !== null);
+}
+
+function construirGrelha(): void {
+  grelhaJogos.replaceChildren();
+  for (const j of CATALOGO) {
+    const ranhura = document.createElement('div');
+    ranhura.className = 'cartao-ranhura';
+    ranhura.style.setProperty('--jogo', String(j.matiz));
+
+    const cartao = document.createElement('button');
+    cartao.type = 'button';
+    cartao.className = 'cartao-jogo';
+    cartao.dataset.jogo = j.id;
+    cartao.setAttribute('role', 'listitem');
+    const tela = document.createElement('canvas');
+    tela.className = 'capa';
+    tela.setAttribute('aria-hidden', 'true');
+    const info = document.createElement('span');
+    info.className = 'cartao-info';
+    info.innerHTML = '<strong></strong><small></small>';
+    cartao.append(tela, info);
+
+    const mais = document.createElement('button');
+    mais.type = 'button';
+    mais.className = 'cartao-mais';
+    mais.dataset.ficha = j.id;
+    mais.textContent = '⋯';
+
+    cartao.addEventListener('click', () => abrirJogo(j.id, cartao));
+    for (const evento of ['pointerenter', 'pointerdown', 'focus'] as const) {
+      cartao.addEventListener(evento, () => realcar(j.id));
+    }
+    for (const evento of ['pointerleave', 'blur'] as const) {
+      cartao.addEventListener(evento, () => realcar(null));
+    }
+    mais.addEventListener('click', () => abrirFicha(j.id));
+
+    ranhura.append(cartao, mais);
+    grelhaJogos.append(ranhura);
+    ligarCapa(tela, j.id);
+  }
+}
+
+function saudacaoDaHora(): string {
+  const h = new Date().getHours();
+  return t(h < 13 ? 'bomDia' : h < 20 ? 'boaTarde' : 'boaNoite');
+}
+
+function textoRecorde(id: JogoId): string {
+  const r = recordeDe(id);
+  return r.bruto ? `${t(r.rotulo)} ${r.texto}` : t('semRecorde');
+}
+
+function actualizarLauncher(): void {
+  const nome = nomeJogador.trim();
+  elemento('saudacao').textContent = nome ? `${saudacaoDaHora()}, ${nome}` : saudacaoDaHora();
+  const patente = carreira.patente();
+  elemento('patente-nivel').textContent = `${t('nivel')} ${carreira.nivel()}`;
+  elemento('patente-nome').textContent = patente.nome;
+  elemento('destaque-etiqueta').textContent = t('continuarSeccao');
+
+  jogoHub = lerUltimoJogo();
+  const f = fichaJogo(jogoHub);
+  destaque.style.setProperty('--jogo', String(f.matiz));
+  elemento('destaque-nome').textContent = nomeJogo(jogoHub).toLocaleUpperCase(idiomaEscolhido);
+  const r = recordeDe(jogoHub);
+  elemento('destaque-rotulo').textContent = r.bruto ? t(r.rotulo) : t('semRecorde');
+  elemento('destaque-recorde').textContent = r.bruto ? r.texto : '';
+  ligarCapa(destaqueCapa, jogoHub);
+
+  grelhaJogos.querySelectorAll<HTMLButtonElement>('[data-jogo]').forEach((cartao) => {
+    const id = cartao.dataset.jogo as JogoId;
+    cartao.querySelector('strong')!.textContent = nomeJogo(id).toLocaleUpperCase(idiomaEscolhido);
+    cartao.querySelector('small')!.textContent = textoRecorde(id);
+    cartao.setAttribute('aria-label', `${nomeJogo(id)} — ${textoRecorde(id)}`);
+  });
+}
+
+/** O cartão cresce até ocupar o ecrã: a interface transforma-se no jogo. */
+function transitar(origem: HTMLElement, matiz: number, aoMeio: () => void): void {
+  if (document.documentElement.classList.contains('reduzir-movimento')) {
+    aoMeio();
+    return;
+  }
+  const caixa = origem.getBoundingClientRect();
+  transicao.style.setProperty('--jogo', String(matiz));
+  transicao.style.transition = 'none';
+  transicao.style.left = `${caixa.left}px`;
+  transicao.style.top = `${caixa.top}px`;
+  transicao.style.width = `${caixa.width}px`;
+  transicao.style.height = `${caixa.height}px`;
+  transicao.style.opacity = '1';
+  transicao.hidden = false;
+  requestAnimationFrame(() => {
+    transicao.style.transition = '';
+    transicao.style.left = '0px';
+    transicao.style.top = '0px';
+    transicao.style.width = '100vw';
+    transicao.style.height = '100dvh';
+  });
+  window.setTimeout(aoMeio, 250);
+  window.setTimeout(() => { transicao.style.opacity = '0'; }, 300);
+  window.setTimeout(() => { transicao.hidden = true; }, 560);
+}
+
+function entrarEm(id: JogoId): void {
+  tetrisHub.desactivar();
+  mazeHub.desactivar();
+  hub2048.desactivar();
+  minasHub.desactivar();
+  prismaHub.desactivar();
+  reiniciar();
+  if (id === 'serpente') {
+    vistaSerpente.hidden = false;
+    // O tutorial é da serpente: não tem que bloquear a entrada no arcade.
+    mostrarTutorial();
+    confirmar();
+    return;
+  }
+  vistaSerpente.hidden = true;
+  ({ tetris: tetrisHub, maze: mazeHub, '2048': hub2048, minas: minasHub, prisma: prismaHub })[id].activar();
+}
+
+function abrirJogo(id: JogoId, origem: HTMLElement): void {
+  som.garantir();
+  vibrar(14);
+  jogoHub = id;
+  try { localStorage.setItem(CHAVE_ULTIMO, id); } catch { /* sessão sem armazenamento */ }
+  aplicarCorDoJogo(id);
+  transitar(origem, fichaJogo(id).matiz, () => {
+    fecharFicha();
+    realcar(null);
+    animarCapas(false);
+    menuPrincipal.classList.add('fechado');
+    entrarEm(id);
+  });
+}
+
+function desenharAbaFicha(): void {
+  const d = carreira.dados;
+  if (abaFicha === 'desafios') {
+    const hoje = new Date().toDateString();
+    const partidasHoje = d.historico.filter((h) => new Date(h.data).toDateString() === hoje);
+    const pontosHoje = partidasHoje.reduce((soma, h) => soma + h.pontos, 0);
+    const dominio = Math.round(carreira.dominio(jogoFicha) * 100);
+    const linhas: [string, string, boolean][] = [
+      [t('desafioD1'), `${Math.min(3, partidasHoje.length)}/3`, partidasHoje.length >= 3],
+      [t('desafioD2'), `${Math.min(50, pontosHoje)}/50`, pontosHoje >= 50],
+      [t('dominio'), `${dominio}%`, dominio >= 100],
+    ];
+    fichaConteudo.innerHTML = linhas
+      .map(([texto, valor, feito]) => `<div class="${feito ? 'feito' : ''}"><span>${texto}</span><b>${valor}</b></div>`)
+      .join('');
+    return;
+  }
+  const sessoes = d.sessoes[jogoFicha] ?? 0;
+  const xp = d.xpJogos[jogoFicha] ?? 0;
+  const r = recordeDe(jogoFicha);
+  fichaConteudo.innerHTML = [
+    [t('partidasJogadas', { n: sessoes }), String(sessoes)],
+    ['XP', xp.toLocaleString(idiomaEscolhido)],
+    [t(r.rotulo), r.bruto ? r.texto : '—'],
+  ].map(([texto, valor]) => `<div><span>${texto}</span><b>${valor}</b></div>`).join('');
+}
+
+function abrirFicha(id: JogoId): void {
+  jogoFicha = id;
+  const f = fichaJogo(id);
+  painelFicha.style.setProperty('--jogo', String(f.matiz));
+  elemento('ficha-nome').textContent = nomeJogo(id).toLocaleUpperCase(idiomaEscolhido);
+  const r = recordeDe(id);
+  elemento('ficha-rotulo').textContent = t(r.rotulo);
+  const numero = elemento('ficha-numero');
+  numero.textContent = r.bruto ? r.texto : '—';
+  numero.classList.toggle('sem-registo', !r.bruto);
+  const dominio = Math.round(carreira.dominio(id) * 100);
+  elemento('ficha-dominio-valor').textContent = `${dominio}%`;
+  elemento('ficha-dominio-barra').style.width = `${dominio}%`;
+  fichaModos.hidden = id !== 'serpente';
+  ligarCapa(fichaCapa, id);
+  desenharAbaFicha();
+  painelFicha.hidden = false;
+  animar(painelFicha, 'abrir-ficha');
+  vibrar(8);
+}
+
+function fecharFicha(): void {
+  painelFicha.hidden = true;
 }
 
 function abrirSistema(titulo: string, etiqueta: string, conteudo: string): void {
@@ -816,17 +1075,39 @@ document.querySelectorAll<HTMLButtonElement>('[data-idioma]').forEach((botao) =>
 document.querySelectorAll<HTMLButtonElement>('[data-escolha-modo]').forEach((botao) => {
   botao.addEventListener('click', () => escolherModo(botao.dataset.escolhaModo as Modo));
 });
-document.querySelectorAll<HTMLButtonElement>('[data-menu-categoria]').forEach((botao) => {
+document.querySelectorAll<HTMLButtonElement>('[data-painel-botao]').forEach((botao) => {
   botao.addEventListener('click', () => {
-    const categoria = botao.dataset.menuCategoria;
-    document.querySelectorAll<HTMLButtonElement>('[data-menu-categoria]').forEach((b) => b.classList.toggle('activo', b.dataset.menuCategoria === categoria));
-    document.querySelectorAll<HTMLElement>('[data-menu-painel]').forEach((painel) => painel.classList.toggle('activo', painel.dataset.menuPainel === categoria));
-    botaoEntrar.hidden = categoria !== 'jogo';
+    const painel = botao.dataset.painelBotao;
+    document.querySelectorAll<HTMLButtonElement>('[data-painel-botao]').forEach((b) => b.classList.toggle('activo', b.dataset.painelBotao === painel));
+    document.querySelectorAll<HTMLElement>('[data-painel]').forEach((alvo) => alvo.classList.toggle('activo', alvo.dataset.painel === painel));
+    if (painel === 'carreira') actualizarCarreira();
     vibrar(6);
   });
 });
-document.querySelectorAll<HTMLButtonElement>('[data-jogo]').forEach((botao) => {
-  botao.addEventListener('click', () => escolherJogoHub(botao.dataset.jogo as JogoHub));
+
+// Um toque em qualquer parte do destaque entra no jogo: é para isso que ele existe.
+destaque.addEventListener('click', (e) => {
+  if ((e.target as Element).closest('.destaque-ficha')) return;
+  abrirJogo(jogoHub, destaque);
+});
+for (const evento of ['pointerenter', 'pointerdown'] as const) {
+  destaque.addEventListener(evento, () => realcar(jogoHub));
+}
+destaque.addEventListener('pointerleave', () => realcar(null));
+elemento('destaque-ficha').addEventListener('click', () => abrirFicha(jogoHub));
+elemento('ficha-voltar').addEventListener('click', fecharFicha);
+elemento('ficha-jogar').addEventListener('click', () => abrirJogo(jogoFicha, painelFicha));
+painelFicha.querySelectorAll<HTMLButtonElement>('[data-aba]').forEach((botao) => {
+  botao.addEventListener('click', () => {
+    abaFicha = botao.dataset.aba as typeof abaFicha;
+    painelFicha.querySelectorAll<HTMLButtonElement>('[data-aba]').forEach((b) => b.classList.toggle('activa', b === botao));
+    desenharAbaFicha();
+  });
+});
+campoNome.addEventListener('input', () => {
+  nomeJogador = campoNome.value.slice(0, 14);
+  try { localStorage.setItem(CHAVE_NOME, nomeJogador); } catch { /* sessão sem armazenamento */ }
+  actualizarLauncher();
 });
 
 const fecharCarreira = (): void => { folhaCarreira.hidden = true; };
@@ -844,6 +1125,8 @@ elemento('fechar-sistema-x').addEventListener('click', fecharSistema);
 elemento('abrir-loja').addEventListener('click', abrirLoja);
 elemento('abrir-ranking').addEventListener('click', abrirRanking);
 elemento('abrir-definicoes').addEventListener('click', abrirDefinicoes);
+elemento('abrir-definicoes-perfil').addEventListener('click', abrirDefinicoes);
+elemento('definicoes-minas').addEventListener('click', abrirDefinicoes);
 sistemaConteudo.addEventListener('click', (e) => {
   const alvo = (e.target as Element).closest<HTMLElement>('[data-comprar], [data-rasto]');
   if (!alvo) return;
@@ -888,48 +1171,9 @@ botaoPartilhar.addEventListener('click', async () => {
     if (resultado === 'copiado') botaoPartilhar.querySelector('span')!.textContent = t('copiado');
   } catch { /* o jogador fechou o menu nativo */ }
 });
-botaoEntrar.addEventListener('click', () => {
-  som.garantir();
-  vibrar(14);
-  menuPrincipal.classList.add('fechado');
-  if (jogoHub === 'tetris') {
-    reiniciar();
-    vistaSerpente.hidden = true;
-    tetrisHub.activar();
-  } else if (jogoHub === 'maze') {
-    reiniciar();
-    vistaSerpente.hidden = true;
-    tetrisHub.desactivar();
-    mazeHub.activar();
-  } else if (jogoHub === '2048') {
-    reiniciar();
-    vistaSerpente.hidden = true;
-    tetrisHub.desactivar();
-    mazeHub.desactivar();
-    hub2048.activar();
-  } else if (jogoHub === 'minas') {
-    reiniciar();
-    vistaSerpente.hidden = true;
-    tetrisHub.desactivar();
-    mazeHub.desactivar();
-    hub2048.desactivar();
-    minasHub.activar();
-  } else {
-    tetrisHub.desactivar();
-    mazeHub.desactivar();
-    hub2048.desactivar();
-    minasHub.desactivar();
-    vistaSerpente.hidden = false;
-    confirmar();
-  }
-});
 botaoAbrirMenu.addEventListener('click', () => {
-  reiniciar();
-  document.documentElement.style.setProperty('--cobra', String(cobraEscolhida));
-  document.documentElement.style.setProperty('--tema', String(MATIZ_INTERFACE));
-  matizAplicada = cobraEscolhida;
   actualizarEscolhasMenu();
-  menuPrincipal.classList.remove('fechado');
+  voltarAoArcade();
   vibrar(10);
 });
 elemento('comecar').addEventListener('click', () => { elemento('comecar').blur(); som.garantir(); confirmar(); });
@@ -980,9 +1224,12 @@ declare global {
 }
 window.serpente = { jogo, som, reiniciar, restante: () => restante };
 
+construirGrelha();
+campoNome.value = nomeJogador;
+campoNome.placeholder = t('jogador');
 aplicarIdioma(idiomaEscolhido);
+animarCapas(true);
 reporRelogio();
 sincronizarMatiz();
 medirArena();
-mostrarTutorial();
 requestAnimationFrame(quadro);

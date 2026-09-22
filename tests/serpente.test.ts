@@ -224,7 +224,7 @@ describe('comida e pontuação', () => {
     }
   });
 
-  it('marca o marco de pontuação de dez em dez comidas', () => {
+  it('marca o marco de pontuação a cada dezena de pontos', () => {
     // Arena larga: a serpente come em linha recta sem chegar à parede.
     const j = new Jogo({ lado: MARCO * 4 + 1, aleatorio: semente(3) });
     j.comecar();
@@ -233,9 +233,13 @@ describe('comida e pontuação', () => {
       j.comida = { ...vetorAplicado(j), tipo: 'normal' };
       const r = j.passo();
       expect(r.comeu).toBe(true);
-      if (r.marco) marcos.push(j.comidas);
+      if (r.marco) marcos.push(j.pontos);
     }
-    expect(marcos).toEqual([MARCO, MARCO * 2]);
+    // Com o combo, a pontuação já não sobe de um em um: o marco acompanha as
+    // dezenas de pontos e soa exactamente uma vez por cada dezena atravessada.
+    expect(marcos.length).toBe(Math.floor(j.pontos / MARCO));
+    expect(new Set(marcos.map((p) => Math.floor(p / MARCO))).size).toBe(marcos.length);
+    expect([...marcos].sort((x, y) => x - y)).toEqual(marcos);
   });
 
   it('encher a arena termina a partida em vitória', () => {
@@ -317,15 +321,18 @@ describe('reinício e recorde', () => {
       j.comida = { ...vetorAplicado(j), tipo: 'normal' };
       j.passo();
     }
-    expect(j.pontos).toBe(4);
-    expect(j.recorde).toBe(4);
+    // O combo faz de quatro comidas mais do que quatro pontos: o que importa
+    // aqui é o recorde seguir a pontuação e nunca descer, não o valor exacto.
+    const marcados = j.pontos;
+    expect(marcados).toBeGreaterThanOrEqual(4);
+    expect(j.recorde).toBe(marcados);
     j.reiniciar();
-    expect(j.recorde).toBe(4);
+    expect(j.recorde).toBe(marcados);
     expect(j.pontos).toBe(0);
     j.comecar();
     j.comida = { ...vetorAplicado(j), tipo: 'normal' };
     j.passo();
-    expect(j.recorde).toBe(4);
+    expect(j.recorde).toBe(marcados);
   });
 
   it('aguenta muitas partidas seguidas sem estado sujo', () => {
@@ -457,7 +464,7 @@ describe('onde a comida nasce', () => {
 
     let soma = 0;
     let apertadas = 0;
-    const amostras = 300;
+    const amostras = 3000;
     for (let i = 0; i < amostras; i++) {
       j.comida = { x: 0, y: 4, tipo: 'normal' };
       j.corpo = corpo.map((c) => ({ ...c }));
@@ -471,6 +478,8 @@ describe('onde a comida nasce', () => {
     }
     // O sorteio pesado tem de bater o sorteio uniforme nas duas medidas: mais
     // desafogo em média, e menos comida em casas apertadas do que a arena tem.
+    // Com 300 amostras a segunda medida ficava dentro do ruído; com 3000 a
+    // margem é de várias vezes o erro-padrão e o teste deixa de oscilar.
     expect(soma / amostras).toBeGreaterThan(mediaGeral);
     expect(apertadas / amostras).toBeLessThan(apertadasNaArena);
   });

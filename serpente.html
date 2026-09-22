@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#0b0e09" />
+    <meta name="theme-color" content="#08090b" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -12,44 +12,72 @@
     <title>Nexus Arcade</title>
   </head>
   <body>
+    <!-- LAUNCHER — abrir, perceber e entrar num jogo em menos de dois segundos. -->
     <section class="menu-principal" id="menu-principal" aria-labelledby="menu-titulo">
-      <div class="menu-conteudo launcher">
-        <header class="menu-topo launcher-topo">
+      <div class="arcade">
+        <header class="arcade-topo">
           <div class="marca" aria-label="Nexus Arcade">
             <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M23 7H12a5 5 0 0 0 0 10h8a5 5 0 0 1 0 10H8" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><circle cx="24" cy="6" r="1.5" fill="currentColor" class="olho-logo"/></svg>
             <span>NEXUS ARCADE</span>
           </div>
-          <button class="launcher-definicoes" type="button" data-menu-categoria="visual" aria-label="Abrir definições"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21H9.6v-.09A1.7 1.7 0 0 0 8.5 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.1 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H2V9.6h.4A1.7 1.7 0 0 0 4.1 8.5a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 8.5 4.1a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V2h4v.4A1.7 1.7 0 0 0 15 4.1a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 8.5a1.7 1.7 0 0 0 .6 1 1.7 1.7 0 0 0 1.1.4h.4v4h-.4a1.7 1.7 0 0 0-1.7 1.1Z"/></svg></button>
+          <button class="arcade-engrenagem" id="abrir-definicoes" type="button" aria-label="Definições">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21H9.6v-.09A1.7 1.7 0 0 0 8.5 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.1 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H2V9.6h.4A1.7 1.7 0 0 0 4.1 8.5a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 8.5 4.1a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V2h4v.4A1.7 1.7 0 0 0 15 4.1a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 8.5a1.7 1.7 0 0 0 .6 1 1.7 1.7 0 0 0 1.1.4h.4v4h-.4a1.7 1.7 0 0 0-1.7 1.1Z"/></svg>
+          </button>
         </header>
 
-        <div class="menu-opcoes launcher-corpo">
-          <section class="menu-painel activo launcher-jogos" data-menu-painel="jogo" aria-label="Jogos">
-            <h1 id="menu-titulo">Escolhe um jogo</h1>
-            <div class="jogos-hub" role="list">
-              <button type="button" data-jogo="serpente" class="seleccionado"><canvas class="jogo-preview" data-preview="serpente" width="300" height="96" aria-hidden="true"></canvas><span><strong>Serpente</strong><small>3 modos · estratégia</small></span></button>
-              <button type="button" data-jogo="tetris"><canvas class="jogo-preview" data-preview="tetris" width="300" height="96" aria-hidden="true"></canvas><span><strong data-i18n="tetrisNome">Blocos</strong><small>Clássico · 10×20</small></span></button>
-              <button type="button" data-jogo="maze"><canvas class="jogo-preview" data-preview="maze" width="300" height="96" aria-hidden="true"></canvas><span><strong data-i18n="mazeNome">Labirinto</strong><small>Exploração</small></span></button>
-              <button type="button" data-jogo="2048"><canvas class="jogo-preview" data-preview="2048" width="300" height="96" aria-hidden="true"></canvas><span><strong>2048</strong><small>Clássico · 4×4</small></span></button>
-              <button type="button" data-jogo="minas"><canvas class="jogo-preview" data-preview="minas" width="300" height="96" aria-hidden="true"></canvas><span><strong>Campo Minado</strong><small>9×12 · 18 minas</small></span></button>
-              <button type="button" disabled><span class="preview-brevemente">?</span><span><strong>Próximo jogo</strong><small>Em breve</small></span></button>
+        <div class="arcade-corpo">
+          <section class="arcade-painel activo" data-painel="arcade" aria-label="Arcade">
+            <div class="saudacao">
+              <h1 id="menu-titulo"><span id="saudacao">Olá</span></h1>
+              <p><b id="patente-nivel">Nível 1</b> · <span id="patente-nome">ROOKIE</span></p>
             </div>
 
-            <div class="launcher-seleccao" id="config-serpente">
-              <div class="launcher-resumo"><i>S</i><span><h2>Serpente</h2><b>3 modos · cor personalizada</b><p>Domina a arena e cresce sem tocar no corpo.</p></span></div>
-              <div class="cartoes-modo launcher-modos" aria-label="Modos disponíveis">
-                <button type="button" data-escolha-modo="classico"><span><strong data-i18n="classico">Clássico</strong></span><i></i></button>
-                <button type="button" data-escolha-modo="relogio"><span><strong data-i18n="relogio">Tempo</strong></span><i></i></button>
-                <button type="button" data-escolha-modo="portais"><span><strong data-i18n="portais">Portais</strong></span><i></i></button>
+            <h2 class="arcade-seccao" id="destaque-etiqueta">CONTINUAR</h2>
+            <article class="destaque" id="destaque">
+              <canvas class="capa" id="destaque-capa" aria-hidden="true"></canvas>
+              <div class="destaque-info">
+                <h3 id="destaque-nome">SERPENTE</h3>
+                <p><span id="destaque-rotulo">Recorde</span> <b id="destaque-recorde">—</b></p>
               </div>
-            </div>
-            <section class="launcher-seleccao" id="config-tetris" hidden><div class="launcher-resumo"><i>▦</i><span><h2 data-i18n="tetrisNome">Blocos</h2><b>Clássico · 10×20</b><p>Completa linhas, cria combos e controla o ritmo.</p></span></div></section>
-            <section class="launcher-seleccao" id="config-maze" hidden><div class="launcher-resumo"><i>◎</i><span><h2 data-i18n="mazeNome">Labirinto</h2><b>Exploração</b><p>Recolhe a energia e domina cada rota.</p></span></div></section>
-            <section class="launcher-seleccao" id="config-2048" hidden><div class="launcher-resumo"><i>＋</i><span><h2>2048</h2><b>Clássico · 4×4</b><p>Desliza, funde e constrói o maior número.</p></span></div></section>
-            <section class="launcher-seleccao" id="config-minas" hidden><div class="launcher-resumo"><i>✦</i><span><h2>Campo Minado</h2><b>9×12 · 18 minas</b><p>Encontra todas as casas seguras.</p></span></div></section>
+              <button class="destaque-jogar" id="destaque-jogar" type="button"><span data-i18n="jogarAcao">JOGAR</span></button>
+              <button class="destaque-ficha" id="destaque-ficha" type="button" aria-label="Detalhes do jogo em destaque">⋯</button>
+            </article>
+
+            <h2 class="arcade-seccao" data-i18n="todosJogos">TODOS OS JOGOS</h2>
+            <div class="grelha-jogos" id="grelha-jogos" role="list"></div>
           </section>
 
-          <section class="menu-painel launcher-perfil" data-menu-painel="visual" aria-label="Perfil e definições">
-            <div class="launcher-titulo"><small>PERFIL</small><h2>Personalização</h2><p>Escolhe as cores dos personagens e o idioma.</p></div>
+          <section class="arcade-painel" data-painel="carreira" aria-label="Carreira">
+            <div class="saudacao">
+              <h1 data-i18n="carreiraTitulo">A tua carreira</h1>
+              <p data-i18n="carreiraDesc">Uma só progressão para os cinco jogos.</p>
+            </div>
+
+            <article class="patente-cartao">
+              <header><b id="patente-grande">ROOKIE</b><small id="patente-seguinte"></small></header>
+              <div class="patente-barra"><i id="patente-barra"></i></div>
+              <div class="patente-escada" id="patente-escada"></div>
+            </article>
+
+            <div class="carreira-destaques">
+              <span><b id="menu-recorde">0</b><small data-i18n="recordeAtual">RECORDE ATUAL</small></span>
+              <span><b id="menu-conquistas">0/10</b><small data-i18n="conquistas">CONQUISTAS</small></span>
+              <span><b id="menu-moedas">0</b><small data-i18n="moedas">MOEDAS</small></span>
+              <span><b id="menu-xp">0</b><small>XP</small></span>
+            </div>
+
+            <div class="objetivos-diarios" id="objetivos-diarios"></div>
+
+            <section class="carreira"><button type="button" id="abrir-carreira"><span><small data-i18n="carreira">CARREIRA</small><strong id="carreira-contagem"><b id="stat-partidas">0</b> partidas · <b id="stat-comidas">0</b> luzes</strong></span><span class="nivel"><small data-i18n="nivel">NÍVEL</small><b id="stat-nivel">1</b></span></button></section>
+            <div class="carreira-acoes"><button type="button" id="abrir-loja"><span>◇</span><b data-i18n="loja">Loja</b></button><button type="button" id="abrir-ranking"><span>♜</span><b data-i18n="ranking">Ranking</b></button></div>
+          </section>
+
+          <section class="arcade-painel" data-painel="perfil" aria-label="Perfil">
+            <div class="saudacao">
+              <h1 data-i18n="perfilTitulo">Perfil</h1>
+              <p data-i18n="perfilDesc">Cores, idioma e acessibilidade.</p>
+            </div>
+            <fieldset class="escolha"><legend data-i18n="oTeuNome">O TEU NOME</legend><input class="campo-nome" id="nome-jogador" type="text" maxlength="14" autocomplete="off" spellcheck="false" placeholder="Jogador" aria-label="O teu nome" /></fieldset>
             <fieldset class="escolha"><legend data-i18n="corCobra">COR DA COBRA</legend><div class="paleta cobras" id="paleta-cobra">
               <button class="amostra cobra-lima" type="button" data-cobra="83"><i></i><span data-i18n="lima">Lima</span></button><button class="amostra cobra-ciano" type="button" data-cobra="188"><i></i><span data-i18n="ciano">Ciano</span></button><button class="amostra cobra-rosa" type="button" data-cobra="330"><i></i><span data-i18n="rosa">Rosa</span></button><button class="amostra cobra-dourada" type="button" data-cobra="42"><i></i><span data-i18n="dourada">Dourada</span></button>
             </div></fieldset>
@@ -59,37 +87,56 @@
             <fieldset class="escolha escolha-idioma"><legend data-i18n="idioma">IDIOMA / LANGUAGE</legend><div class="paleta idiomas" id="paleta-idioma">
               <button class="amostra" type="button" data-idioma="pt-PT"><b>PT</b><span>Portugal</span></button><button class="amostra" type="button" data-idioma="en"><b>EN</b><span>English</span></button><button class="amostra" type="button" data-idioma="es"><b>ES</b><span>Español</span></button><button class="amostra" type="button" data-idioma="pt-BR"><b>BR</b><span>Brasil</span></button>
             </div></fieldset>
+            <div class="carreira-acoes"><button type="button" id="abrir-definicoes-perfil"><span>⚙</span><b data-i18n="definicoes">Definições</b></button></div>
           </section>
-
-          <section class="menu-painel launcher-carreira" data-menu-painel="carreira" aria-label="Carreira e progressão">
-            <div class="launcher-titulo"><small>CARREIRA</small><h2>O teu percurso</h2><p>Recordes, missões e conquistas guardados neste dispositivo.</p></div>
-            <section class="carreira"><button type="button" id="abrir-carreira"><span><small data-i18n="carreira">CARREIRA</small><strong id="carreira-contagem"><b id="stat-partidas">0</b> partidas · <b id="stat-comidas">0</b> luzes</strong></span><span class="nivel"><small data-i18n="nivel">NÍVEL</small><b id="stat-nivel">1</b></span></button></section>
-            <div class="carreira-destaques"><span><b id="menu-recorde">0</b><small data-i18n="recordeAtual">RECORDE ATUAL</small></span><span><b id="menu-conquistas">0/10</b><small data-i18n="conquistas">CONQUISTAS</small></span></div>
-            <div class="carreira-saldo"><span><b id="menu-moedas">0</b><small data-i18n="moedas">MOEDAS</small></span><span><b id="menu-xp">0</b><small>XP</small></span></div>
-            <div class="carreira-acoes"><button type="button" id="abrir-loja"><span>◇</span><b data-i18n="loja">Loja</b></button><button type="button" id="abrir-ranking"><span>♜</span><b data-i18n="ranking">Ranking</b></button><button type="button" id="abrir-definicoes"><span>⚙</span><b data-i18n="definicoes">Definições</b></button></div>
-            <div class="objetivos-diarios" id="objetivos-diarios"></div>
-          </section>
-
-          <nav class="menu-categorias launcher-nav" aria-label="Navegação principal">
-            <button type="button" data-menu-categoria="jogo" class="activo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 8h10l3 5v5a2 2 0 0 1-3.4 1.4L14.2 17H9.8l-2.4 2.4A2 2 0 0 1 4 18v-5l3-5Z"/><path d="M8 12v4m-2-2h4m6-1h.01m2 2h.01"/></svg><b>Jogos</b></button>
-            <button type="button" data-menu-categoria="carreira"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 4h8v3a4 4 0 0 1-8 0V4Z"/><path d="M8 6H5v1a4 4 0 0 0 4 4m7-5h3v1a4 4 0 0 1-4 4m-3 0v5m-4 4h8m-6-4h4"/></svg><b data-i18n="carreira">Carreira</b></button>
-            <button type="button" data-menu-categoria="visual"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.8 21a7.4 7.4 0 0 1 14.4 0"/></svg><b>Perfil</b></button>
-          </nav>
         </div>
 
-        <button class="entrar launcher-jogar" id="entrar" type="button"><span>JOGAR</span><span aria-hidden="true">→</span></button>
+        <nav class="arcade-nav" aria-label="Navegação principal">
+          <button type="button" data-painel-botao="arcade" class="activo"><b data-i18n="arcade">Arcade</b></button>
+          <button type="button" data-painel-botao="carreira"><b data-i18n="carreira">Carreira</b></button>
+          <button type="button" data-painel-botao="perfil"><b data-i18n="perfilTitulo">Perfil</b></button>
+        </nav>
       </div>
+
+      <!-- FICHA — o cartão aberto: capa grande, recorde, domínio e um só botão. -->
+      <section class="ficha" id="ficha" hidden aria-labelledby="ficha-nome">
+        <header class="ficha-topo">
+          <button type="button" id="ficha-voltar" aria-label="Voltar ao arcade">←</button>
+        </header>
+        <canvas class="capa" id="ficha-capa" aria-hidden="true"></canvas>
+        <h2 id="ficha-nome">SERPENTE</h2>
+        <p class="ficha-recorde"><small id="ficha-rotulo">Recorde</small><b id="ficha-numero">—</b></p>
+        <p class="ficha-dominio"><span>★ <span data-i18n="dominio">Domínio</span> <b id="ficha-dominio-valor">0%</b></span><i><em id="ficha-dominio-barra"></em></i></p>
+        <div class="ficha-modos" id="ficha-modos" hidden aria-label="Modos disponíveis">
+          <button type="button" data-escolha-modo="classico"><span><strong data-i18n="classico">Clássico</strong></span><i></i></button>
+          <button type="button" data-escolha-modo="relogio"><span><strong data-i18n="relogio">Tempo</strong></span><i></i></button>
+          <button type="button" data-escolha-modo="portais"><span><strong data-i18n="portais">Portais</strong></span><i></i></button>
+        </div>
+        <button class="ficha-jogar" id="ficha-jogar" type="button"><span data-i18n="jogarAcao">JOGAR</span></button>
+        <div class="ficha-abas" role="tablist">
+          <button type="button" data-aba="desafios" class="activa" role="tab" data-i18n="desafios">Desafios</button>
+          <button type="button" data-aba="estatisticas" role="tab" data-i18n="estatisticasAba">Estatísticas</button>
+        </div>
+        <div class="ficha-conteudo" id="ficha-conteudo"></div>
+      </section>
+
+      <div class="transicao" id="transicao" hidden aria-hidden="true"></div>
     </section>
 
+    <!-- SERPENTE — HUD reduzido ao essencial: nome, pontos, pausa. -->
     <main class="jogo">
       <header class="topo">
         <div class="marca" aria-label="Serpente">
           <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M23 7H12a5 5 0 0 0 0 10h8a5 5 0 0 1 0 10H8" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><circle cx="24" cy="6" r="1.5" fill="#0b0e09"/></svg>
           <span>SERPENTE</span>
         </div>
+        <div class="marcador" id="marcador-pontos">
+          <span class="valor" id="pontos">0</span>
+          <span class="rotulo" id="hud-modo">CLÁSSICO</span>
+        </div>
         <div class="acoes">
           <button class="botao-icone" id="abrir-menu" type="button" aria-label="Abrir menu principal">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
           </button>
           <button class="botao-icone som" id="som" type="button" aria-pressed="true" aria-label="Desligar som">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path class="onda" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/><path class="risca" d="m16 9.5 5 5m0-5-5 5"/></svg>
@@ -100,17 +147,11 @@
         </div>
       </header>
 
-      <section class="hud" id="hud" aria-label="Pontuação">
-        <div class="marcador" id="marcador-pontos">
-          <span class="rotulo" data-i18n="pontos">PONTOS</span>
-          <span class="valor" id="pontos">0</span>
-        </div>
-        <div class="estado" id="estado-caixa"><i></i><span><b id="estado" role="status">PRONTO</b><small id="hud-modo">CLÁSSICO</small></span><strong class="tempo" id="tempo" hidden aria-label="Segundos para comer">10.0</strong></div>
-        <div class="marcador direita">
-          <span class="rotulo"><i class="coroa" id="coroa" hidden></i><span data-i18n="recorde"> RECORDE</span></span>
-          <span class="valor" id="recorde">0</span>
-        </div>
-      </section>
+      <div class="linha-viva" aria-label="Estado da partida">
+        <span class="estado" id="estado-caixa"><i></i><b id="estado" role="status">PRONTO</b><strong class="tempo" id="tempo" hidden aria-label="Segundos para comer">10.0</strong></span>
+        <span class="combo" id="combo" hidden>COMBO <b id="combo-valor">×2</b></span>
+        <span class="recorde-linha"><i class="coroa" id="coroa" hidden></i><span data-i18n="recorde">RECORDE</span> <b id="recorde">0</b></span>
+      </div>
 
       <section class="consola" aria-label="Arena de jogo">
         <div class="palco" id="palco">
@@ -153,74 +194,115 @@
             </div>
           </div>
         </div>
-        <div class="partida-info" aria-label="Objetivo da partida">
-          <div class="missao-partida" id="missao-partida"><small data-i18n="missao">MISSÃO</small><span id="missao-texto">Recolhe 8 luzes</span><b id="missao-progresso">0/8</b></div>
-          <div class="combo" id="combo" hidden><span>COMBO</span><b id="combo-valor">×2</b></div>
-        </div>
         <div class="poderes-ativos" id="poderes-ativos" hidden aria-live="polite"></div>
-        <div class="telemetria">
-          <span><i></i><b id="comprimento">3</b> <span data-i18n="segmentos">SEGMENTOS</span></span>
-          <span id="velocidade">1.00× RITMO</span>
-          <span>21 × 21</span>
-        </div>
-        <div class="progresso" aria-label="Próximo marco">
-          <progress id="progresso" value="0" max="10" aria-label="Progresso até ao próximo marco"></progress>
-          <span id="marco-texto">0 / 10</span>
+        <div class="missao-barra" id="missao-partida" aria-label="Objetivo da partida">
+          <span id="missao-texto">Recolhe 8 luzes</span>
+          <b id="missao-progresso">0/8</b>
+          <progress id="progresso" value="0" max="8" aria-label="Progresso da missão"></progress>
         </div>
       </section>
-
-      <div class="gesto-dica" aria-hidden="true">
-        <svg viewBox="0 0 44 44" fill="none"><path d="M22 4v36M4 22h36M22 4l-4 4m4-4 4 4M40 22l-4-4m4 4-4 4M22 40l-4-4m4 4 4-4M4 22l4-4m-4 4 4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-        <span><span data-i18n="deslizaArena">DESLIZA NA ARENA</span><small data-i18n="gesto">uma direção por gesto</small></span>
-      </div>
     </main>
+
+    <!-- BLOCOS — gestos no tabuleiro, só reserva e queda ficam como botões. -->
     <main class="tetris-jogo" id="tetris-jogo" hidden>
       <header class="topo tetris-topo">
         <div class="marca"><i>▦</i><span>BLOCOS</span></div>
-        <div class="acoes"><button class="botao-icone" id="tetris-menu" type="button" aria-label="Abrir menu">☰</button><button class="botao-icone" id="tetris-pausa" type="button" aria-label="Pausar">Ⅱ</button></div>
+        <div class="marcador"><span class="valor" id="tetris-pontos">0</span><span class="rotulo"><span id="tetris-linhas">0</span> LINHAS · NV <span id="tetris-nivel">1</span></span></div>
+        <div class="acoes"><button class="botao-icone" id="tetris-menu" type="button" aria-label="Voltar ao arcade">‹</button><button class="botao-icone" id="tetris-pausa" type="button" aria-label="Pausar">Ⅱ</button></div>
       </header>
-      <section class="tetris-hud">
-        <span><small>PONTOS</small><b id="tetris-pontos">0</b></span><span><small>LINHAS</small><b id="tetris-linhas">0</b></span><span><small>NÍVEL</small><b id="tetris-nivel">1</b></span><span><small>RECORDE</small><b id="tetris-recorde">0</b></span>
-      </section>
+      <div class="linha-viva">
+        <span class="estado" id="tetris-estado">PRONTO</span>
+        <span class="combo" id="tetris-combo">COMBO <b>—</b></span>
+        <span class="recorde-linha">RECORDE <b id="tetris-recorde">0</b></span>
+      </div>
       <section class="tetris-corpo">
-        <aside><div><small>RESERVA</small><canvas id="tetris-hold" width="120" height="90"></canvas></div><div class="tetris-combo" id="tetris-combo"><small>COMBO</small><b>—</b></div></aside>
-        <div class="tetris-arena" id="tetris-arena"><canvas id="tetris-canvas" width="300" height="600"></canvas><div class="tetris-overlay" id="tetris-overlay"><small>ARCADE / 02</small><h1>Constrói.<br><em>Limpa.</em></h1><p>Desliza ou usa os controlos.</p><button id="tetris-iniciar" type="button">JOGAR <span>→</span></button></div></div>
-        <aside><div><small>SEGUINTES</small><canvas id="tetris-next" width="120" height="280"></canvas></div></aside>
+        <div class="tetris-arena" id="tetris-arena"><canvas id="tetris-canvas" width="300" height="600"></canvas><div class="tetris-overlay" id="tetris-overlay"><small>ARCADE / 02</small><h1>Constrói.<br><em>Limpa.</em></h1><p>Desliza para mover, toca para rodar.</p><button id="tetris-iniciar" type="button">JOGAR <span>→</span></button></div></div>
+        <aside class="tetris-lado">
+          <div><small>RESERVA</small><canvas id="tetris-hold" width="120" height="90"></canvas></div>
+          <div><small>SEGUINTES</small><canvas id="tetris-next" width="120" height="280"></canvas></div>
+        </aside>
       </section>
-      <div class="tetris-estado" id="tetris-estado">PRONTO</div>
-      <section class="tetris-controlos" aria-label="Controlos do jogo">
-        <button type="button" data-tetris="hold"><small>HOLD</small>◇</button><button type="button" data-tetris="left" aria-label="Esquerda">‹</button><button class="principal" type="button" data-tetris="rotate" aria-label="Rodar">↻</button><button type="button" data-tetris="right" aria-label="Direita">›</button><button type="button" data-tetris="down" aria-label="Descer">↓</button><button class="largo" type="button" data-tetris="drop"><small>QUEDA</small>⇣</button>
+      <section class="rodape-jogo" aria-label="Controlos do jogo">
+        <button type="button" data-tetris="hold"><span>◇</span><small>RESERVA</small></button>
+        <button type="button" data-tetris="drop"><span>⇣</span><small>QUEDA</small></button>
       </section>
     </main>
+
+    <!-- LABIRINTO — só swipe: a interface desaparece dentro do circuito. -->
     <main class="maze-jogo" id="maze-jogo" hidden>
-      <header class="topo maze-topo"><div class="marca"><i>◉</i><span>LABIRINTO</span></div><div class="acoes"><button class="botao-icone" id="maze-menu" type="button" aria-label="Abrir menu">☰</button><button class="botao-icone" id="maze-pausa" type="button" aria-label="Pausar">Ⅱ</button></div></header>
-      <section class="maze-hud"><span><small>PONTOS</small><b id="maze-pontos">0</b></span><span><small>NÍVEL</small><b id="maze-nivel">1</b></span><span><small>VIDAS</small><b id="maze-vidas">◆ ◆ ◆</b></span><span><small>RECORDE</small><b id="maze-recorde">0</b></span></section>
+      <header class="topo maze-topo">
+        <div class="marca"><i>◉</i><span>LV. <b id="maze-nivel">1</b></span></div>
+        <div class="marcador"><span class="valor" id="maze-pontos">0</span><span class="rotulo">PONTOS</span></div>
+        <div class="acoes"><b class="vidas" id="maze-vidas">◆ ◆ ◆</b><button class="botao-icone" id="maze-menu" type="button" aria-label="Voltar ao arcade">‹</button><button class="botao-icone" id="maze-pausa" type="button" aria-label="Pausar">Ⅱ</button></div>
+      </header>
       <section class="maze-console">
         <div class="maze-arena" id="maze-arena"><canvas id="maze-canvas" width="570" height="630"></canvas><div class="maze-overlay" id="maze-overlay"><small>ARCADE / 03</small><h1>Lê cada<br><em>movimento.</em></h1><p>Desliza para explorar o circuito.</p><button id="maze-iniciar" type="button">JOGAR <span>→</span></button></div></div>
-        <div class="maze-mensagem" id="maze-mensagem">À TUA ESPERA</div>
       </section>
-      <section class="maze-controlos" aria-label="Direções"><button data-maze="cima">↑</button><button data-maze="esquerda">←</button><i>◉</i><button data-maze="direita">→</button><button data-maze="baixo">↓</button></section>
+      <div class="linha-viva rodape-linha">
+        <span class="estado" id="maze-mensagem">À TUA ESPERA</span>
+        <span class="recorde-linha">RECORDE <b id="maze-recorde">0</b></span>
+      </div>
     </main>
+
+    <!-- 2048 — gesto puro. Em baixo vive só o desfazer. -->
     <main class="jogo-2048" id="jogo-2048" hidden>
-      <header class="topo topo-2048"><div class="marca"><i>＋</i><span>2048</span></div><div class="acoes"><button class="botao-icone" id="menu-2048" type="button" aria-label="Abrir menu">☰</button><button class="botao-icone" id="reiniciar-2048" type="button" aria-label="Nova partida">↻</button></div></header>
-      <section class="hud-2048">
-        <span><small>PONTOS</small><b id="pontos-2048">0</b></span><span><small>RECORDE</small><b id="recorde-2048">0</b></span><span><small>MÁXIMO</small><b id="maior-2048">4</b></span><span><small>JOGADAS</small><b id="movimentos-2048">0</b></span>
-      </section>
+      <header class="topo topo-2048">
+        <div class="marca"><i>＋</i><span>2048</span></div>
+        <div class="marcador"><span class="valor" id="pontos-2048">0</span><span class="rotulo">PONTOS</span></div>
+        <div class="acoes"><button class="botao-icone" id="menu-2048" type="button" aria-label="Voltar ao arcade">‹</button></div>
+      </header>
+      <div class="linha-viva">
+        <span class="estado" id="mensagem-2048">À TUA ESPERA</span>
+        <span class="recorde-linha">RECORDE <b id="recorde-2048">0</b></span>
+      </div>
       <section class="console-2048">
         <div class="arena-2048"><canvas id="canvas-2048" width="600" height="600" aria-label="Tabuleiro 2048. Desliza para mover."></canvas><div class="overlay-2048" id="overlay-2048"><small>ARCADE / 04</small><h1>Funde.<br><em>Ascende.</em></h1><p>Desliza para mover toda a matriz.</p><button id="iniciar-2048" type="button">JOGAR <span>→</span></button></div></div>
-        <div class="mensagem-2048" id="mensagem-2048">À TUA ESPERA</div>
       </section>
-      <section class="controlos-2048" aria-label="Controlos do 2048"><button id="desfazer-2048" type="button"><small>UNDO</small>↶</button><button data-2048="esquerda" type="button">←</button><button data-2048="cima" type="button">↑</button><button data-2048="baixo" type="button">↓</button><button data-2048="direita" type="button">→</button></section>
+      <section class="rodape-jogo" aria-label="Controlos do 2048">
+        <button id="desfazer-2048" type="button"><span>↶</span><small>DESFAZER</small></button>
+        <button id="reiniciar-2048" type="button"><span>↻</span><small>NOVA</small></button>
+      </section>
     </main>
+
+    <!-- CAMPO MINADO — toque abre, toque longo marca. Nada mais. -->
     <main class="jogo-minas" id="jogo-minas" hidden>
-      <header class="topo topo-minas"><div class="marca"><i>✦</i><span>CAMPO MINADO</span></div><div class="acoes"><button class="botao-icone" id="menu-minas" type="button" aria-label="Abrir menu">☰</button><button class="botao-icone" id="novo-minas" type="button" aria-label="Novo campo">↻</button></div></header>
-      <section class="hud-minas"><span><small>TEMPO</small><b id="tempo-minas">0s</b></span><span><small>MINAS</small><b id="minas-restantes">18</b></span><span><small>ABERTAS</small><b id="abertas-minas">0/90</b></span><span><small>RECORDE</small><b id="recorde-minas">—</b></span></section>
+      <header class="topo topo-minas">
+        <div class="marca"><i>✦</i><span><b id="minas-restantes">18</b> MINAS</span></div>
+        <div class="marcador"><span class="valor" id="tempo-minas">00:00</span><span class="rotulo"><b id="abertas-minas">0%</b> SEGURO</span></div>
+        <div class="acoes"><button class="botao-icone" id="menu-minas" type="button" aria-label="Voltar ao arcade">‹</button></div>
+      </header>
+      <div class="linha-viva">
+        <span class="estado" id="mensagem-minas">À TUA ESPERA</span>
+        <span class="recorde-linha">MELHOR <b id="recorde-minas">—</b></span>
+      </div>
       <section class="console-minas">
-        <div class="arena-minas"><canvas id="canvas-minas" width="540" height="720" aria-label="Campo minado. Toca para abrir e mantém pressionado para marcar."></canvas><div class="overlay-minas" id="overlay-minas"><small>ARCADE / 05</small><h1>Lê.<br><em>Neutraliza.</em></h1><p>O primeiro toque é sempre seguro.</p><button id="iniciar-minas" type="button">JOGAR <span>→</span></button></div></div>
-        <div class="mensagem-minas" id="mensagem-minas">À TUA ESPERA</div>
+        <div class="arena-minas"><canvas id="canvas-minas" width="540" height="720" aria-label="Campo minado. Toca para abrir e mantém pressionado para marcar."></canvas><div class="overlay-minas" id="overlay-minas"><small>ARCADE / 05</small><h1>Lê.<br><em>Neutraliza.</em></h1><p>Toca para abrir · segura para marcar.</p><button id="iniciar-minas" type="button">JOGAR <span>→</span></button></div></div>
       </section>
-      <section class="controlos-minas"><button id="modo-bandeira" type="button" aria-pressed="false"><span>⚑</span><small>MARCAR</small></button><p><b>TOCA</b> para explorar<br><b>SEGURA</b> para marcar</p></section>
+      <section class="rodape-jogo" aria-label="Controlos do campo minado">
+        <button id="novo-minas" type="button"><span>↻</span><small>REINICIAR</small></button>
+        <button id="definicoes-minas" type="button"><span>⚙</span><small>OPÇÕES</small></button>
+      </section>
     </main>
+
+    <!-- PRISMA — a luz parte-se contra os prismas. Arrasta para mover, toca para largar. -->
+    <main class="jogo-prisma" id="jogo-prisma" hidden>
+      <header class="topo topo-prisma">
+        <div class="marca"><i>◆</i><span>PRISMA</span></div>
+        <div class="marcador"><span class="valor" id="pontos-prisma">0</span><span class="rotulo">NÍVEL <b id="nivel-prisma">1</b></span></div>
+        <div class="acoes"><b class="vidas" id="vidas-prisma">◆ ◆ ◆</b><button class="botao-icone" id="menu-prisma" type="button" aria-label="Voltar ao arcade">‹</button><button class="botao-icone" id="pausa-prisma" type="button" aria-label="Pausar">Ⅱ</button></div>
+      </header>
+      <div class="linha-viva">
+        <span class="estado" id="mensagem-prisma">À TUA ESPERA</span>
+        <span class="recorde-linha">RECORDE <b id="recorde-prisma">0</b></span>
+      </div>
+      <section class="console-prisma">
+        <div class="arena-prisma"><canvas id="canvas-prisma" width="450" height="700" aria-label="Arena do Prisma. Arrasta para mover a raquete e toca para largar a bola."></canvas><div class="overlay-prisma" id="overlay-prisma"><small>ARCADE / 06</small><h1>Parte<br><em>a luz.</em></h1><p>Arrasta para mover · toca para largar.</p><button id="iniciar-prisma" type="button">JOGAR <span>→</span></button></div></div>
+      </section>
+      <section class="rodape-jogo" aria-label="Controlos do Prisma">
+        <button id="novo-prisma" type="button"><span>↻</span><small>REINICIAR</small></button>
+      </section>
+    </main>
+
     <section class="folha" id="folha-carreira" hidden aria-labelledby="carreira-titulo">
       <button class="folha-fundo" id="fechar-carreira" type="button" aria-label="Fechar carreira"></button>
       <div class="folha-painel">

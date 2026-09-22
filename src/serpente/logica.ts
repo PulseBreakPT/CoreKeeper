@@ -511,8 +511,7 @@ export class Jogo {
     // Há células livres, logo há sempre uma região onde as pôr.
     if (melhor < 0) throw new Error('há células livres mas nenhuma região para a comida');
 
-    // Sorteio pesado: uma célula com quatro vizinhos livres vale cinco vezes
-    // mais do que uma encurralada com um só.
+    // Sorteio pesado pelo desafogo, afinado pela distância.
     const naRegiao = livres.filter((p) => de[p.y * this.lado + p.x] === melhor);
     const alcancaveisPorRota = naRegiao.filter((p) => distancias[p.y * this.lado + p.x] >= 0);
     const alvos = alcancaveisPorRota.length > 0 ? alcancaveisPorRota : naRegiao;
@@ -520,8 +519,12 @@ export class Jogo {
     let total = 0;
     const pesos = alvos.map((p) => {
       const distancia = distancias[p.y * this.lado + p.x];
-      const proximidadeIdeal = distancia < 0 ? 0 : Math.max(0, 6 - Math.abs(distancia - distanciaDesejada));
-      const peso = 1 + this.vizinhasLivres(p, de, melhor) + proximidadeIdeal;
+      // O desafogo entra ao quadrado e a distância só multiplica: assim uma
+      // casa encurralada nunca ganha a uma aberta por estar à distância certa,
+      // que era o que acontecia quando os dois termos se somavam.
+      const desafogo = 1 + this.vizinhasLivres(p, de, melhor);
+      const foco = distancia < 0 ? 0 : Math.max(0, 6 - Math.abs(distancia - distanciaDesejada)) / 6;
+      const peso = desafogo * desafogo * (1 + foco * 1.5);
       total += peso;
       return peso;
     });
