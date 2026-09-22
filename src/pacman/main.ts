@@ -17,7 +17,7 @@ class AudioMaze {
   acordar():void{this.garantir();}
 }
 
-export function montarMaze(aoMenu:()=>void):{activar():void;desactivar():void}{
+export function montarMaze(aoMenu:()=>void,aoResultado:(xp:number,moedas:number)=>void):{activar():void;desactivar():void}{
   const raiz=el<HTMLElement>('maze-jogo'), canvas=el<HTMLCanvasElement>('maze-canvas'), ctx=canvas.getContext('2d')!;
   const overlay=el<HTMLElement>('maze-overlay'), iniciar=el<HTMLButtonElement>('maze-iniciar'), mensagem=el<HTMLElement>('maze-mensagem');
   const arena=el<HTMLElement>('maze-arena'), jogo=new Labirinto();
@@ -122,7 +122,12 @@ export function montarMaze(aoMenu:()=>void):{activar():void;desactivar():void}{
   }
 
   function actualizarParticulas(dt:number):void{for(let i=particulas.length-1;i>=0;i--){const q=particulas[i];q.vida-=dt;q.x+=q.vx*dt/1000;q.y+=q.vy*dt/1000;q.vx*=.97;q.vy*=.97;if(q.vida<=0)particulas.splice(i,1);}}
-  function hud():void{el('maze-pontos').textContent=jogo.pontos.toLocaleString();el('maze-nivel').textContent=String(jogo.nivel);el('maze-vidas').textContent=Array(Math.max(0,jogo.vidas)).fill('◆').join(' ');el('maze-recorde').textContent=jogo.recorde.toLocaleString();}
+  /** Uma sentinela demasiado perto acende a interface: tensão sem texto. */
+  function emPerigo():boolean{
+    if(jogo.estado!=='jogar')return false;
+    return jogo.fantasmas.some(f=>f.estado==='normal'&&Math.abs(f.x-jogo.jogador.x)+Math.abs(f.y-jogo.jogador.y)<=4);
+  }
+  function hud():void{raiz.classList.toggle('alerta',emPerigo());el('maze-pontos').textContent=jogo.pontos.toLocaleString();el('maze-nivel').textContent=String(jogo.nivel);el('maze-vidas').textContent=Array(Math.max(0,jogo.vidas)).fill('◆').join(' ');el('maze-recorde').textContent=jogo.recorde.toLocaleString();}
   function anunciar(texto:string,dur=900):void{mensagem.textContent=texto;mensagem.classList.remove('impacto');void mensagem.offsetWidth;mensagem.classList.add('impacto');mensagemAte=performance.now()+dur;}
   function tratar():void{
     const ev=jogo.passo(), p=pos(jogo.jogador,1);
@@ -133,12 +138,11 @@ export function montarMaze(aoMenu:()=>void):{activar():void;desactivar():void}{
     if(ev.nivel){audio.nivel();anunciar(`CIRCUITO ${jogo.nivel}`,1500);vibrar([15,20,15,20,35]);}
     if(jogo.pontos>jogo.recorde)jogo.recorde=jogo.pontos;
     if(jogo.recorde>recordeGuardado)try{localStorage.setItem(CHAVE,String(jogo.recorde));recordeGuardado=jogo.recorde;}catch{/* sessão */}
-    if(ev.terminou){overlay.querySelector('small')!.textContent='CIRCUITO TERMINADO';overlay.querySelector('h1')!.innerHTML=`${jogo.pontos.toLocaleString()}<br><em>pontos.</em>`;overlay.querySelector('p')!.textContent=`Nível ${jogo.nivel} · recorde ${jogo.recorde.toLocaleString()}`;iniciar.innerHTML='JOGAR OUTRA VEZ <span>↻</span>';overlay.hidden=false;}
+    if(ev.terminou){aoResultado(Math.round(jogo.pontos/12)+jogo.nivel*10,Math.round(jogo.pontos/80)+1);overlay.querySelector('small')!.textContent='CIRCUITO TERMINADO';overlay.querySelector('h1')!.innerHTML=`${jogo.pontos.toLocaleString()}<br><em>pontos.</em>`;overlay.querySelector('p')!.textContent=`Nível ${jogo.nivel} · recorde ${jogo.recorde.toLocaleString()}`;iniciar.innerHTML='JOGAR OUTRA VEZ <span>↻</span>';overlay.hidden=false;}
     hud();
   }
 
   function direcao(d:DirecaoMaze):void{audio.acordar();const arrancou=jogo.estado==='pronto';jogo.pedir(d);if(arrancou)acumulado=jogo.intervalo();overlay.hidden=true;vibrar(4);}
-  document.querySelectorAll<HTMLButtonElement>('[data-maze]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();direcao(b.dataset.maze as DirecaoMaze);}));
   let toque:{x:number;y:number}|null=null;
   const lerGesto=(e:PointerEvent,final=false):void=>{
     if(!toque)return;const dx=e.clientX-toque.x,dy=e.clientY-toque.y;
@@ -154,7 +158,7 @@ export function montarMaze(aoMenu:()=>void):{activar():void;desactivar():void}{
   iniciar.addEventListener('click',()=>{audio.acordar();if(jogo.estado==='fim')jogo.reiniciar();jogo.iniciar();overlay.hidden=true;acumulado=jogo.intervalo();anunciar(`CIRCUITO ${jogo.nivel}`);hud();});
   el('maze-pausa').addEventListener('click',()=>{jogo.pausar();anunciar(jogo.estado==='pausa'?'EM PAUSA':`CIRCUITO ${jogo.nivel}`);});el('maze-menu').addEventListener('click',()=>{if(jogo.estado==='jogar')jogo.pausar();aoMenu();});
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&activo&&jogo.estado==='jogar')jogo.pausar();});
-  function quadro(agora:number):void{const dt=Math.min(50,agora-ultimo);ultimo=agora;tempo=agora;if(activo){if(jogo.estado==='jogar'){acumulado+=dt;let guarda=4;while(acumulado>=jogo.intervalo()&&guarda-->0){acumulado-=jogo.intervalo();tratar();}}actualizarParticulas(dt);if(mensagemAte&&agora>mensagemAte){mensagem.textContent=jogo.estado==='pausa'?'EM PAUSA':`CIRCUITO ${jogo.nivel}`;mensagem.classList.remove('impacto');mensagemAte=0;}desenhar(Math.min(1,acumulado/jogo.intervalo()));}requestAnimationFrame(quadro);}
+  function quadro(agora:number):void{const dt=Math.min(50,agora-ultimo);ultimo=agora;tempo=agora;if(activo){if(jogo.estado==='jogar'){acumulado+=dt;let guarda=4;while(acumulado>=jogo.intervalo()&&guarda-->0){acumulado-=jogo.intervalo();tratar();}raiz.classList.toggle('alerta',emPerigo());}else raiz.classList.remove('alerta');actualizarParticulas(dt);if(mensagemAte&&agora>mensagemAte){mensagem.textContent=jogo.estado==='pausa'?'EM PAUSA':`CIRCUITO ${jogo.nivel}`;mensagem.classList.remove('impacto');mensagemAte=0;}desenhar(Math.min(1,acumulado/jogo.intervalo()));}requestAnimationFrame(quadro);}
   requestAnimationFrame(quadro);hud();desenhar(1);
   return{activar(){activo=true;raiz.hidden=false;ultimo=performance.now();},desactivar(){activo=false;raiz.hidden=true;if(jogo.estado==='jogar')jogo.pausar();}};
 }

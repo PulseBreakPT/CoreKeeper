@@ -6,7 +6,7 @@ const CHAVE_RECORDE = 'nexus:tetris:recorde:v1';
 function el<T extends HTMLElement>(id: string): T { const e = document.getElementById(id); if (!e) throw new Error(`#${id}`); return e as T; }
 function vibrar(p: number | number[]): void { if ('vibrate' in navigator) navigator.vibrate(p); }
 
-export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(): void } {
+export function montarTetris(aoMenu: () => void, aoResultado: (xp: number, moedas: number) => void): { activar(): void; desactivar(): void } {
   const raiz = el<HTMLElement>('tetris-jogo');
   const canvas = el<HTMLCanvasElement>('tetris-canvas');
   const ctx = canvas.getContext('2d')!;
@@ -189,6 +189,7 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
     if (nome) { estado.textContent = nome; estado.classList.add('impacto'); mensagemAte = performance.now() + 1050; vibrar(nome === 'TETRIS' ? [18,25,18,25,45] : 14); }
     if (nivelSubiu) vibrar([12,20,12]);
     if (terminou) {
+      aoResultado(Math.round(jogo.pontos / 30) + jogo.linhas * 2, Math.round(jogo.pontos / 200) + 1);
       overlay.querySelector('small')!.textContent = 'PARTIDA TERMINADA'; overlay.querySelector('h1')!.innerHTML = `${jogo.pontos.toLocaleString()}<br><em>pontos.</em>`;
       overlay.querySelector('p')!.textContent = `${jogo.linhas} linhas · nível ${jogo.nivel}`; iniciar.innerHTML = 'JOGAR OUTRA VEZ <span>↻</span>'; overlay.hidden = false;
     }

@@ -18,6 +18,10 @@ export interface Estatisticas {
   xp: number;
   compras: string[];
   historico: { modo: Modo; pontos: number; comprimento: number; data: number }[];
+  /** XP acumulado em cada jogo do arcade — é isto que dá o domínio de cada um. */
+  xpJogos: Record<string, number>;
+  /** Partidas fechadas em cada jogo, para a carreira global. */
+  sessoes: Record<string, number>;
 }
 
 export interface Missao {
@@ -50,7 +54,28 @@ const VAZIO: Estatisticas = {
   xp: 0,
   compras: [],
   historico: [],
+  xpJogos: {},
+  sessoes: {},
 };
+
+/**
+ * Arcade Rank: uma única carreira que atravessa os cinco jogos. Jogar qualquer
+ * um deles dá XP, e é o XP total que decide a patente mostrada no launcher.
+ */
+export interface Patente { id: string; nome: string; xp: number }
+
+export const PATENTES: Patente[] = [
+  { id: 'rookie', nome: 'ROOKIE', xp: 0 },
+  { id: 'bronze', nome: 'BRONZE', xp: 150 },
+  { id: 'prata', nome: 'SILVER', xp: 450 },
+  { id: 'ouro', nome: 'GOLD', xp: 1000 },
+  { id: 'elite', nome: 'ELITE', xp: 2200 },
+  { id: 'ascendant', nome: 'ASCENDANT', xp: 4500 },
+  { id: 'nexus', nome: 'NEXUS', xp: 9000 },
+];
+
+/** XP a partir do qual um jogo conta como dominado a 100%. */
+const XP_DOMINIO = 1200;
 
 export const CONQUISTAS: Conquista[] = [
   { id: 'despertar', nome: 'Despertar', descricao: 'Termina a primeira partida.', icone: '01', feita: (d) => d.partidas >= 1 },
@@ -71,9 +96,13 @@ export const CONQUISTAS: Conquista[] = [
 function ler(): Estatisticas {
   try {
     const valor = JSON.parse(localStorage.getItem(CHAVE) ?? '{}') as Partial<Estatisticas>;
-    return { ...VAZIO, ...valor, modos: valor.modos ?? {}, conquistas: valor.conquistas ?? [], compras: valor.compras ?? [], historico: valor.historico ?? [] };
+    return {
+      ...VAZIO, ...valor,
+      modos: valor.modos ?? {}, conquistas: valor.conquistas ?? [], compras: valor.compras ?? [],
+      historico: valor.historico ?? [], xpJogos: valor.xpJogos ?? {}, sessoes: valor.sessoes ?? {},
+    };
   } catch {
-    return { ...VAZIO, modos: {}, conquistas: [] };
+    return { ...VAZIO, modos: {}, conquistas: [], xpJogos: {}, sessoes: {} };
   }
 }
 
@@ -86,6 +115,40 @@ export class Carreira {
 
   nivel(): number {
     return 1 + Math.floor(Math.sqrt(this.dados.xp / 40));
+  }
+
+  /** A patente actual e quanto falta para a seguinte, em percentagem. */
+  patente(): { nome: string; seguinte: string | null; progresso: number; faltam: number } {
+    const xp = this.dados.xp;
+    let indice = 0;
+    while (indice + 1 < PATENTES.length && xp >= PATENTES[indice + 1].xp) indice++;
+    const actual = PATENTES[indice], seguinte = PATENTES[indice + 1] ?? null;
+    if (!seguinte) return { nome: actual.nome, seguinte: null, progresso: 1, faltam: 0 };
+    const intervalo = seguinte.xp - actual.xp;
+    return {
+      nome: actual.nome,
+      seguinte: seguinte.nome,
+      progresso: Math.min(1, Math.max(0, (xp - actual.xp) / intervalo)),
+      faltam: Math.max(0, seguinte.xp - xp),
+    };
+  }
+
+  /** Domínio de um jogo: 0 a 1, do XP que lá ganhaste. */
+  dominio(jogo: string): number {
+    return Math.min(1, (this.dados.xpJogos[jogo] ?? 0) / XP_DOMINIO);
+  }
+
+  /**
+   * Fecho de partida de qualquer jogo do arcade que não seja a serpente: a
+   * carreira é uma só, por isso o XP e as moedas entram no mesmo sítio.
+   */
+  registarSessao(jogo: string, xp: number, moedas: number): void {
+    const d = this.dados;
+    d.xp += Math.max(0, Math.round(xp));
+    d.moedas += Math.max(0, Math.round(moedas));
+    d.xpJogos[jogo] = (d.xpJogos[jogo] ?? 0) + Math.max(0, Math.round(xp));
+    d.sessoes[jogo] = (d.sessoes[jogo] ?? 0) + 1;
+    gravar(d);
   }
 
   registar(jogo: Jogo, duracaoMs: number, missaoCumprida: boolean): Conquista[] {
@@ -102,7 +165,10 @@ export class Carreira {
     d.modos[jogo.modo] = (d.modos[jogo.modo] ?? 0) + 1;
     const ganhoMoedas = Math.max(1, Math.floor(jogo.pontos / 2) + jogo.especiais * 2 + (missaoCumprida ? 5 : 0));
     d.moedas += ganhoMoedas;
-    d.xp += jogo.pontos + jogo.comidas * 2 + (missaoCumprida ? 15 : 0);
+    const ganhoXp = jogo.pontos + jogo.comidas * 2 + (missaoCumprida ? 15 : 0);
+    d.xp += ganhoXp;
+    d.xpJogos.serpente = (d.xpJogos.serpente ?? 0) + ganhoXp;
+    d.sessoes.serpente = (d.sessoes.serpente ?? 0) + 1;
     d.historico.unshift({ modo: jogo.modo, pontos: jogo.pontos, comprimento: jogo.corpo.length, data: Date.now() });
     d.historico = d.historico.slice(0, 20);
     const novas = CONQUISTAS.filter((c) => !d.conquistas.includes(c.id) && c.feita(d));

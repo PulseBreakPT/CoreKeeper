@@ -96,16 +96,22 @@ class CampoMinado {
   tempo(): number { return this.estado === 'pronto' ? 0 : this.estado === 'jogar' ? Math.floor((performance.now() - this.inicio) / 1000) : this.tempoFinal; }
 }
 
-export function montarMinas(aoMenu: () => void): { activar(): void; desactivar(): void } {
+export function montarMinas(aoMenu: () => void, aoResultado: (xp: number, moedas: number) => void): { activar(): void; desactivar(): void } {
   const raiz = el<HTMLElement>('jogo-minas'), canvas = el<HTMLCanvasElement>('canvas-minas'), ctx = canvas.getContext('2d')!;
   const overlay = el<HTMLElement>('overlay-minas'), iniciar = el<HTMLButtonElement>('iniciar-minas'), mensagem = el<HTMLElement>('mensagem-minas');
-  const bandeira = el<HTMLButtonElement>('modo-bandeira'), jogo = new CampoMinado();
-  let activo = false, modoBandeira = false, impacto = 0, ultimo = performance.now();
+  const jogo = new CampoMinado();
+  let activo = false, impacto = 0, ultimo = performance.now();
+
+  /** Tempos ao minuto: um campo bom lê-se melhor como 01:24 do que como 84s. */
+  function relogio(segundos: number): string {
+    return `${String(Math.floor(segundos / 60)).padStart(2, '0')}:${String(segundos % 60).padStart(2, '0')}`;
+  }
 
   function hud(): void {
-    el('tempo-minas').textContent = `${jogo.tempo()}s`; el('minas-restantes').textContent = String(Math.max(0, MINAS - jogo.bandeiras()));
-    el('abertas-minas').textContent = `${jogo.abertas}/${COLUNAS * LINHAS - MINAS}`; el('recorde-minas').textContent = jogo.recorde ? `${jogo.recorde}s` : '—';
-    bandeira.classList.toggle('activo', modoBandeira); bandeira.setAttribute('aria-pressed', String(modoBandeira));
+    el('tempo-minas').textContent = relogio(jogo.tempo());
+    el('minas-restantes').textContent = String(Math.max(0, MINAS - jogo.bandeiras()));
+    el('abertas-minas').textContent = `${Math.round(jogo.abertas / (COLUNAS * LINHAS - MINAS) * 100)}%`;
+    el('recorde-minas').textContent = jogo.recorde ? relogio(jogo.recorde) : '—';
   }
 
   function desenhar(): void {
@@ -140,11 +146,12 @@ export function montarMinas(aoMenu: () => void): { activar(): void; desactivar()
 
   function terminar(): void {
     const venceu = jogo.estado === 'venceu'; overlay.querySelector('small')!.textContent = venceu ? 'CAMPO LIMPO' : 'NÚCLEO DETONADO';
-    overlay.querySelector('h1')!.innerHTML = venceu ? `${jogo.tempo()}s.<br><em>Perfeito.</em>` : 'Detonado.<br><em>Tenta outra vez.</em>';
+    aoResultado(venceu ? 80 + Math.max(0, 150 - jogo.tempo()) : 10 + jogo.abertas, venceu ? 14 : 2);
+    overlay.querySelector('h1')!.innerHTML = venceu ? `${relogio(jogo.tempo())}<br><em>Perfeito.</em>` : 'Detonado.<br><em>Tenta outra vez.</em>';
     overlay.querySelector('p')!.textContent = venceu ? `${MINAS} minas neutralizadas` : `${jogo.abertas} zonas seguras abertas`;
     iniciar.innerHTML = 'NOVA PARTIDA <span>↻</span>'; overlay.hidden = false;
   }
-  function agir(x: number, y: number, marcar = modoBandeira): void {
+  function agir(x: number, y: number, marcar = false): void {
     if (marcar) { if (jogo.bandeira(x, y)) { navigator.vibrate?.(8); mensagem.textContent = jogo.grelha[y][x].bandeira ? 'BANDEIRA COLOCADA' : 'BANDEIRA REMOVIDA'; } }
     else { const r = jogo.abrir(x, y); if (r !== 'nada') { impacto = 0; navigator.vibrate?.(r === 'explodiu' ? [35,25,65] : r === 'venceu' ? [12,20,12,20,40] : 5); mensagem.textContent = r === 'abriu' ? 'ZONA SEGURA' : r === 'venceu' ? 'CAMPO LIMPO' : 'NÚCLEO DETONADO'; if (r === 'venceu' || r === 'explodiu') terminar(); } }
     hud(); desenhar();
@@ -164,8 +171,7 @@ export function montarMinas(aoMenu: () => void): { activar(): void; desactivar()
   canvas.addEventListener('pointerdown', (e) => { const p = coordenada(e); toque = { ...p, marcou: false, longo: window.setTimeout(() => { if (!toque) return; toque.marcou = true; agir(toque.x, toque.y, true); }, 430) }; canvas.setPointerCapture(e.pointerId); });
   canvas.addEventListener('pointerup', (e) => { if (!toque) return; clearTimeout(toque.longo); const p = coordenada(e), marcou = toque.marcou; toque = null; if (!marcou) agir(p.x, p.y); });
   canvas.addEventListener('pointercancel', () => { if (toque) clearTimeout(toque.longo); toque = null; });
-  bandeira.addEventListener('click', () => { modoBandeira = !modoBandeira; mensagem.textContent = modoBandeira ? 'MODO BANDEIRA' : 'MODO EXPLORAR'; hud(); navigator.vibrate?.(7); });
-  el('novo-minas').addEventListener('click', () => { jogo.reiniciar(); modoBandeira = false; overlay.hidden = true; mensagem.textContent = 'NOVO CAMPO'; hud(); });
+  el('novo-minas').addEventListener('click', () => { jogo.reiniciar(); overlay.hidden = true; mensagem.textContent = 'NOVO CAMPO'; hud(); desenhar(); });
   el('menu-minas').addEventListener('click', aoMenu);
   iniciar.addEventListener('click', () => { if (jogo.estado === 'venceu' || jogo.estado === 'perdeu') jogo.reiniciar(); overlay.hidden = true; mensagem.textContent = 'PRIMEIRO TOQUE SEGURO'; hud(); });
   function quadro(agora: number): void { const dt = Math.min(50, agora - ultimo); ultimo = agora; if (activo) { impacto = Math.min(1, impacto + dt / 1000); hud(); desenhar(); } requestAnimationFrame(quadro); }

@@ -104,7 +104,7 @@ class Jogo2048 {
   }
 }
 
-export function montar2048(aoMenu: () => void): { activar(): void; desactivar(): void } {
+export function montar2048(aoMenu: () => void, aoResultado: (xp: number, moedas: number) => void): { activar(): void; desactivar(): void } {
   const raiz = el<HTMLElement>('jogo-2048'), canvas = el<HTMLCanvasElement>('canvas-2048'), ctx = canvas.getContext('2d')!;
   const overlay = el<HTMLElement>('overlay-2048'), iniciar = el<HTMLButtonElement>('iniciar-2048'), mensagem = el<HTMLElement>('mensagem-2048');
   const jogo = new Jogo2048(); let activo = false, tempo = 0, pulso = 0;
@@ -114,7 +114,6 @@ export function montar2048(aoMenu: () => void): { activar(): void; desactivar():
 
   function hud(): void {
     el('pontos-2048').textContent = jogo.pontos.toLocaleString(); el('recorde-2048').textContent = jogo.recorde.toLocaleString();
-    el('maior-2048').textContent = String(jogo.maior()); el('movimentos-2048').textContent = String(jogo.movimentos);
   }
 
   function desenhar(): void {
@@ -171,6 +170,7 @@ export function montar2048(aoMenu: () => void): { activar(): void; desactivar():
     }
     mensagem.textContent = r.pontos ? `FUSÃO +${r.pontos}` : `${jogo.movimentos} MOVIMENTOS`; navigator.vibrate?.(r.pontos ? [7, 12, 18] : 5); hud();
     if (jogo.estado === 'ganhou' || jogo.estado === 'fim') {
+      aoResultado(Math.round(jogo.pontos / 45) + Math.log2(Math.max(2, jogo.maior())) * 4, Math.round(jogo.pontos / 300) + 1);
       overlay.querySelector('small')!.textContent = jogo.estado === 'ganhou' ? 'NÚCLEO 2048' : 'SEM MOVIMENTOS';
       overlay.querySelector('h1')!.innerHTML = jogo.estado === 'ganhou' ? '2048.<br><em>Conquistado.</em>' : `${jogo.pontos.toLocaleString()}<br><em>pontos.</em>`;
       overlay.querySelector('p')!.textContent = `${jogo.movimentos} movimentos · máximo ${jogo.maior()}`;
@@ -178,7 +178,6 @@ export function montar2048(aoMenu: () => void): { activar(): void; desactivar():
     }
   }
 
-  document.querySelectorAll<HTMLButtonElement>('[data-2048]').forEach((b) => b.addEventListener('pointerdown', (e) => { e.preventDefault(); mover(b.dataset['2048'] as Direcao2048); }));
   let toque: { x: number; y: number } | null = null;
   canvas.addEventListener('pointerdown', (e) => { toque = { x: e.clientX, y: e.clientY }; canvas.setPointerCapture(e.pointerId); });
   canvas.addEventListener('pointerup', (e) => { if (!toque) return; const dx = e.clientX - toque.x, dy = e.clientY - toque.y; toque = null; if (Math.hypot(dx, dy) < 18) return; mover(Math.abs(dx) > Math.abs(dy) ? dx > 0 ? 'direita' : 'esquerda' : dy > 0 ? 'baixo' : 'cima'); });

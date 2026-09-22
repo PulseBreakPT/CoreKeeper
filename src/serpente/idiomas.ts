@@ -44,6 +44,14 @@ const pt: Textos = {
   statPartidas: 'PARTIDAS', statPontos: 'PONTOS', statLuzes: 'LUZES', statEspeciais: 'ESPECIAIS', statCombo: 'MELHOR COMBO', statCobra: 'MAIOR COBRA', statMissoes: 'MISSÕES', statMinutos: 'MINUTOS',
   missaoComidas: 'Recolhe {n} luzes', missaoCombo: 'Alcança combo ×{n}', missaoPontos: 'Marca {n} pontos', missaoEspeciais: 'Apanha {n} luzes especiais', missaoComprimento: 'Chega aos {n} segmentos',
   diario0: 'Portais instáveis', diario1: 'Arena em eclipse', diario2: 'Circuito de blocos', diario3: 'Ritmo ascendente',
+  arcade: 'Arcade', todosJogos: 'TODOS OS JOGOS', continuarSeccao: 'CONTINUAR', dominio: 'Domínio', desafios: 'Desafios', estatisticasAba: 'Estatísticas',
+  carreiraTitulo: 'A tua carreira', carreiraDesc: 'Uma só progressão para os cinco jogos.', perfilTitulo: 'Perfil', perfilDesc: 'Cores, idioma e acessibilidade.',
+  oTeuNome: 'O TEU NOME', jogador: 'Jogador', bomDia: 'Bom dia', boaTarde: 'Boa tarde', boaNoite: 'Boa noite',
+  melhorTempo: 'Melhor tempo', semRecorde: 'Ainda sem recorde', proximaPatente: 'Faltam {n} XP para {patente}', patenteMaxima: 'Patente máxima do Nexus',
+  minasNome: 'Campo Minado', jogo2048Nome: '2048', serpenteNome: 'Serpente',
+  capaSerpente: 'Cresce sem te tocares', capaMaze: 'Circuito vivo, quatro sentinelas', capaMinas: 'Lê a grelha, marca as minas', capa2048: 'Funde até ao núcleo', capaTetris: 'Encaixa, limpa, domina',
+  semPartidas: 'Ainda não jogaste. O primeiro toque conta.', partidasJogadas: '{n} partidas', dominioTotal: 'Dominado',
+  desafioD1: 'Joga 3 partidas hoje', desafioD2: 'Marca 50 pontos hoje', desafioD3: 'Cumpre a missão da partida',
   conquista_despertar_nome: 'Despertar', conquista_despertar_desc: 'Termina a primeira partida.',
   conquista_dez_nome: 'Primeira dezena', conquista_dez_desc: 'Marca 10 pontos numa carreira.',
   conquista_centuria_nome: 'Centúria', conquista_centuria_desc: 'Recolhe 100 luzes.',
@@ -62,6 +70,14 @@ const pt: Textos = {
 export type ChaveTexto = string;
 
 const en: Textos = {
+  objetivosHoje: "TODAY'S GOALS",
+  arcade: 'Arcade', todosJogos: 'ALL GAMES', continuarSeccao: 'CONTINUE', dominio: 'Mastery', desafios: 'Challenges', estatisticasAba: 'Stats',
+  carreiraTitulo: 'Your career', carreiraDesc: 'One progression across all five games.', perfilTitulo: 'Profile', perfilDesc: 'Colours, language and accessibility.',
+  oTeuNome: 'YOUR NAME', jogador: 'Player', bomDia: 'Good morning', boaTarde: 'Good afternoon', boaNoite: 'Good evening',
+  melhorTempo: 'Best time', semRecorde: 'No record yet', proximaPatente: '{n} XP to {patente}', patenteMaxima: 'Highest Nexus rank',
+  minasNome: 'Minesweeper', capaSerpente: 'Grow without touching yourself', capaMaze: 'A living circuit, four sentinels', capaMinas: 'Read the grid, flag the mines', capa2048: 'Merge up to the core', capaTetris: 'Fit, clear, dominate',
+  semPartidas: 'Nothing played yet. The first tap counts.', partidasJogadas: '{n} games', dominioTotal: 'Mastered',
+  desafioD1: 'Play 3 games today', desafioD2: 'Score 50 points today', desafioD3: 'Complete the match mission',
   meta: 'Serpente — a mobile arcade game.',
   configurar: 'SET UP YOUR RUN', titulo: 'Your snake.<br><em>Your rules.</em>',
   jogar: 'Play', visual: 'Visual', carreira: 'Career', corInterface: 'INTERFACE COLOR', aparencia: 'APPEARANCE', modoEscuro: 'Dark', modoClaro: 'Light', corCobra: 'SNAKE COLOR', corNucleo: 'MAZE CHARACTER COLOR', cor: 'SNAKE COLOR', pele: 'ANIMATED SKIN', idioma: 'LANGUAGE', escolherModo: 'CHOOSE A MODE',
@@ -79,6 +95,14 @@ const en: Textos = {
 };
 
 const es: Textos = {
+  objetivosHoje: 'OBJETIVOS DE HOY',
+  arcade: 'Arcade', todosJogos: 'TODOS LOS JUEGOS', continuarSeccao: 'CONTINUAR', dominio: 'Dominio', desafios: 'Retos', estatisticasAba: 'Estadísticas',
+  carreiraTitulo: 'Tu carrera', carreiraDesc: 'Una sola progresión para los cinco juegos.', perfilTitulo: 'Perfil', perfilDesc: 'Colores, idioma y accesibilidad.',
+  oTeuNome: 'TU NOMBRE', jogador: 'Jugador', bomDia: 'Buenos días', boaTarde: 'Buenas tardes', boaNoite: 'Buenas noches',
+  melhorTempo: 'Mejor tiempo', semRecorde: 'Aún sin récord', proximaPatente: 'Faltan {n} XP para {patente}', patenteMaxima: 'Rango máximo del Nexus',
+  minasNome: 'Buscaminas', capaSerpente: 'Crece sin tocarte', capaMaze: 'Circuito vivo, cuatro centinelas', capaMinas: 'Lee la rejilla, marca las minas', capa2048: 'Fusiona hasta el núcleo', capaTetris: 'Encaja, limpia, domina',
+  semPartidas: 'Aún no has jugado. El primer toque cuenta.', partidasJogadas: '{n} partidas', dominioTotal: 'Dominado',
+  desafioD1: 'Juega 3 partidas hoy', desafioD2: 'Marca 50 puntos hoy', desafioD3: 'Cumple la misión de la partida',
   meta: 'Serpente — un juego arcade para móvil.', configurar: 'CONFIGURA LA PARTIDA', titulo: 'Tu serpiente.<br><em>Tus reglas.</em>', jogar: 'Jugar', visual: 'Visual', carreira: 'Carrera', corInterface: 'COLOR DE LA INTERFAZ', aparencia: 'APARIENCIA', modoEscuro: 'Oscuro', modoClaro: 'Claro', corCobra: 'COLOR DE LA SERPIENTE', corNucleo: 'COLOR DEL PERSONAJE DEL LABERINTO', cor: 'COLOR DE LA SERPIENTE', pele: 'ASPECTO ANIMADO', idioma: 'IDIOMA / LANGUAGE', escolherModo: 'ELIGE EL MODO',
   floresta: 'Bosque', oceano: 'Océano', violeta: 'Violeta', brasa: 'Brasa', lima: 'Lima', ciano: 'Cian', rosa: 'Rosa', dourada: 'Dorada', aurora: 'Aurora', pulso: 'Pulso', prisma: 'Prisma',
   classico: 'Clásico', classicoDesc: 'Sin límite. Puro instinto.', relogio: 'Contrarreloj', relogioDesc: '10 segundos por luz.', portais: 'Portales', portaisDesc: 'Cruza los bordes.', zen: 'Zen', zenDesc: 'Sin derrota. Solo fluye.', escuro: 'Eclipse', escuroDesc: 'Visión limitada a la cabeza.', obstaculos: 'Laberinto', obstaculosDesc: 'Bloques en cada arena.', umaVida: 'Una vida', umaVidaDesc: 'Más rápido. Puntos ×2.', desafio: 'DESAFÍO DIARIO',
@@ -92,6 +116,14 @@ const es: Textos = {
 };
 
 const br: Textos = {
+  objetivosHoje: 'OBJETIVOS DE HOJE',
+  arcade: 'Arcade', todosJogos: 'TODOS OS JOGOS', continuarSeccao: 'CONTINUAR', dominio: 'Domínio', desafios: 'Desafios', estatisticasAba: 'Estatísticas',
+  carreiraTitulo: 'Sua carreira', carreiraDesc: 'Uma só progressão para os cinco jogos.', perfilTitulo: 'Perfil', perfilDesc: 'Cores, idioma e acessibilidade.',
+  oTeuNome: 'SEU NOME', jogador: 'Jogador', bomDia: 'Bom dia', boaTarde: 'Boa tarde', boaNoite: 'Boa noite',
+  melhorTempo: 'Melhor tempo', semRecorde: 'Ainda sem recorde', proximaPatente: 'Faltam {n} XP para {patente}', patenteMaxima: 'Patente máxima do Nexus',
+  minasNome: 'Campo Minado', capaSerpente: 'Cresça sem se tocar', capaMaze: 'Circuito vivo, quatro sentinelas', capaMinas: 'Leia a grade, marque as minas', capa2048: 'Funda até o núcleo', capaTetris: 'Encaixe, limpe, domine',
+  semPartidas: 'Você ainda não jogou. O primeiro toque conta.', partidasJogadas: '{n} partidas', dominioTotal: 'Dominado',
+  desafioD1: 'Jogue 3 partidas hoje', desafioD2: 'Marque 50 pontos hoje', desafioD3: 'Cumpra a missão da partida',
   ...pt,
   meta: 'Serpente — um jogo arcade para celular.', configurar: 'CONFIGURE A PARTIDA', titulo: 'Sua cobra.<br><em>Suas regras.</em>',
   escolherModo: 'ESCOLHA O MODO', portaisDesc: 'Atravesse as bordas.', percurso: 'Sua jornada.', percursoDesc: 'Recordes, missões e conquistas ficam salvos neste dispositivo.',
