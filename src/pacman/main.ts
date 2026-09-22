@@ -30,6 +30,7 @@ export function montarMaze(aoMenu:()=>void):{activar():void;desactivar():void}{
 
   function pos(e:Entidade,p:number):{x:number;y:number}{ return {x:(e.anterior.x+(e.x-e.anterior.x)*p+.5)*cel,y:(e.anterior.y+(e.y-e.anterior.y)*p+.5)*cel}; }
   function tema():number{return Number(getComputedStyle(document.documentElement).getPropertyValue('--tema'))||188;}
+  function matizJogador():number{return Number(getComputedStyle(document.documentElement).getPropertyValue('--maze-personagem'))||42;}
   function explosao(x:number,y:number,matiz:number,n=14):void{for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=35+Math.random()*130;particulas.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,vida:350+Math.random()*350,matiz,tamanho:1.5+Math.random()*4});}}
 
   function sentinela(f:Fantasma,p:number):void{
@@ -44,12 +45,12 @@ export function montarMaze(aoMenu:()=>void):{activar():void;desactivar():void}{
   }
 
   function desenhar(p:number):void{
-    const h=tema();ctx.clearRect(0,0,canvas.width,canvas.height);
-    const bg=ctx.createRadialGradient(canvas.width/2,canvas.height*.48,20,canvas.width/2,canvas.height*.48,canvas.height*.7);bg.addColorStop(0,`hsl(${h} 28% 8%)`);bg.addColorStop(1,`hsl(${h} 30% 2.5%)`);ctx.fillStyle=bg;ctx.fillRect(0,0,canvas.width,canvas.height);
+    const h=tema(),hp=matizJogador(),claro=document.documentElement.dataset.aparencia==='claro';ctx.clearRect(0,0,canvas.width,canvas.height);
+    const bg=ctx.createRadialGradient(canvas.width/2,canvas.height*.48,20,canvas.width/2,canvas.height*.48,canvas.height*.7);bg.addColorStop(0,`hsl(${h} 28% ${claro?98:8}%)`);bg.addColorStop(1,`hsl(${h} 30% ${claro?88:2.5}%)`);ctx.fillStyle=bg;ctx.fillRect(0,0,canvas.width,canvas.height);
     for(let y=0;y<LINHAS_MAZE;y++)for(let x=0;x<COLUNAS_MAZE;x++){
       if(MAPA_BASE[y][x]==='#'){
-        const px=x*cel,py=y*cel;ctx.fillStyle=`hsl(${h} 35% 8%)`;ctx.fillRect(px,py,cel,cel);
-        ctx.strokeStyle=`hsla(${h},82%,62%,.24)`;ctx.lineWidth=1.2;ctx.strokeRect(px+2.5,py+2.5,cel-5,cel-5);
+        const px=x*cel,py=y*cel;ctx.fillStyle=`hsl(${h} 35% ${claro?84:8}%)`;ctx.fillRect(px,py,cel,cel);
+        ctx.strokeStyle=`hsla(${h},82%,${claro?34:62}%,${claro ? .34 : .24})`;ctx.lineWidth=1.2;ctx.strokeRect(px+2.5,py+2.5,cel-5,cel-5);
       }else{
         const tipo=jogo.mapa[y][x];
         if(tipo==='.') {ctx.fillStyle=`hsl(${h} 80% 76%)`;ctx.beginPath();ctx.arc((x+.5)*cel,(y+.5)*cel,2.2,0,Math.PI*2);ctx.fill();}
@@ -59,7 +60,7 @@ export function montarMaze(aoMenu:()=>void):{activar():void;desactivar():void}{
     if(jogo.fruta){const x=(jogo.fruta.x+.5)*cel,y=(jogo.fruta.y+.5)*cel;ctx.save();ctx.translate(x,y);ctx.rotate(tempo*.002);ctx.fillStyle=`hsl(${(h+145)%360} 82% 62%)`;ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=14;ctx.beginPath();for(let i=0;i<8;i++){const a=i*Math.PI/4,r=i%2?4:9;ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);}ctx.closePath();ctx.fill();ctx.restore();}
     for(const f of jogo.fantasmas)sentinela(f,p);
     const j=pos(jogo.jogador,p), energia=jogo.energia>0;
-    ctx.save();ctx.translate(j.x,j.y);ctx.shadowColor=`hsl(${h} 100% 68%)`;ctx.shadowBlur=18;const g=ctx.createRadialGradient(-4,-5,1,0,0,cel*.4);g.addColorStop(0,'white');g.addColorStop(.3,`hsl(${h} 95% 78%)`);g.addColorStop(1,`hsl(${h} 80% 43%)`);ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,cel*.31,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=`hsla(${(h+80)%360},90%,80%,${energia ? .95 : .42})`;ctx.lineWidth=energia?3:1.5;ctx.beginPath();ctx.arc(0,0,cel*(.39+Math.sin(tempo*.012)*.025),tempo*.004,tempo*.004+Math.PI*1.35);ctx.stroke();ctx.restore();
+    ctx.save();ctx.translate(j.x,j.y);ctx.shadowColor=`hsl(${hp} 100% 58%)`;ctx.shadowBlur=18;const g=ctx.createRadialGradient(-4,-5,1,0,0,cel*.4);g.addColorStop(0,'white');g.addColorStop(.3,`hsl(${hp} 95% 78%)`);g.addColorStop(1,`hsl(${hp} 80% 43%)`);ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,cel*.31,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=`hsla(${(hp+80)%360},90%,${claro?35:80}%,${energia ? .95 : .42})`;ctx.lineWidth=energia?3:1.5;ctx.beginPath();ctx.arc(0,0,cel*(.39+Math.sin(tempo*.012)*.025),tempo*.004,tempo*.004+Math.PI*1.35);ctx.stroke();ctx.restore();
     ctx.save();ctx.globalCompositeOperation='lighter';for(const q of particulas){ctx.globalAlpha=Math.max(0,q.vida/700);ctx.fillStyle=`hsl(${q.matiz} 95% 70%)`;ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=7;ctx.beginPath();ctx.arc(q.x,q.y,q.tamanho,0,Math.PI*2);ctx.fill();}ctx.restore();
   }
 
@@ -68,7 +69,7 @@ export function montarMaze(aoMenu:()=>void):{activar():void;desactivar():void}{
   function anunciar(texto:string,dur=900):void{mensagem.textContent=texto;mensagem.classList.remove('impacto');void mensagem.offsetWidth;mensagem.classList.add('impacto');mensagemAte=performance.now()+dur;}
   function tratar():void{
     const ev=jogo.passo(), p=pos(jogo.jogador,1);
-    if(ev.comeu){explosao(p.x,p.y,tema(),ev.energia?24:4);audio.comer();if(ev.energia){audio.pulso();anunciar('PULSO ATIVO',1100);vibrar([12,18,12]);}}
+    if(ev.comeu){explosao(p.x,p.y,matizJogador(),ev.energia?24:4);audio.comer();if(ev.energia){audio.pulso();anunciar('PULSO ATIVO',1100);vibrar([12,18,12]);}}
     if(ev.fantasma){explosao(p.x,p.y,MATIZES[(jogo.comboFantasmas-1)%4],35);audio.capturar(jogo.comboFantasmas);anunciar(`SENTINELA +${ev.fantasma}`,1000);vibrar([18,20,28]);}
     if(ev.fruta){explosao(p.x,p.y,(tema()+145)%360,30);anunciar('NÚCLEO RECOLHIDO');vibrar([10,15,25]);}
     if(ev.morreu){audio.morrer();anunciar(ev.terminou?'FIM DO CIRCUITO':'NÚCLEO INSTÁVEL',1300);arena.classList.remove('maze-impacto');void arena.offsetWidth;arena.classList.add('maze-impacto');vibrar([45,25,70]);}

@@ -9,6 +9,7 @@
 :root {
   --tema: 83;
   --cobra: 83;
+  --maze-personagem: 42;
   --acento: hsl(var(--tema), 78%, 68%);
   --acento-forte: hsl(var(--tema), 88%, 78%);
   --fundo: hsl(var(--tema), 30%, 4.5%);
@@ -28,6 +29,21 @@
   font-family: var(--letra);
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
+}
+
+:root[data-aparencia='claro'] {
+  --acento: hsl(var(--tema), 76%, 39%);
+  --acento-forte: hsl(var(--tema), 82%, 29%);
+  --fundo: hsl(var(--tema), 25%, 95%);
+  --painel: hsl(var(--tema), 28%, 99%);
+  --painel-alto: hsl(var(--tema), 32%, 100%);
+  --painel-profundo: hsl(var(--tema), 22%, 91%);
+  --linha: hsl(var(--tema), 16%, 80%);
+  --linha-forte: hsl(var(--tema), 23%, 65%);
+  --tinta: hsl(var(--tema), 28%, 11%);
+  --tinta-fraca: hsl(var(--tema), 12%, 39%);
+  --ambar: hsl(var(--tema), 82%, 30%);
+  color-scheme: light;
 }
 
 * { box-sizing: border-box; }
@@ -120,6 +136,9 @@ button:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; }
 .idiomas .amostra.seleccionada b { color: var(--acento-forte); text-shadow: 0 0 12px var(--brilho); }
 .tema-floresta { --cor: #b9ed68; }.tema-oceano { --cor: #60ddea; }.tema-violeta { --cor: #b98aff; }.tema-brasa { --cor: #ff895c; }
 .cobra-lima { --cor: hsl(83, 78%, 67%); }.cobra-ciano { --cor: hsl(188, 78%, 67%); }.cobra-rosa { --cor: hsl(330, 78%, 67%); }.cobra-dourada { --cor: hsl(42, 85%, 66%); }
+.aparencias { grid-template-columns: repeat(2, 1fr); }
+.aparencia-escura { --cor: linear-gradient(135deg, #182018 50%, #596557 50%); }
+.aparencia-clara { --cor: linear-gradient(135deg, #fff 50%, #dbe2d8 50%); }
 .pele-aurora { --cor: linear-gradient(135deg, hsl(var(--cobra), 85%, 76%), hsl(var(--cobra), 70%, 44%)); }
 .pele-pulso { --cor: radial-gradient(circle, #fff 0 18%, hsl(var(--cobra), 90%, 64%) 25% 58%, hsl(var(--cobra), 70%, 34%) 65%); }
 .pele-prisma { --cor: conic-gradient(#ff7a9e, #ffe277, #68f3cf, #74a8ff, #dd82ff, #ff7a9e); }
@@ -1017,6 +1036,33 @@ html[data-estado-jogo='terminado'] .hud { filter: saturate(.65); }
 /* O multiplicador vive no fundo do Canvas; abaixo da arena fica apenas a missão. */
 .partida-info .combo { display: none !important; }
 
+/* Aparência clara: mantém a mesma hierarquia e adapta todas as superfícies. */
+html[data-aparencia='claro'] body {
+  background: radial-gradient(circle at 50% 18%, hsla(var(--tema), 70%, 55%, .16), transparent 38%), var(--fundo);
+}
+html[data-aparencia='claro'] .menu-principal {
+  background: radial-gradient(circle at 78% 13%, hsla(var(--tema), 76%, 52%, .16), transparent 29%), radial-gradient(circle at 16% 70%, hsla(var(--cobra), 70%, 50%, .09), transparent 34%), var(--fundo);
+}
+html[data-aparencia='claro'] .folha-fundo { background: hsla(var(--tema), 25%, 20%, .3); }
+html[data-aparencia='claro'] .folha-painel {
+  background: radial-gradient(circle at 90% 0%, hsla(var(--tema), 72%, 52%, .13), transparent 36%), linear-gradient(160deg, var(--painel-alto), var(--painel));
+  box-shadow: 0 -25px 70px rgba(25, 35, 20, .2);
+}
+html[data-aparencia='claro'] .inicio {
+  background: radial-gradient(ellipse at 61% 49%, hsla(var(--tema), 75%, 52%, .2), transparent 53%), repeating-linear-gradient(90deg, transparent 0, transparent calc(100% / 21 - 1px), hsla(var(--tema), 45%, 28%, .07) calc(100% / 21 - 1px), hsla(var(--tema), 45%, 28%, .07) calc(100% / 21)), var(--painel-profundo);
+}
+html[data-aparencia='claro'] .fim {
+  background: radial-gradient(circle at 50% 36%, hsla(var(--tema), 72%, 48%, .2), transparent 45%), hsla(var(--tema), 30%, 98%, .95);
+}
+html[data-aparencia='claro'] .fim-numeros,
+html[data-aparencia='claro'] .estatisticas div,
+html[data-aparencia='claro'] .conquistas article { background: hsla(var(--tema), 28%, 100%, .72); }
+html[data-aparencia='claro'] .tetris-overlay,
+html[data-aparencia='claro'] .maze-overlay { background: radial-gradient(circle at 50% 42%, hsla(var(--tema), 65%, 55%, .15), transparent 43%), hsla(var(--tema), 28%, 98%, .88); }
+html[data-aparencia='claro'] .tetris-arena,
+html[data-aparencia='claro'] .maze-arena { box-shadow: 0 0 0 3px hsla(var(--tema), 18%, 55%, .25), 0 18px 45px rgba(20, 30, 15, .18), 0 0 35px hsla(var(--tema), 80%, 55%, .1); }
+html[data-aparencia='claro'] .maze-hud { background: hsla(var(--tema), 30%, 100%, .72); }
+
 /* MOBILE HOME 3.4 — navegação e seletores desenhados para polegares. */
 .menu-conteudo {
   width: min(100%, 480px);
@@ -1286,6 +1332,22 @@ html.reduzir-movimento *, html.reduzir-movimento *::before, html.reduzir-movimen
 .maze-overlay { position: absolute; inset: 0; z-index: 3; padding: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: radial-gradient(circle at 50% 42%, hsla(var(--tema),65%,30%,.2), transparent 40%), hsla(var(--tema),30%,3%,.86); backdrop-filter: blur(5px); }.maze-overlay small { color: var(--acento); font-size: 6px; letter-spacing: 1.5px; }.maze-overlay h1 { margin: 12px 0 8px; font-size: clamp(27px,8vw,42px); line-height: .94; }.maze-overlay h1 em { color: var(--acento); font-style: normal; }.maze-overlay p { margin: 0 0 21px; color: var(--tinta-fraca); font-size: 8px; }.maze-overlay button { width: min(100%,210px); min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; color: var(--fundo); background: var(--acento); border-radius: 14px; font-size: 8px; font-weight: 800; letter-spacing: .8px; }
 .maze-mensagem { flex: 0 0 17px; color: var(--tinta-fraca); font-size: 6px; font-weight: 750; letter-spacing: 1.5px; text-align: center; }.maze-mensagem.impacto { color: var(--acento-forte); animation: tetris-impacto .4s ease-out; }
 .maze-controlos { flex: 0 0 58px; width: min(100%,350px); align-self: center; display: grid; grid-template-columns: repeat(5,1fr); gap: 5px; }.maze-controlos button,.maze-controlos i { min-width: 0; display: grid; place-items: center; color: var(--tinta); background: linear-gradient(180deg,var(--painel-alto),var(--painel)); border: 1px solid var(--linha-forte); border-radius: 14px; font-size: 19px; font-style: normal; touch-action: none; user-select: none; }.maze-controlos i { color: var(--acento); background: hsla(var(--tema),55%,16%,.75); font-size: 15px; }.maze-controlos button:active { transform: translateY(2px); color: var(--fundo); background: var(--acento); }
+
+html[data-aparencia='claro'] .menu-hero,
+html[data-aparencia='claro'] .menu-categorias,
+html[data-aparencia='claro'] .menu-painel,
+html[data-aparencia='claro'] .carreira-resumo,
+html[data-aparencia='claro'] .tetris-hud,
+html[data-aparencia='claro'] .tetris-corpo aside > div,
+html[data-aparencia='claro'] .maze-hud { background-color: hsla(var(--tema), 28%, 100%, .76); }
+html[data-aparencia='claro'] .amostra,
+html[data-aparencia='claro'] .cartoes-modo button,
+html[data-aparencia='claro'] .jogos-hub button { background: linear-gradient(145deg, hsla(var(--tema), 35%, 100%, .92), hsla(var(--tema), 22%, 92%, .82)); }
+html[data-aparencia='claro'] .amostra.seleccionada,
+html[data-aparencia='claro'] .cartoes-modo button.seleccionado,
+html[data-aparencia='claro'] .jogos-hub button.seleccionado { background: linear-gradient(135deg, hsla(var(--tema), 68%, 82%, .62), hsla(var(--tema), 38%, 94%, .92)); }
+html[data-aparencia='claro'] .poderes-ativos span,
+html[data-aparencia='claro'] .maze-controlos i { background: hsla(var(--tema), 55%, 82%, .72); }
 @keyframes maze-impacto { 0%,100%{transform:translate(0)} 20%{transform:translate(-5px,2px);filter:saturate(1.8)} 42%{transform:translate(4px,-2px)} 65%{transform:translate(-2px,1px)} }
 .maze-arena.maze-impacto { animation: maze-impacto .45s ease-out; }
 @media(max-height:700px){.maze-topo{display:none}.maze-hud{flex-basis:40px}.maze-controlos{flex-basis:52px}.maze-arena{width:min(100%,calc((100dvh - 115px)*.905));}}

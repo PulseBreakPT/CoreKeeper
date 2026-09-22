@@ -55,11 +55,11 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
   }
 
   function desenhar(): void {
-    const tamanho = canvas.width / COLUNAS, tema = matizTema();
+    const tamanho = canvas.width / COLUNAS, tema = matizTema(), claro = document.documentElement.dataset.aparencia === 'claro';
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const fundo = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    fundo.addColorStop(0, `hsl(${tema} 24% 7%)`); fundo.addColorStop(1, `hsl(${tema} 28% 3%)`); ctx.fillStyle = fundo; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = `hsl(${tema} 30% 45% / .085)`; ctx.lineWidth = 1;
+    fundo.addColorStop(0, `hsl(${tema} 24% ${claro ? 98 : 7}%)`); fundo.addColorStop(1, `hsl(${tema} 28% ${claro ? 89 : 3}%)`); ctx.fillStyle = fundo; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = `hsl(${tema} 30% ${claro ? 28 : 45}% / ${claro ? .12 : .085})`; ctx.lineWidth = 1;
     for (let x = 1; x < COLUNAS; x++) { ctx.beginPath(); ctx.moveTo(x * tamanho, 0); ctx.lineTo(x * tamanho, canvas.height); ctx.stroke(); }
     for (let y = 1; y < LINHAS - OCULTAS; y++) { ctx.beginPath(); ctx.moveTo(0, y * tamanho); ctx.lineTo(canvas.width, y * tamanho); ctx.stroke(); }
     jogo.grelha.slice(OCULTAS).forEach((linha, y) => linha.forEach((tipo, x) => { if (tipo) bloco(ctx, x, y, tamanho, tipo); }));

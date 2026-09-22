@@ -5,14 +5,14 @@ import { PASSO_INICIAL, PASSO_MINIMO, vetor, type Jogo, type Ponto, type TipoCom
 /** A cor só aquece a sério na parte final da curva de velocidade. */
 const CURVA_MATIZ = 1.8;
 
-const COR_COMIDA = '#f8bd91';
-const COR_COMIDA_BORDA = '#ed956d';
+const COR_COMIDA = '#ffe66d';
+const COR_COMIDA_BORDA = '#e4a900';
 const COR_MORTE = '#ff6b7a';
 const CORES_COMIDA: Record<TipoComida, [string, string]> = {
   normal: [COR_COMIDA, COR_COMIDA_BORDA],
-  ouro: ['#ffe79a', '#ffb52e'],
-  leve: ['#9ef4ff', '#41b8e8'],
-  gigante: ['#e3a7ff', '#a95ee8'],
+  ouro: ['#fff2a3', '#f3bd18'],
+  leve: ['#fff8c9', '#d8b92e'],
+  gigante: ['#ffd24f', '#d58b00'],
 };
 const CORES_ITEM: Record<TipoItem, [string, string, string]> = {
   vida: ['#ff7f9c', '#ff386e', '+'], escudo: ['#86c9ff', '#328de8', '◆'],
@@ -414,6 +414,7 @@ export class Pintor {
 
   /** Pinta o chão da arena num buffer: só muda quando o tamanho muda. */
   private prepararChao(L: number, cel: number, lado: number, matiz: number): HTMLCanvasElement {
+    const claro = document.documentElement.dataset.aparencia === 'claro';
     const dpr = Math.min(2.5, window.devicePixelRatio || 1);
     const buffer = document.createElement('canvas');
     buffer.width = Math.round(L * dpr);
@@ -424,9 +425,9 @@ export class Pintor {
 
     caminhoRedondo(c, 0, 0, L, L, this.raio);
     const fundo = c.createLinearGradient(0, 0, L * 0.72, L);
-    fundo.addColorStop(0, `hsl(${matiz}, 30%, 14%)`);
-    fundo.addColorStop(0.46, `hsl(${matiz}, 27%, 9%)`);
-    fundo.addColorStop(1, `hsl(${matiz}, 30%, 5.5%)`);
+    fundo.addColorStop(0, `hsl(${matiz}, ${claro ? 30 : 30}%, ${claro ? 98 : 14}%)`);
+    fundo.addColorStop(0.46, `hsl(${matiz}, ${claro ? 25 : 27}%, ${claro ? 94 : 9}%)`);
+    fundo.addColorStop(1, `hsl(${matiz}, ${claro ? 24 : 30}%, ${claro ? 89 : 5.5}%)`);
     c.fillStyle = fundo;
     c.fill();
     c.save();
@@ -458,7 +459,7 @@ export class Pintor {
       c.beginPath();
       c.moveTo(i * cel, 0); c.lineTo(i * cel, L);
       c.moveTo(0, i * cel); c.lineTo(L, i * cel);
-      c.strokeStyle = `hsla(${matiz}, ${principal ? 70 : 48}%, ${principal ? 70 : 62}%, ${principal ? .105 : .038})`;
+      c.strokeStyle = `hsla(${matiz}, ${principal ? 70 : 48}%, ${claro ? (principal ? 34 : 40) : (principal ? 70 : 62)}%, ${principal ? .105 : .038})`;
       c.lineWidth = principal ? 1.15 : 0.75;
       c.stroke();
       if (principal) {
@@ -474,7 +475,7 @@ export class Pintor {
       for (let x = 1; x < lado; x++) {
         const principal = x % 5 === 0 && y % 5 === 0;
         const r = principal ? Math.max(1.05, cel * 0.065) : Math.max(0.55, cel * 0.032);
-        c.fillStyle = `hsla(${matiz}, 70%, 74%, ${principal ? .3 : .13})`;
+        c.fillStyle = `hsla(${matiz}, 70%, ${claro ? 34 : 74}%, ${principal ? .3 : .13})`;
         c.beginPath();
         c.arc(x * cel, y * cel, r, 0, Math.PI * 2);
         c.fill();
@@ -501,7 +502,7 @@ export class Pintor {
     // Vinheta interior: escurece as bordas e empurra o olhar para o centro.
     const vinheta = c.createRadialGradient(L / 2, L / 2, L * 0.25, L / 2, L / 2, L * 0.75);
     vinheta.addColorStop(0, 'rgba(0, 0, 0, 0)');
-    vinheta.addColorStop(1, 'rgba(0, 0, 0, 0.28)');
+    vinheta.addColorStop(1, claro ? 'rgba(40, 50, 35, 0.12)' : 'rgba(0, 0, 0, 0.28)');
     c.fillStyle = vinheta;
     c.fillRect(0, 0, L, L);
     c.restore();
@@ -511,7 +512,7 @@ export class Pintor {
 
   private arena(L: number, cel: number, lado: number, matiz: number): void {
     const ctx = this.ctx;
-    ctx.fillStyle = '#10150d';
+    ctx.fillStyle = document.documentElement.dataset.aparencia === 'claro' ? `hsl(${matiz} 22% 91%)` : '#10150d';
     ctx.fillRect(-L, -L, L * 3, L * 3);
 
     if (!this.chao || this.celulasChao !== lado) {

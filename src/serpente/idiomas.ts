@@ -11,8 +11,8 @@ type Textos = Record<string, string>;
 const pt: Textos = {
   meta: 'Serpente — um jogo arcade para telemóvel.',
   configurar: 'CONFIGURA A PARTIDA', titulo: 'A tua cobra.<br><em>As tuas regras.</em>',
-  jogar: 'Jogar', visual: 'Visual', carreira: 'Carreira', ambiente: 'AMBIENTE DA ARENA',
-  cor: 'COR DO TEMA E DA COBRA', pele: 'PELE ANIMADA', idioma: 'IDIOMA / LANGUAGE', escolherModo: 'ESCOLHE O MODO',
+  jogar: 'Jogar', visual: 'Visual', carreira: 'Carreira', corInterface: 'COR DA INTERFACE', aparencia: 'APARÊNCIA', modoEscuro: 'Escuro', modoClaro: 'Claro', corCobra: 'COR DA COBRA', corNucleo: 'COR DO PERSONAGEM DO LABIRINTO',
+  cor: 'COR DA COBRA', pele: 'PELE ANIMADA', idioma: 'IDIOMA / LANGUAGE', escolherModo: 'ESCOLHE O MODO',
   floresta: 'Floresta', oceano: 'Oceano', violeta: 'Violeta', brasa: 'Brasa',
   lima: 'Lima', ciano: 'Ciano', rosa: 'Rosa', dourada: 'Dourada', aurora: 'Aurora', pulso: 'Pulso', prisma: 'Prisma',
   classico: 'Clássico', classicoDesc: 'Sem limite. Só instinto.', relogio: 'Contra o tempo', relogioDesc: '10 segundos por luz.',
@@ -64,7 +64,7 @@ export type ChaveTexto = string;
 const en: Textos = {
   meta: 'Serpente — a mobile arcade game.',
   configurar: 'SET UP YOUR RUN', titulo: 'Your snake.<br><em>Your rules.</em>',
-  jogar: 'Play', visual: 'Visual', carreira: 'Career', ambiente: 'ARENA ENVIRONMENT', cor: 'THEME AND SNAKE COLOR', pele: 'ANIMATED SKIN', idioma: 'LANGUAGE', escolherModo: 'CHOOSE A MODE',
+  jogar: 'Play', visual: 'Visual', carreira: 'Career', corInterface: 'INTERFACE COLOR', aparencia: 'APPEARANCE', modoEscuro: 'Dark', modoClaro: 'Light', corCobra: 'SNAKE COLOR', corNucleo: 'MAZE CHARACTER COLOR', cor: 'SNAKE COLOR', pele: 'ANIMATED SKIN', idioma: 'LANGUAGE', escolherModo: 'CHOOSE A MODE',
   floresta: 'Forest', oceano: 'Ocean', violeta: 'Violet', brasa: 'Ember', lima: 'Lime', ciano: 'Cyan', rosa: 'Pink', dourada: 'Gold', aurora: 'Aurora', pulso: 'Pulse', prisma: 'Prism',
   classico: 'Classic', classicoDesc: 'No limit. Pure instinct.', relogio: 'Time attack', relogioDesc: '10 seconds per light.', portais: 'Portals', portaisDesc: 'Cross the edges.', zen: 'Zen', zenDesc: 'No defeat. Just flow.', escuro: 'Eclipse', escuroDesc: 'Vision follows the head.', obstaculos: 'Maze', obstaculosDesc: 'Blocks in every arena.', umaVida: 'One life', umaVidaDesc: 'Faster. Double points.', desafio: 'DAILY CHALLENGE',
   progressao: 'LOCAL PROGRESSION', percurso: 'Your journey.', percursoDesc: 'Records, missions and achievements are saved on this device.', nivel: 'LEVEL', recordeAtual: 'CURRENT BEST', conquistas: 'ACHIEVEMENTS', entrar: 'ENTER THE ARENA',
@@ -79,7 +79,7 @@ const en: Textos = {
 };
 
 const es: Textos = {
-  meta: 'Serpente — un juego arcade para móvil.', configurar: 'CONFIGURA LA PARTIDA', titulo: 'Tu serpiente.<br><em>Tus reglas.</em>', jogar: 'Jugar', visual: 'Visual', carreira: 'Carrera', ambiente: 'AMBIENTE DE LA ARENA', cor: 'COLOR DEL TEMA Y LA SERPIENTE', pele: 'ASPECTO ANIMADO', idioma: 'IDIOMA / LANGUAGE', escolherModo: 'ELIGE EL MODO',
+  meta: 'Serpente — un juego arcade para móvil.', configurar: 'CONFIGURA LA PARTIDA', titulo: 'Tu serpiente.<br><em>Tus reglas.</em>', jogar: 'Jugar', visual: 'Visual', carreira: 'Carrera', corInterface: 'COLOR DE LA INTERFAZ', aparencia: 'APARIENCIA', modoEscuro: 'Oscuro', modoClaro: 'Claro', corCobra: 'COLOR DE LA SERPIENTE', corNucleo: 'COLOR DEL PERSONAJE DEL LABERINTO', cor: 'COLOR DE LA SERPIENTE', pele: 'ASPECTO ANIMADO', idioma: 'IDIOMA / LANGUAGE', escolherModo: 'ELIGE EL MODO',
   floresta: 'Bosque', oceano: 'Océano', violeta: 'Violeta', brasa: 'Brasa', lima: 'Lima', ciano: 'Cian', rosa: 'Rosa', dourada: 'Dorada', aurora: 'Aurora', pulso: 'Pulso', prisma: 'Prisma',
   classico: 'Clásico', classicoDesc: 'Sin límite. Puro instinto.', relogio: 'Contrarreloj', relogioDesc: '10 segundos por luz.', portais: 'Portales', portaisDesc: 'Cruza los bordes.', zen: 'Zen', zenDesc: 'Sin derrota. Solo fluye.', escuro: 'Eclipse', escuroDesc: 'Visión limitada a la cabeza.', obstaculos: 'Laberinto', obstaculosDesc: 'Bloques en cada arena.', umaVida: 'Una vida', umaVidaDesc: 'Más rápido. Puntos ×2.', desafio: 'DESAFÍO DIARIO',
   progressao: 'PROGRESIÓN LOCAL', percurso: 'Tu recorrido.', percursoDesc: 'Récords, misiones y logros se guardan en este dispositivo.', nivel: 'NIVEL', recordeAtual: 'RÉCORD ACTUAL', conquistas: 'LOGROS', entrar: 'ENTRAR EN LA ARENA', pontos: 'PUNTOS', recorde: 'RÉCORD', segue: 'Sigue tu<br><em>instinto.</em>', jogarAcao: 'JUGAR', pausaEtiqueta: 'JUEGO EN PAUSA', respira: 'Respira.', continuar: 'CONTINUAR', espera: 'La arena te esperará.', fimEtiqueta: 'FIN DE LA PARTIDA', jogarOutra: 'JUGAR DE NUEVO', partilhar: 'COMPARTIR RESULTADO', voltar: 'Toca para volver a la arena.', missao: 'MISIÓN', segmentos: 'SEGMENTOS', ritmo: 'RITMO', deslizaArena: 'DESLIZA EN LA ARENA', gesto: 'una dirección por gesto', perfil: 'PERFIL LOCAL', tuaCarreira: 'Tu carrera', fechar: 'Cerrar',
