@@ -2,9 +2,6 @@
 
 import { PASSO_INICIAL, PASSO_MINIMO, vetor, type Jogo, type Ponto, type TipoComida, type TipoItem } from './logica';
 
-/** A cor só aquece a sério na parte final da curva de velocidade. */
-const CURVA_MATIZ = 1.8;
-
 const COR_COMIDA = '#ffe66d';
 const COR_COMIDA_BORDA = '#e4a900';
 const COR_MORTE = '#ff6b7a';
@@ -269,8 +266,7 @@ export class Pintor {
       : this.pele === 'pulso' ? Math.sin(tempo / 180) * 9
       : this.pele === 'brasa' ? 12 + Math.sin(tempo / 260) * 5
       : 0;
-    const matiz = (this.pele === 'prisma' ? animacao : this.matizBase + animacao)
-      + 10 * Math.pow(this.intensidade, CURVA_MATIZ);
+    const matiz = this.pele === 'prisma' ? animacao : this.matizBase + animacao;
     this.matiz = matiz;
 
     if (jogo.combo !== this.comboVisto) {

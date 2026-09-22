@@ -43,19 +43,14 @@ const CHAVE_RECORDE: Record<Modo, string> = {
 };
 const CHAVE_MODO = 'serpente:modo:v1';
 const MODOS_DISPONIVEIS: Modo[] = ['classico', 'relogio', 'portais'];
-const CHAVE_COR_INTERFACE = 'nexus:cor-interface:v1';
-const CHAVE_APARENCIA = 'nexus:aparencia:v1';
 const CHAVE_MAZE_COR = 'nexus:maze:cor:v1';
 const CHAVE_COBRA = 'serpente:cobra:v1';
-const CHAVE_PELE = 'serpente:pele:v1';
 const CHAVE_DEFINICOES = 'serpente:definicoes:v1';
 const CHAVE_TUTORIAL = 'serpente:tutorial:v1';
 
-const CORES_INTERFACE = [83, 188, 330, 42] as const;
-const CORES_COBRA = CORES_INTERFACE;
-type Aparencia = 'escuro' | 'claro';
-type Pele = 'aurora' | 'pulso' | 'prisma' | 'brasa';
-const PELES: Pele[] = ['aurora', 'pulso', 'prisma', 'brasa'];
+const MATIZ_INTERFACE = 42;
+const CORES_PERSONAGEM = [83, 188, 330, 42] as const;
+const CORES_COBRA = CORES_PERSONAGEM;
 interface Definicoes { sensibilidade: number; esquerdino: boolean; reduzirMovimento: boolean; daltonico: boolean; rasto: boolean }
 const DEFINICOES_BASE: Definicoes = { sensibilidade: 11, esquerdino: false, reduzirMovimento: false, daltonico: false, rasto: true };
 
@@ -108,23 +103,11 @@ function lerModo(): Modo {
   }
 }
 
-function lerPele(): Pele {
-  try {
-    const pele = localStorage.getItem(CHAVE_PELE) as Pele | null;
-    return pele && PELES.includes(pele) ? pele : 'aurora';
-  } catch { return 'aurora'; }
-}
-
 function lerCor(chave: string, padrao: number): number {
   try {
     const guardada = Number(localStorage.getItem(chave));
-    return CORES_INTERFACE.includes(guardada as (typeof CORES_INTERFACE)[number]) ? guardada : padrao;
+    return CORES_PERSONAGEM.includes(guardada as (typeof CORES_PERSONAGEM)[number]) ? guardada : padrao;
   } catch { return padrao; }
-}
-
-function lerAparencia(): Aparencia {
-  try { return localStorage.getItem(CHAVE_APARENCIA) === 'claro' ? 'claro' : 'escuro'; }
-  catch { return 'escuro'; }
 }
 
 function lerCobra(): number {
@@ -183,11 +166,8 @@ const configMaze = elemento<HTMLElement>('config-maze');
 let jogoHub: 'serpente' | 'tetris' | 'maze' = 'serpente';
 let pausado = false;
 let estadoAplicado = '';
-let corInterfaceEscolhida = lerCor(CHAVE_COR_INTERFACE, 83);
-let aparenciaEscolhida = lerAparencia();
 let cobraEscolhida = lerCobra();
 let mazeCorEscolhida = lerCor(CHAVE_MAZE_COR, 42);
-let peleEscolhida = lerPele();
 let idiomaEscolhido = idiomaActual();
 let definicoes = lerDefinicoes();
 definirIdioma(idiomaEscolhido);
@@ -197,11 +177,11 @@ const jogo = new Jogo({ lado: LADO, recorde: lerRecorde(modoInicial), modo: modo
 const pintor = new Pintor(tela);
 const som = new Som();
 const carreira = new Carreira();
-pintor.definirCores(cobraEscolhida, corInterfaceEscolhida);
-pintor.definirPele(peleEscolhida, definicoes.rasto);
-document.documentElement.dataset.aparencia = aparenciaEscolhida;
+pintor.definirCores(cobraEscolhida, MATIZ_INTERFACE);
+pintor.definirPele('aurora', definicoes.rasto);
+document.documentElement.dataset.aparencia = 'escuro';
 document.documentElement.style.setProperty('--cobra', String(cobraEscolhida));
-document.documentElement.style.setProperty('--tema', String(corInterfaceEscolhida));
+document.documentElement.style.setProperty('--tema', String(MATIZ_INTERFACE));
 document.documentElement.style.setProperty('--maze-personagem', String(mazeCorEscolhida));
 aplicarDefinicoes();
 
@@ -254,7 +234,7 @@ function aplicarDefinicoes(): void {
   document.documentElement.classList.toggle('rasto-neon', carreira?.dados.compras.includes('rasto-neon') ?? false);
   document.documentElement.classList.toggle('impacto-prisma', carreira?.dados.compras.includes('impacto-prisma') ?? false);
   document.documentElement.classList.toggle('aura-coroa', carreira?.dados.compras.includes('aura-coroa') ?? false);
-  pintor?.definirPele(peleEscolhida, definicoes.rasto);
+  pintor?.definirPele('aurora', definicoes.rasto);
 }
 
 let matizAplicada = -1;
@@ -268,16 +248,6 @@ function sincronizarMatiz(): void {
 }
 
 function actualizarEscolhasMenu(): void {
-  document.querySelectorAll<HTMLButtonElement>('[data-cor-interface]').forEach((botao) => {
-    const seleccionado = Number(botao.dataset.corInterface) === corInterfaceEscolhida;
-    botao.classList.toggle('seleccionada', seleccionado);
-    botao.setAttribute('aria-pressed', String(seleccionado));
-  });
-  document.querySelectorAll<HTMLButtonElement>('[data-aparencia]').forEach((botao) => {
-    const seleccionado = botao.dataset.aparencia === aparenciaEscolhida;
-    botao.classList.toggle('seleccionada', seleccionado);
-    botao.setAttribute('aria-pressed', String(seleccionado));
-  });
   document.querySelectorAll<HTMLButtonElement>('[data-maze-cor]').forEach((botao) => {
     const seleccionado = Number(botao.dataset.mazeCor) === mazeCorEscolhida;
     botao.classList.toggle('seleccionada', seleccionado);
@@ -291,11 +261,6 @@ function actualizarEscolhasMenu(): void {
   document.querySelectorAll<HTMLButtonElement>('[data-escolha-modo]').forEach((botao) => {
     const seleccionado = botao.dataset.escolhaModo === jogo.modo;
     botao.classList.toggle('seleccionado', seleccionado);
-    botao.setAttribute('aria-pressed', String(seleccionado));
-  });
-  document.querySelectorAll<HTMLButtonElement>('[data-pele]').forEach((botao) => {
-    const seleccionado = botao.dataset.pele === peleEscolhida;
-    botao.classList.toggle('seleccionada', seleccionado);
     botao.setAttribute('aria-pressed', String(seleccionado));
   });
   document.querySelectorAll<HTMLButtonElement>('[data-idioma]').forEach((botao) => {
@@ -358,27 +323,8 @@ function actualizarCarreira(): void {
   elemento('objetivos-diarios').innerHTML = `<small>${t('objetivosHoje')}</small><div><span class="${partidasHoje.length >= 3 ? 'feito' : ''}"><b>${Math.min(3, partidasHoje.length)}/3</b> Partidas</span><span class="${pontosHoje >= 50 ? 'feito' : ''}"><b>${Math.min(50, pontosHoje)}/50</b> ${t('pontos')}</span></div>`;
 }
 
-function escolherCorInterface(matiz: number): void {
-  if (!CORES_INTERFACE.includes(matiz as (typeof CORES_INTERFACE)[number])) return;
-  corInterfaceEscolhida = matiz;
-  document.documentElement.style.setProperty('--tema', String(matiz));
-  pintor.definirCores(cobraEscolhida, matiz);
-  try { localStorage.setItem(CHAVE_COR_INTERFACE, String(matiz)); } catch { /* preferência desta sessão */ }
-  actualizarEscolhasMenu();
-  vibrar(8);
-}
-
-function escolherAparencia(aparencia: Aparencia): void {
-  aparenciaEscolhida = aparencia;
-  document.documentElement.dataset.aparencia = aparencia;
-  pintor.definirCores(cobraEscolhida, corInterfaceEscolhida);
-  try { localStorage.setItem(CHAVE_APARENCIA, aparencia); } catch { /* preferência desta sessão */ }
-  actualizarEscolhasMenu();
-  vibrar(8);
-}
-
 function escolherMazeCor(matiz: number): void {
-  if (!CORES_INTERFACE.includes(matiz as (typeof CORES_INTERFACE)[number])) return;
+  if (!CORES_PERSONAGEM.includes(matiz as (typeof CORES_PERSONAGEM)[number])) return;
   mazeCorEscolhida = matiz;
   document.documentElement.style.setProperty('--maze-personagem', String(matiz));
   try { localStorage.setItem(CHAVE_MAZE_COR, String(matiz)); } catch { /* preferência desta sessão */ }
@@ -390,16 +336,8 @@ function escolherCobra(matiz: number): void {
   cobraEscolhida = matiz;
   document.documentElement.style.setProperty('--cobra', String(matiz));
   matizAplicada = matiz;
-  pintor.definirCores(matiz, corInterfaceEscolhida);
+  pintor.definirCores(matiz, MATIZ_INTERFACE);
   try { localStorage.setItem(CHAVE_COBRA, String(matiz)); } catch { /* preferência desta sessão */ }
-  actualizarEscolhasMenu();
-  vibrar(8);
-}
-
-function escolherPele(pele: Pele): void {
-  peleEscolhida = pele;
-  pintor.definirPele(pele);
-  try { localStorage.setItem(CHAVE_PELE, pele); } catch { /* preferência desta sessão */ }
   actualizarEscolhasMenu();
   vibrar(8);
 }
@@ -854,20 +792,11 @@ async function partilharCartao(texto: string): Promise<boolean> {
 }
 
 ligarControlos(arena, { virar, confirmar, interacao: () => som.garantir(), limiar: () => definicoes.sensibilidade });
-document.querySelectorAll<HTMLButtonElement>('[data-cor-interface]').forEach((botao) => {
-  botao.addEventListener('click', () => escolherCorInterface(Number(botao.dataset.corInterface)));
-});
-document.querySelectorAll<HTMLButtonElement>('[data-aparencia]').forEach((botao) => {
-  botao.addEventListener('click', () => escolherAparencia(botao.dataset.aparencia as Aparencia));
-});
 document.querySelectorAll<HTMLButtonElement>('[data-maze-cor]').forEach((botao) => {
   botao.addEventListener('click', () => escolherMazeCor(Number(botao.dataset.mazeCor)));
 });
 document.querySelectorAll<HTMLButtonElement>('[data-cobra]').forEach((botao) => {
   botao.addEventListener('click', () => escolherCobra(Number(botao.dataset.cobra)));
-});
-document.querySelectorAll<HTMLButtonElement>('[data-pele]').forEach((botao) => {
-  botao.addEventListener('click', () => escolherPele(botao.dataset.pele as Pele));
 });
 document.querySelectorAll<HTMLButtonElement>('[data-idioma]').forEach((botao) => {
   botao.addEventListener('click', () => escolherIdioma(botao.dataset.idioma as Idioma));
@@ -969,7 +898,7 @@ botaoEntrar.addEventListener('click', () => {
 botaoAbrirMenu.addEventListener('click', () => {
   reiniciar();
   document.documentElement.style.setProperty('--cobra', String(cobraEscolhida));
-  document.documentElement.style.setProperty('--tema', String(corInterfaceEscolhida));
+  document.documentElement.style.setProperty('--tema', String(MATIZ_INTERFACE));
   matizAplicada = cobraEscolhida;
   actualizarEscolhasMenu();
   menuPrincipal.classList.remove('fechado');
