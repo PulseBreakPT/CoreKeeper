@@ -19,7 +19,7 @@
             <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M23 7H12a5 5 0 0 0 0 10h8a5 5 0 0 1 0 10H8" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><circle cx="24" cy="6" r="1.5" fill="currentColor" class="olho-logo"/></svg>
             <span>NEXUS ARCADE</span>
           </div>
-          <span class="versao">MOBILE / 6.9</span>
+          <span class="versao">MOBILE / 7.0</span>
         </header>
 
         <div class="menu-hero">
@@ -81,6 +81,7 @@
               <button type="button" data-jogo="serpente" class="seleccionado"><i class="icone-serpente">S</i><span><strong>Serpente</strong><small>Instinto · estratégia · velocidade</small></span><b>01</b></button>
               <button type="button" data-jogo="tetris"><i class="icone-blocos">▦</i><span><strong data-i18n="tetrisNome">Blocos</strong><small data-i18n="tetrisDesc">Encaixa · limpa · domina</small></span><b>02</b></button>
               <button type="button" data-jogo="maze"><i class="icone-maze">◉</i><span><strong data-i18n="mazeNome">Labirinto</strong><small data-i18n="mazeDesc">Explora · engana · conquista</small></span><b>03</b></button>
+              <button type="button" data-jogo="2048"><i class="icone-2048">＋</i><span><strong>2048</strong><small>Desliza · funde · ascende</small></span><b>04</b></button>
             </div>
           </fieldset>
           <div id="config-serpente">
@@ -110,6 +111,10 @@
           <section class="config-tetris config-maze" id="config-maze" hidden>
             <div class="tetris-destaque maze-destaque"><i>◉</i><span><small>ARCADE / 03</small><h2 data-i18n="mazeNome">Labirinto</h2><p data-i18n="mazeFrase">Recolhe a energia. Lê os sentinelas. Domina cada rota.</p></span></div>
             <div class="tetris-recursos"><span><b>4 IAs</b><small data-i18n="mazeIas">Personalidades próprias</small></span><span><b>PULSO</b><small data-i18n="mazePulso">Inverte a perseguição</small></span><span><b>ROTAS</b><small data-i18n="mazeRotas">Labirinto original</small></span></div>
+          </section>
+          <section class="config-tetris config-2048" id="config-2048" hidden>
+            <div class="tetris-destaque destaque-2048"><i>＋</i><span><small>ARCADE / 04</small><h2>2048</h2><p>Funde valores. Constrói a matriz perfeita.</p></span></div>
+            <div class="tetris-recursos"><span><b>4 × 4</b><small>Matriz de precisão</small></span><span><b>UNDO</b><small>Uma jogada atrás</small></span><span><b>2048</b><small>Núcleo máximo</small></span></div>
           </section>
           </section>
 
@@ -258,6 +263,17 @@
         <div class="maze-mensagem" id="maze-mensagem">À TUA ESPERA</div>
       </section>
       <section class="maze-controlos" aria-label="Direções"><button data-maze="cima">↑</button><button data-maze="esquerda">←</button><i>◉</i><button data-maze="direita">→</button><button data-maze="baixo">↓</button></section>
+    </main>
+    <main class="jogo-2048" id="jogo-2048" hidden>
+      <header class="topo topo-2048"><div class="marca"><i>＋</i><span>2048</span></div><div class="acoes"><button class="botao-icone" id="menu-2048" type="button" aria-label="Abrir menu">☰</button><button class="botao-icone" id="reiniciar-2048" type="button" aria-label="Nova partida">↻</button></div></header>
+      <section class="hud-2048">
+        <span><small>PONTOS</small><b id="pontos-2048">0</b></span><span><small>RECORDE</small><b id="recorde-2048">0</b></span><span><small>MÁXIMO</small><b id="maior-2048">4</b></span><span><small>JOGADAS</small><b id="movimentos-2048">0</b></span>
+      </section>
+      <section class="console-2048">
+        <div class="arena-2048"><canvas id="canvas-2048" width="600" height="600" aria-label="Tabuleiro 2048. Desliza para mover."></canvas><div class="overlay-2048" id="overlay-2048"><small>ARCADE / 04</small><h1>Funde.<br><em>Ascende.</em></h1><p>Desliza para mover toda a matriz.</p><button id="iniciar-2048" type="button">JOGAR <span>→</span></button></div></div>
+        <div class="mensagem-2048" id="mensagem-2048">À TUA ESPERA</div>
+      </section>
+      <section class="controlos-2048" aria-label="Controlos do 2048"><button id="desfazer-2048" type="button"><small>UNDO</small>↶</button><button data-2048="esquerda" type="button">←</button><button data-2048="cima" type="button">↑</button><button data-2048="baixo" type="button">↓</button><button data-2048="direita" type="button">→</button></section>
     </main>
     <section class="folha" id="folha-carreira" hidden aria-labelledby="carreira-titulo">
       <button class="folha-fundo" id="fechar-carreira" type="button" aria-label="Fechar carreira"></button>
