@@ -111,6 +111,90 @@ for (const [w, h] of ECRAS) {
   await pagina.mouse.up();
   await pagina.evaluate(() => localStorage.clear());
 
+  // Ecrã de jogo: arrancar uma partida e medir a casca nova com as mesmas regras.
+  await pagina.evaluate(() => localStorage.clear());
+  await pagina.reload({ waitUntil: 'networkidle' });
+  await pagina.waitForTimeout(500);
+  await pagina.click('[data-modo="plural"]');
+  await pagina.waitForTimeout(400);
+  if (w === 390) await pagina.screenshot({ path: `${DESTINO}/contagem-${w}x${h}.png` });
+  await pagina.waitForSelector('#contagem', { state: 'hidden', timeout: 8000 });
+  await pagina.waitForTimeout(500);
+  if (w === 390) await pagina.screenshot({ path: `${DESTINO}/jogo-${w}x${h}.png` });
+
+  const jogo = await pagina.evaluate(() => {
+    const raiz = document.getElementById('jogo');
+    const maus = [];
+    if (raiz.scrollWidth > raiz.clientWidth + 1) maus.push(`scroll horizontal ${raiz.scrollWidth}>${raiz.clientWidth}`);
+    for (const n of raiz.querySelectorAll('.jg-marcador strong,.jg-marcador small,.nw-chip,.jg-faixa b,.jg-faixa small,.nw-cta strong,.jg-tempo-corpo b,.jg-bottom b,.jg-pergunta h1,.jg-pergunta p,#estado-input')) {
+      if (n.scrollWidth > n.clientWidth + 1) maus.push(`corta "${n.textContent.trim()}" (${n.scrollWidth}>${n.clientWidth})`);
+      if (parseFloat(getComputedStyle(n).fontSize) < 6.5) maus.push(`texto minúsculo "${n.textContent.trim()}"`);
+    }
+    for (const n of raiz.querySelectorAll('.jg-card,.jg-faixa,.jg-bottom,.jg-hud,.jg-tempo')) {
+      const r = n.getBoundingClientRect();
+      if (r.left < -0.5 || r.right > innerWidth + 0.5) maus.push(`${n.className} fora do ecrã`);
+    }
+    return { maus, excesso: raiz.scrollHeight - raiz.clientHeight, tempo: document.getElementById('tempo-numero').textContent };
+  });
+  if (jogo.maus.length) { falhas++; console.log(`  ✗ jogo ${etiqueta}`, jogo.maus); }
+  else console.log(`  ✓ jogo ${etiqueta} (scroll extra ${jogo.excesso}px, relógio ${jogo.tempo})`);
+
+  // Resposta errada de propósito: primeiro a segunda oportunidade, depois o erro.
+  // É o caminho determinista — o plural certo depende da palavra sorteada.
+  await pagina.fill('#resposta', 'zzzz');
+  await pagina.click('#confirmar');
+  await pagina.waitForTimeout(220);
+  // Verifica a classe base também: main.ts reescreve className inteiro e já a perdeu uma vez.
+  passos.push(['segunda oportunidade', await pagina.evaluate(() => {
+    const f = document.getElementById('feedback');
+    return !f.hidden && f.classList.contains('oportunidade') && f.classList.contains('jg-feedback')
+      && getComputedStyle(f).position === 'absolute';
+  })]);
+  passos.push(['caixa da resposta mantém estilo', await pagina.evaluate(() =>
+    document.getElementById('resposta-wrap').classList.contains('jg-resposta'))]);
+  if (w === 390) await pagina.screenshot({ path: `${DESTINO}/feedback-${w}x${h}.png` });
+  await pagina.waitForTimeout(800);
+  await pagina.fill('#resposta', 'zzzz');
+  await pagina.click('#confirmar');
+  await pagina.waitForTimeout(220);
+  passos.push(['feedback de erro', await pagina.evaluate(() => {
+    const f = document.getElementById('feedback');
+    return !f.hidden && f.classList.contains('errado') && f.classList.contains('jg-feedback');
+  })]);
+  await pagina.waitForTimeout(900);
+  passos.push(['histórico preenche', await pagina.locator('#historico span').count() >= 1]);
+
+  // Pausar, retomar, pular e mudo.
+  await pagina.click('#pausa');
+  await pagina.waitForTimeout(150);
+  passos.push(['pausa muda rótulo', (await pagina.textContent('#pausa-texto')) === 'RETOMAR']);
+  await pagina.click('#pausa');
+  await pagina.waitForTimeout(150);
+  passos.push(['retoma', (await pagina.textContent('#pausa-texto')) === 'PAUSAR']);
+  await pagina.click('#som');
+  passos.push(['som desliga', (await pagina.getAttribute('#som', 'aria-pressed')) === 'false']);
+  await pagina.click('#som');
+  const antesPular = await pagina.evaluate(() => document.getElementById('vidas').textContent);
+  await pagina.click('#pular');
+  await pagina.waitForTimeout(1100);
+  passos.push(['pular custa vida', (await pagina.evaluate(() => document.getElementById('vidas').textContent)) !== antesPular]);
+
+  // Gastar as vidas que restam para chegar ao painel final e à revisão.
+  for (let i = 0; i < 4 && await pagina.isHidden('#painel'); i++) {
+    await pagina.click('#pular');
+    await pagina.waitForTimeout(1100);
+  }
+  passos.push(['painel final aparece', await pagina.isVisible('#painel')]);
+  if (w === 390) await pagina.screenshot({ path: `${DESTINO}/painel-${w}x${h}.png` });
+  passos.push(['painel tem resumo', (await pagina.locator('#painel .jg-resumo span').count()) === 4]);
+  await pagina.click('#rever-erros');
+  await pagina.waitForTimeout(300);
+  passos.push(['revisão lista erros', (await pagina.locator('#lista-erros article').count()) > 0]);
+  if (w === 390) await pagina.screenshot({ path: `${DESTINO}/revisao-${w}x${h}.png` });
+  await pagina.click('#fechar-revisao');
+  await pagina.click('#ir-menu');
+  passos.push(['sai para o menu', await pagina.isVisible('#menu')]);
+
   const maus = passos.filter(([, ok]) => !ok).map(([n]) => n);
   if (maus.length || erros.length) { falhas++; console.log(`  ✗ interações ${etiqueta}:`, maus, erros.slice(0, 2)); }
   else console.log(`  ✓ interações ${etiqueta}`);

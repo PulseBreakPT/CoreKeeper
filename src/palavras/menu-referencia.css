@@ -1,13 +1,7 @@
-/* Nexus Word — launcher 2.5D. Namespace .nw-* isolado do tema escuro do jogo (estilo.css).
+/* Nexus Word — launcher 2.5D. Namespace .nw-* próprio; a base partilhada está em base.css.
    Cenário, logótipo, peças e cartões são markup real: o texto nunca vive dentro de imagens. */
 
-@font-face{font-family:Baloo;src:url('../assets/fontes/baloo2-latin.woff2') format('woff2');font-weight:400 800;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2212,U+FEFF,U+FFFD}
-@font-face{font-family:Baloo;src:url('../assets/fontes/baloo2-latin-ext.woff2') format('woff2');font-weight:400 800;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+2C60-2C7F,U+A720-A7FF}
-@font-face{font-family:Nunito;src:url('../assets/fontes/nunito-latin.woff2') format('woff2');font-weight:400 900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2212,U+FEFF,U+FFFD}
-@font-face{font-family:Nunito;src:url('../assets/fontes/nunito-latin-ext.woff2') format('woff2');font-weight:400 900;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+2C60-2C7F,U+A720-A7FF}
-
-:root{--nw-navy:#132867;--nw-ink:#1a2a5e}
-
+/* Tipos de letra e base partilhada vivem em base.css. */
 /* ---------- estrutura ---------- */
 .nw{position:relative;width:min(100%,520px);height:100%;margin:auto;display:flex;flex-direction:column;gap:clamp(5px,1vh,10px);--pad:13px;padding:max(7px,env(safe-area-inset-top)) var(--pad) max(7px,env(safe-area-inset-bottom));overflow-x:hidden;overflow-x:clip;overflow-y:auto;overscroll-behavior:contain;color:var(--nw-ink);background:#8ee1fb;font-family:Nunito,system-ui,sans-serif;isolation:isolate;scrollbar-width:none;-webkit-tap-highlight-color:transparent}
 .nw::-webkit-scrollbar{display:none}
