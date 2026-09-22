@@ -93,6 +93,88 @@ de nível de ferramenta. O Relé aponta-te o guardião vivo mais próximo.
 
 ---
 
+## Serpente — o segundo jogo
+
+No mesmo repositório vive um segundo jogo, independente do primeiro: **Serpente**, uma
+versão moderna do clássico jogo da cobra. Abre em `serpente.html`.
+
+```bash
+npm run serpente       # abre o jogo directamente no browser
+npm run serpente:apk   # compila o APK da Serpente (app própria, não o Hollow Star)
+```
+
+A Serpente também é **aplicação Android própria**, separada do Hollow Star: `appId`
+`pt.pulsebreak.serpente`, nome *Serpente*, ícone próprio e sem orientação forçada — joga-se
+de pé ou deitado. Vive em `serpente-app/`, com a sua configuração de Capacitor e o seu
+projecto nativo; o `npm run serpente:build` compila só esta página para `serpente-app/www`,
+por isso o APK leva 3,6 MB e nem um ficheiro do outro jogo. O CI compila-o em cada push e
+publica-o como artefacto `serpente-apk`.
+
+Arena quadrada de 21×21, sempre igual em todos os ecrãs, que se ajusta ao espaço
+disponível mantendo as células quadradas. A serpente anda sozinha assim que dás a
+primeira ordem e acelera a cada comida — de 150 ms por passo até um tecto de 74 ms, com
+uma curva que decai devagar para o jogo continuar controlável quando está rápido.
+
+| Acção | Telemóvel | Teclado |
+|-------|-----------|---------|
+| Virar | Deslizar na arena | WASD / setas |
+| Começar | Tocar ou deslizar | Qualquer direcção |
+| Jogar de novo | Botão ou toque | Enter / Espaço |
+| Modo | Botão do cronómetro | — |
+| Som | Botão do altifalante | — |
+
+**Contagem de arranque.** A primeira ordem não põe a serpente a andar: põe o 3, 2, 1,
+VAI a andar. São 1,94 s a olhar para o tabuleiro antes de alguma coisa se mexer — no
+modo de relógio é o que impede que os dez segundos comecem a correr antes de teres
+olhado para onde está a comida. A contagem fica por trás da serpente, que continua a ser
+o assunto, e podes mudar de direcção enquanto ela corre.
+
+**Dois modos.** No clássico só as paredes e o próprio corpo matam. No **relógio** há
+sempre dez segundos para chegar à comida, e o contador volta ao topo a cada refeição —
+é sempre a mesma janela, não encolhe com a partida. Dez segundos são folgados mas nunca
+confortáveis: a maior distância possível na arena são 40 passos, que ao ritmo inicial
+dão seis segundos, e a folga que sobra é exactamente o que dá para hesitar.
+
+O tempo lê-se na própria moldura da arena, que vai drenando, e fica vermelha e mais
+grossa nos últimos trinta por cento; nos últimos três segundos o número aparece em
+grande, ténue, no meio do campo, com um tique a acompanhar. Não há mais nada na
+interface por causa disto. Cada modo tem o seu recorde, porque as pontuações não são
+comparáveis entre eles.
+
+O swipe é reancorado a cada 16 px, por isso encadeias curvas sem levantar o dedo, e
+só a arena trava o toque — o resto da página continua normal. As inversões sobre o
+próprio corpo são recusadas mesmo em rajadas de teclas, e entrar na célula que a cauda
+liberta no mesmo passo é legal, como no original. Encher o tabuleiro ganha a partida. O
+recorde fica em `localStorage`.
+
+**A comida tem critério.** Sortear uniformemente entre as casas livres é o que quase
+toda a gente faz, e é o que estraga partidas: a comida cai atrás de uma parede feita
+pelo próprio corpo, ou colada a ele, e perde-se sem ter errado. Aqui o espaço livre é
+partido em regiões ligadas a cada refeição, e a escolha passa por dois filtros: só
+células da **maior região a que a cabeça consegue mesmo chegar** — nunca do outro lado
+do corpo, nunca numa bolsa apertada se houver espaço aberto — e, dentro dessa região,
+um sorteio em que uma casa com quatro vizinhos livres vale cinco vezes mais do que uma
+encurralada com um só. Se a cabeça estiver fechada, a partida já está perdida e a comida
+vai para a maior região que exista: o jogo continua honesto e só declara vitória com a
+arena mesmo cheia.
+
+Toda a lógica vive em `src/serpente/logica.ts`, sem DOM nem canvas, e é testada à parte.
+
+**O desenho.** O chão da arena — gradiente, grelha de pontos e vinheta — é pintado uma
+vez para um buffer e reaproveitado; por cima ficam só a serpente, a comida e os efeitos,
+o que deixa margem para detalhe sem sair dos 60 FPS. A serpente é desenhada como uma
+linha interpolada entre dois passos e traçada em bandas que vão afinando da cabeça para
+a cauda, cada uma com o seu contorno escuro — é o contorno que a mantém legível a
+qualquer velocidade. A cor não é fixa: `--matiz` acompanha o intervalo entre passos, por
+isso a serpente, a moldura, o halo, o marcador e o botão aquecem de esmeralda a turquesa
+à medida que o jogo acelera. Ao comer há partículas, um anel, um "+1" a subir e a
+moldura a acender; ao morrer, tremor, um clarão pelas bordas e o corpo a desfazer-se em
+pó da cauda para a cabeça, deixando a cara para o fim. A letra é a
+[Space Grotesk](https://fonts.google.com/specimen/Space+Grotesk) (OFL), guardada no
+próprio jogo.
+
+---
+
 ## Desenvolvimento
 
 ```bash
@@ -101,6 +183,9 @@ npm run dev        # servidor local com recarregamento
 npm run build      # verificação de tipos + build de produção para dist/
 npm test           # testes unitários (vitest)
 npm run fumo       # teste de fumo real num Chromium: joga, cria, luta e grava
+npm run fumo:serpente  # o mesmo para a Serpente: joga, come, morre, reinicia, desliza
+EMPACOTADA=1 npm run fumo:serpente  # corre o mesmo teste contra o pacote que vai no APK
+npm run serpente:apk   # APK da Serpente (JDK 17 + Android SDK, como o do Hollow Star)
 npm run perf       # mede FPS e milissegundos por quadro em cada nível de qualidade
 npm run sprites    # gera uma folha com todos os sprites, para rever a arte
 ```
@@ -118,13 +203,22 @@ src/
   game/      simulação, itens, inventário, receitas
   render/    paletas, sprites, auto-tiling, câmara, pipeline de desenho
   ui/         HUD, painéis, menus, fundo animado
+  serpente/  o segundo jogo: lógica pura, desenho, controlos, som
+serpente-app/  embrulho Capacitor da Serpente: configuração e projecto Android
 ```
 
 ---
 
 ## Android (APK)
 
-O projecto Android está em `android/`, gerado com Capacitor.
+São duas aplicações separadas, cada uma com o seu `appId` e o seu projecto nativo:
+
+| Aplicação | `appId` | Projecto | Comando |
+|---|---|---|---|
+| The Hollow Star | `pt.pulsebreak.hollowstar` | `android/` | `npm run apk` |
+| Serpente | `pt.pulsebreak.serpente` | `serpente-app/android/` | `npm run serpente:apk` |
+
+O projecto Android do jogo principal está em `android/`, gerado com Capacitor.
 
 ```bash
 npm run build

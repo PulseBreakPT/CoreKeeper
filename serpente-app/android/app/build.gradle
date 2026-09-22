@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "pt.pulsebreak.hollowstar"
+    namespace "pt.pulsebreak.serpente"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "pt.pulsebreak.hollowstar"
+        applicationId "pt.pulsebreak.serpente"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 33
-        versionName "7.2"
+        versionCode 17
+        versionName "3.4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
