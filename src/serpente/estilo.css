@@ -1621,3 +1621,69 @@ body { background: radial-gradient(ellipse 80% 42% at 50% -8%, rgba(255,255,255,
   0%, 15% { background-position: 0 -120px; }
   70%, 100% { background-position: 0 1200px; }
 }
+
+/* NEXUS KINETIC 6.8 — composição, movimento e resposta de alta precisão. */
+.hud > *,
+.tetris-hud > *,
+.maze-hud > * { position: relative; }
+.tetris-hud span::after,
+.maze-hud span::after {
+  content: '';
+  position: absolute;
+  left: 26%;
+  right: 26%;
+  bottom: 4px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,225,145,.34), transparent);
+}
+.tetris-hud span:first-child::after,
+.maze-hud span:first-child::after { box-shadow: 0 0 7px var(--acento); }
+.consola::after,
+.tetris-arena::before,
+.maze-arena::before {
+  background-image:
+    linear-gradient(90deg, rgba(255,255,255,.05), transparent 13%, transparent 87%, rgba(255,255,255,.035)),
+    linear-gradient(180deg, rgba(255,255,255,.035), transparent 12%, transparent 88%, rgba(255,255,255,.025));
+}
+.tetris-estado,
+.maze-mensagem {
+  width: min(100%, 350px);
+  min-height: 22px;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  color: #9ba0a9;
+  background: linear-gradient(90deg, transparent, #101318 18%, #101318 82%, transparent);
+  border-top: 1px solid rgba(255,255,255,.025);
+  border-bottom: 1px solid rgba(255,225,145,.08);
+}
+.maze-console { justify-content: flex-start; padding-top: clamp(12px, 3.2dvh, 28px); }
+.maze-mensagem { margin-top: 6px; }
+.tetris-controlos button,
+.maze-controlos button { position: relative; overflow: hidden; }
+.tetris-controlos button::after,
+.maze-controlos button::after {
+  content: '';
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  bottom: 5px;
+  height: 2px;
+  border-radius: 9px;
+  background: #59616d;
+  opacity: .35;
+}
+.tetris-controlos button:active::after,
+.maze-controlos button:active::after { background: var(--acento); opacity: 1; box-shadow: 0 0 10px var(--acento); }
+.tetris-controlos .principal::after { background: var(--acento); opacity: .72; }
+.inicio .comecar,
+.tetris-overlay button,
+.maze-overlay button { transition: transform .12s ease, border-color .18s ease, box-shadow .18s ease; }
+.inicio .comecar:active,
+.tetris-overlay button:active,
+.maze-overlay button:active { transform: translateY(2px) scale(.985); border-color: var(--acento-forte); box-shadow: 0 0 28px rgba(222,181,76,.14); }
+.arena.virou { animation: kinetic-direccao .15s ease-out; }
+.tetris-arena.linha-explodiu { animation: kinetic-impacto .34s cubic-bezier(.2,.8,.2,1); }
+.maze-arena.maze-impacto { animation: kinetic-impacto .42s cubic-bezier(.2,.8,.2,1); }
+@keyframes kinetic-direccao { 45% { transform: scale(.997); filter: brightness(1.08); } }
+@keyframes kinetic-impacto { 18% { transform: translateX(-3px) scale(.998); } 40% { transform: translateX(3px); filter: brightness(1.16); } 70% { transform: translateX(-1px); } }

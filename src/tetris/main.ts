@@ -75,6 +75,18 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
     const feixe = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
     feixe.addColorStop(0, 'rgba(255,255,255,.018)'); feixe.addColorStop(.28, 'rgba(255,255,255,0)'); feixe.addColorStop(.72, 'rgba(255,255,255,.012)'); feixe.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.fillStyle = feixe; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (jogo.estado !== 'fim') {
+      const activos = blocos(jogo.peca).filter((b) => b.y >= OCULTAS);
+      if (activos.length) {
+        const minX = Math.min(...activos.map((b) => b.x)), maxX = Math.max(...activos.map((b) => b.x));
+        const x0 = minX * tamanho, largura = (maxX - minX + 1) * tamanho;
+        const corredor = ctx.createLinearGradient(x0, 0, x0 + largura, 0);
+        corredor.addColorStop(0, 'rgba(255,255,255,0)');
+        corredor.addColorStop(.5, `hsl(${CORES[jogo.peca.tipo]} 95% 68% / .035)`);
+        corredor.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = corredor; ctx.fillRect(x0, 0, largura, canvas.height);
+      }
+    }
     ctx.strokeStyle = `hsl(${tema} 30% 45% / .075)`; ctx.lineWidth = 1;
     for (let x = 1; x < COLUNAS; x++) { ctx.beginPath(); ctx.moveTo(x * tamanho, 0); ctx.lineTo(x * tamanho, canvas.height); ctx.stroke(); }
     for (let y = 1; y < LINHAS - OCULTAS; y++) { ctx.beginPath(); ctx.moveTo(0, y * tamanho); ctx.lineTo(canvas.width, y * tamanho); ctx.stroke(); }
@@ -129,6 +141,9 @@ export function montarTetris(aoMenu: () => void): { activar(): void; desactivar(
     ctx.restore();
     const scanY = (agora * .055) % (canvas.height + 70) - 35;
     const scan = ctx.createLinearGradient(0, scanY - 28, 0, scanY + 28); scan.addColorStop(0, 'rgba(255,255,255,0)'); scan.addColorStop(.5, `hsl(${tema} 100% 80% / .055)`); scan.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = scan; ctx.fillRect(0, scanY - 28, canvas.width, 56);
+    const horizonte = (agora * .018) % canvas.height;
+    ctx.strokeStyle = `hsl(${tema} 92% 76% / .08)`; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, horizonte); ctx.lineTo(canvas.width, horizonte); ctx.stroke();
     mini(hold, [jogo.reserva]); mini(next, jogo.fila.slice(0, 4));
   }
 

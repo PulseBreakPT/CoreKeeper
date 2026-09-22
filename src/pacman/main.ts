@@ -101,6 +101,15 @@ export function montarMaze(aoMenu:()=>void):{activar():void;desactivar():void}{
     for(const f of jogo.fantasmas)sentinela(f,p);
     const j=pos(jogo.jogador,p),energia=jogo.energia>0,v={cima:[0,-1],baixo:[0,1],esquerda:[-1,0],direita:[1,0]}[jogo.jogador.direcao] as number[];
     ctx.save();ctx.translate(j.x,j.y);
+    ctx.save();ctx.globalCompositeOperation='screen';
+    for(let i=0;i<3;i++){
+      const fase=(tempo*.00045+i/3)%1,raio=cel*(.42+fase*.95);
+      ctx.globalAlpha=(1-fase)*.12;ctx.strokeStyle=`hsl(${hp} 96% 72%)`;ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(0,0,raio,0,Math.PI*2);ctx.stroke();
+    }
+    const guia=ctx.createLinearGradient(0,0,v[0]*cel*2.2,v[1]*cel*2.2);
+    guia.addColorStop(0,`hsl(${hp} 95% 68% / .13)`);guia.addColorStop(1,`hsl(${hp} 95% 68% / 0)`);
+    ctx.strokeStyle=guia;ctx.lineWidth=cel*.16;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(v[0]*cel*.2,v[1]*cel*.2);ctx.lineTo(v[0]*cel*2.2,v[1]*cel*2.2);ctx.stroke();ctx.restore();
     for(let i=3;i>=1;i--){ctx.globalAlpha=.055*(4-i);ctx.fillStyle=`hsl(${hp} 90% 58%)`;ctx.beginPath();ctx.arc(-v[0]*i*4,-v[1]*i*4,cel*(.18-i*.02),0,Math.PI*2);ctx.fill();}
     ctx.globalAlpha=1;ctx.shadowColor=`hsl(${hp} 100% 58%)`;ctx.shadowBlur=20;
     const g=ctx.createRadialGradient(-5,-6,1,0,0,cel*.42);g.addColorStop(0,'white');g.addColorStop(.27,`hsl(${hp} 98% 82%)`);g.addColorStop(.7,`hsl(${hp} 88% 56%)`);g.addColorStop(1,`hsl(${hp} 82% 36%)`);
