@@ -74,7 +74,7 @@ export function prepararEfeitosPartida(fx: MotorEfeitos): void {
 
   // 10 — Confettis de novo recorde, nas laterais do resultado (centro livre).
   fx.observar(painel, () => {
-    if (painel.hidden || !painel.classList.contains('resultado-recorde') || !fx.pode()) return;
+    if (painel.hidden || painel.classList.contains('resultado-desafio') || !painel.classList.contains('resultado-recorde') || !fx.pode()) return;
     const r = painel.querySelector('.jg-painel-caixa')!.getBoundingClientRect();
     for (let i=0;i<30;i++) {
       const lado=i%2 ? 1 : -1, x=lado<0 ? r.left-4 : r.right+4;

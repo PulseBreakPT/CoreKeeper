@@ -332,3 +332,9 @@
   font-size:clamp(11px,calc(145cqw / var(--letters)),21px);
   letter-spacing:0;
 }
+.jg .jg-marcador.azul .jg-marcador-corpo { container-type:inline-size; }
+.jg #pontos {
+  font-size:clamp(10px,calc(145cqw / var(--pontos-digitos,2)),28px);
+  white-space:nowrap;
+  overflow-wrap:normal;
+}

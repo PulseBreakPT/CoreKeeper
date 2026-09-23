@@ -16,6 +16,7 @@ import { renderizarRecordes, renderizarDefinicoes, prepararFolha } from './folha
 import { atualizarDesafioDiario, adaptarPalavraDiaria } from './diarios';
 import { WordDiscovery, ReviewCard } from './acabamentos';
 import { iniciarEfeitosVisuais } from './efeitos';
+import { META_DIARIA, registarConquistaDiaria, prepararResultadoDiario } from './conquista-diaria';
 
 type Estado='READY'|'ANSWERING'|'CHECKING'|'CORRECT'|'WRONG'|'GAME_OVER';
 type TipoRonda='normal'|'boss'|'relampago'|'armadilha'|'rara'|'jackpot'|'cadeia';
@@ -51,6 +52,16 @@ function recorde(m:Modo):number{try{return Number(localStorage.getItem(`palavra:
 function guardarRecorde():boolean{const anterior=recorde(modo);if(pontos<=anterior)return false;try{localStorage.setItem(`palavra:recorde:${modo}`,String(pontos));}catch{}return true;}
 function hoje():string{return new Date().toISOString().slice(0,10);}
 function prepararDia():void{if(estatisticas.dia===hoje())return;const ontem=new Date(Date.now()-86400000).toISOString().slice(0,10);estatisticas.sequenciaDias=estatisticas.dia===ontem?estatisticas.sequenciaDias+1:1;estatisticas.dia=hoje();estatisticas.desafioDia=0;guardarEstatisticas();}
+function atualizarProgressoDesafio():void{
+  prepararDia();
+  const anterior=estatisticas.desafioDia;
+  estatisticas.desafioDia=Math.max(anterior,combo);
+  atualizarDesafioDiario(estatisticas.desafioDia);
+  if(anterior<META_DIARIA&&estatisticas.desafioDia>=META_DIARIA){
+    guardarEstatisticas();
+    registarConquistaDiaria(estatisticas.dia);
+  }
+}
 function nivel(m:Modo):number{return 1+Math.floor(estatisticas.correctas[m]/20);}
 function actualizarMenu():void{prepararDia();document.querySelectorAll<HTMLElement>('[data-recorde]').forEach(n=>{const m=n.dataset.recorde as Modo,c=estatisticas.melhorCombo[m];n.querySelector<HTMLElement>('[data-combo-value]')!.textContent=c?`×${c}`:'—';});el('melhor-sequencia').textContent=String(estatisticas.melhorGlobal);el('dias').textContent=String(estatisticas.sequenciaDias);el('dias-jogo').textContent=String(estatisticas.sequenciaDias);atualizarDesafioDiario(estatisticas.desafioDia);document.querySelectorAll<HTMLElement>('button[data-modo]').forEach(n=>{const m=n.dataset.modo as Modo;n.querySelector<HTMLElement>('.nw-level')!.textContent=`NV. ${String(nivel(m)).padStart(2,'0')}`;});}
 function definirEstado(n:Estado):void{estado=n;document.documentElement.dataset.estado=n.toLowerCase();if(n==='READY'||n==='ANSWERING'&&!pausado){document.documentElement.dataset.paused='false';el('pausa-texto').textContent='PAUSAR';el('pausa-card').hidden=true;}el<HTMLButtonElement>('pausa').disabled=n!=='ANSWERING';el<HTMLButtonElement>('pular').disabled=n!=='ANSWERING'||pausado;}
@@ -84,7 +95,7 @@ function darSegundaOportunidade():void{segundaDisponivel=false;segundaActiva=tru
 function aplicarMarco():void{if(![10,25,50,100].includes(numero))return;document.documentElement.classList.add('milestone');el('evento-ronda').textContent=`CHECKPOINT ${numero}`;vibrar([12,18,28]);agendar(()=>document.documentElement.classList.remove('milestone'),700);if(numero===25&&tentativasFalhadas===0){perfeitoRun=true;estatisticas.medalhas++;guardarEstatisticas();}}
 function validar(tempoEsgotado=false):void{if(estado!=='ANSWERING'||!ronda||pausado)return;definirEstado('CHECKING');cancelAnimationFrame(quadro);quadro=0;confirmar.disabled=true;input.disabled=true;const decorrido=Math.min(duracaoActual,performance.now()-inicioPergunta),dado=input.value,resposta=normalizar(dado),aceite=!tempoEsgotado&&ronda.pergunta.acceptedAnswers.some(a=>normalizar(a)===resposta);tempoRespostas+=decorrido;
  if(!aceite&&!tempoEsgotado&&segundaDisponivel&&!segundaActiva){tentativasFalhadas++;darSegundaOportunidade();return;}
- if(aceite){combo++;certas++;melhorCombo=Math.max(melhorCombo,combo);const rapido=decorrido<Math.min(2200,duracaoActual*.35),base={normal:100,boss:300,relampago:150,armadilha:180,rara:230,jackpot:500,cadeia:140}[ronda.tipo],bonus=Math.max(0,Math.round((duracaoActual-decorrido)/duracaoActual*50)),precisao=multiplicadorPrecisao(),fogo=onFire?1.5:1,final=vidas===1?Math.min(2,1+finalRushAcertos*.12):1,ganho=Math.round((base+bonus)*precisao*fogo*final);pontos+=ganho;if(vidas===1)finalRushAcertos++;if(onFire>0)onFire--;else{heat=Math.min(100,heat+(rapido?28:decorrido<5000?18:10));if(heat>=100){heat=0;onFire=5;}}estatisticas.desafioDia=Math.max(estatisticas.desafioDia,combo);const chave=`${ronda.modo}:${ronda.pergunta.word}`;estatisticas.errosPalavras[chave]=Math.max(0,(estatisticas.errosPalavras[chave]||0)-1);if(!estatisticas.coleccao.includes(chave))estatisticas.coleccao.push(chave);if(ronda.tipo==='boss')comboFreeze=1;prepararCadeia();definirEstado('CORRECT');mostrarFeedback(true,ganho);if(rapido){el('feedback-titulo').textContent=ronda.tipo==='jackpot'?'JACKPOT!':'PERFEITO';}historico.push({origem:ronda.pergunta.word,word:ronda.pergunta.answer,certo:true});som.certo(rapido);vibrar(ronda.tipo==='boss'?[18,18,35]:18);
+ if(aceite){combo++;certas++;melhorCombo=Math.max(melhorCombo,combo);const rapido=decorrido<Math.min(2200,duracaoActual*.35),base={normal:100,boss:300,relampago:150,armadilha:180,rara:230,jackpot:500,cadeia:140}[ronda.tipo],bonus=Math.max(0,Math.round((duracaoActual-decorrido)/duracaoActual*50)),precisao=multiplicadorPrecisao(),fogo=onFire?1.5:1,final=vidas===1?Math.min(2,1+finalRushAcertos*.12):1,ganho=Math.round((base+bonus)*precisao*fogo*final);pontos+=ganho;if(vidas===1)finalRushAcertos++;if(onFire>0)onFire--;else{heat=Math.min(100,heat+(rapido?28:decorrido<5000?18:10));if(heat>=100){heat=0;onFire=5;}}atualizarProgressoDesafio();const chave=`${ronda.modo}:${ronda.pergunta.word}`;estatisticas.errosPalavras[chave]=Math.max(0,(estatisticas.errosPalavras[chave]||0)-1);if(!estatisticas.coleccao.includes(chave))estatisticas.coleccao.push(chave);if(ronda.tipo==='boss')comboFreeze=1;prepararCadeia();definirEstado('CORRECT');mostrarFeedback(true,ganho);if(rapido){el('feedback-titulo').textContent=ronda.tipo==='jackpot'?'JACKPOT!':'PERFEITO';}historico.push({origem:ronda.pergunta.word,word:ronda.pergunta.answer,certo:true});som.certo(rapido);vibrar(ronda.tipo==='boss'?[18,18,35]:18);
  }else{tentativasFalhadas++;erradas++;const preserva=comboFreeze>0;if(preserva)comboFreeze--;else combo=0;heat=Math.max(0,heat-35);onFire=0;vidas--;finalRushAcertos=0;const chave=`${ronda.modo}:${ronda.pergunta.word}`;estatisticas.errosPalavras[chave]=(estatisticas.errosPalavras[chave]||0)+1;falhas.push({word:ronda.pergunta.word,answer:ronda.pergunta.answer,given:dado,modo:ronda.modo});historico.push({origem:ronda.pergunta.word,word:ronda.pergunta.answer,certo:false});definirEstado('WRONG');mostrarFeedback(false,0,dado);if(preserva)el('feedback-titulo').textContent='COMBO PROTEGIDO';som.erro();vibrar([35,25,45]);}
  percurso.push(pontos);mostrarHistorico();aplicarMarco();hud();const id=token;agendar(()=>{if(id!==token)return;input.value='';if(vidas<=0)terminar();else novaPergunta();},ESPERA);}
 function terminar():void{
@@ -92,6 +103,7 @@ function terminar():void{
   const novo=guardarRecorde();estatisticas.correctas[modo]+=certas;estatisticas.erros[modo]+=erradas;estatisticas.partidas[modo]++;
   estatisticas.melhorCombo[modo]=Math.max(estatisticas.melhorCombo[modo],melhorCombo);estatisticas.melhorGlobal=Math.max(estatisticas.melhorGlobal,melhorCombo);estatisticas.ultimoModo=modo;
   if(novo)estatisticas.melhorPercurso[modo]=[...percurso];guardarEstatisticas();
+  prepararResultadoDiario(hoje());
   painel.classList.toggle('resultado-recorde',novo);painel.hidden=false;
   el('painel-etiqueta').textContent=`${textos[modo].nome} · ${numero} RESPOSTAS`;el('painel-titulo').textContent=pontos.toLocaleString('pt-PT');el('painel-texto').textContent=novo?'NOVO RECORDE':'RECORDE '+recorde(modo).toLocaleString('pt-PT');
   el('resultado-frase').textContent=novo?'Superaste-te. Boa jogada!':certas?'Cada palavra conta. Continua!':'A próxima palavra é um novo começo.';

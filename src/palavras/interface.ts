@@ -10,6 +10,11 @@ export function prepararInterface(): void {
     }
   };
   marcar(document.getElementById('app')!);
+  // Pontuações longas mantêm-se numa linha, sem aumentar a altura dos indicadores.
+  const pontos = document.getElementById('pontos')!;
+  const ajustarPontos = () => pontos.style.setProperty('--pontos-digitos', String(Math.max(2, (pontos.textContent || '').length)));
+  ajustarPontos();
+  new MutationObserver(ajustarPontos).observe(pontos, {childList:true});
   new MutationObserver(changes => {
     for (const change of changes) for (const node of change.addedNodes) if (node instanceof Element) marcar(node);
   }).observe(document.getElementById('app')!, { childList: true, subtree: true });

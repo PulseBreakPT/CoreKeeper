@@ -111,3 +111,38 @@ Confirmação do utilizador: melhorar todas as páginas com autonomia, mantendo 
 - P0: nenhum impedimento visual observado nas capturas realizadas; sem validação em Android físico nesta iteração.
 - P1 opcional: celebração específica do desafio diário, se o utilizador quiser expandir os dez efeitos.
 - P2: medição de consumo em dispositivos reais e consolidação dos estilos legados, fora do âmbito desta passagem visual.
+
+## Iteração — celebração própria do desafio diário
+
+### Pedido e escolha
+- Pedido: “Próxima melhoria possível: uma celebração própria ao completar o desafio diário.”
+- Escolha explícita: “Brilho breve ao atingir a meta e celebração festiva ao terminar a partida, sem distrair durante o jogo”.
+- Mantidas as restrições anteriores: automático, sem novas configurações nas definições, identidade visual preservada e revisão apenas através de capturas.
+
+### Implementado
+- `atualizarProgressoDesafio()` acompanha o progresso real e regista a passagem de menos de 15 para 15 ou mais; respeita a data UTC já usada pelo jogo. A conclusão fica guardada de imediato.
+- Brilho dourado de 600 ms no perímetro do combo ao completar a meta; não abre modal, não muda o relógio nem o intervalo entre perguntas.
+- No final: cartão dourado/verde “Dia conquistado!”, taça ilustrada com pequeno movimento, descrição das 15 respostas, selo 15/15 e confettis dourados/cianos/verdes nas laterais.
+- Festa coordenada com novos recordes: preserva o texto do recorde, mas não sobrepõe duas emissões de confettis.
+- Celebração única por dia neste dispositivo, com estado pendente guardado em `nexus-word:celebracao-diaria:v1`. Se o jogador sair/reabrir antes do resultado, a celebração fica para a próxima partida terminada nesse dia. Não apresenta retroativamente desafios já completos antes desta funcionalidade.
+- O estado pendente só é consumido quando o resultado está visível e a página em primeiro plano. Com movimento reduzido, mostra o cartão estático. Se localStorage falhar, conserva o estado durante a sessão, sem bloquear o jogo.
+- Cartão compacto em ecrãs baixos, preservando os botões do resultado. Sem novos botões/configurações.
+- Durante as capturas, a pontuação de quatro dígitos quebrava linha no indicador. Corrigido com tamanho tipográfico adaptativo à largura e ao número de caracteres, sem truncar o valor ou aumentar a altura.
+
+### Arquitetura
+- `conquista-diaria.ts`: meta, registo/consumo da conquista, persistência e marcação do cartão de resultado.
+- `efeitos-desafio.ts` e `desafio-conquista.css`: brilho, taça, confettis, apresentação e adaptação responsiva.
+- Integração pontual em `main.ts`, `efeitos.ts` e guarda de prioridade em `efeitos-partida.ts`; reaproveita o motor de efeitos e a taça existentes, sem dependências externas.
+- Ajuste de legibilidade da pontuação em `interface.ts` e `refinamento.css`.
+
+### Revisão por capturas e pacote
+- Partida real até combo ×15; captados brilho, pergunta seguinte sem interrupção e resultado da conquista em 320×568, 390×780 e 430×790.
+- Captada partida seguinte sem repetição da festa já consumida.
+- Segunda sessão de capturas: 15 acertos reais, saída para o menu, reabertura, desafio ainda concluído e celebração pendente no resultado seguinte, mesmo sem novo recorde. Captura confirma confettis laterais e todos os botões visíveis no ecrã pequeno.
+- Pontuação de quatro dígitos apresentada numa só linha nas capturas finais; sem erros de página reportados nessa sessão.
+- Compilação `yarn palavras:build` atualizada. Não foram executadas suites de testes, typecheck, agente de testes ou compilação Android.
+
+### Próximas tarefas
+- P0: nenhuma pendência visual bloqueante nas capturas; sem validação em dispositivo físico nesta iteração.
+- P1 opcional: cartão partilhável da conquista diária.
+- P2: medição de desempenho em dispositivos físicos e consolidação de CSS legado.

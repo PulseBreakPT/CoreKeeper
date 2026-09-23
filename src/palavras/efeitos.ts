@@ -2,8 +2,9 @@ import './efeitos.css';
 import { MotorEfeitos } from './efeitos-motor';
 import { prepararEfeitosMenu } from './efeitos-menu';
 import { prepararEfeitosPartida } from './efeitos-partida';
+import { prepararEfeitosDesafio } from './efeitos-desafio';
 
-/** Dez efeitos automáticos. Não acrescenta opções, dados guardados ou regras. */
+/** Efeitos automáticos e celebrações contextuais, sem novas configurações. */
 export function iniciarEfeitosVisuais(): () => void {
   const fx = new MotorEfeitos();
   const html = document.documentElement;
@@ -12,6 +13,7 @@ export function iniciarEfeitosVisuais(): () => void {
   const {signal} = fx.abortar;
   prepararEfeitosMenu(fx);
   prepararEfeitosPartida(fx);
+  prepararEfeitosDesafio(fx);
 
   const sincronizar = () => {
     html.dataset.fxSuspenso = String(!fx.pode());

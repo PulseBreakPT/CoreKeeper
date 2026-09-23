@@ -1,0 +1,46 @@
+/* Conquista diária: ouro e verde, os mesmos materiais do jogo. */
+.desafio-conquista {
+  position:relative; isolation:isolate; display:grid;
+  grid-template-columns:53px minmax(0,1fr) 47px; align-items:center; gap:9px;
+  margin:15px 0 4px; padding:12px 11px;
+  border:1.5px solid #cfaa4a; border-radius:19px;
+  background:radial-gradient(ellipse at 10% 0,#fffff0cc,transparent 65%),linear-gradient(125deg,#fff0ae,#fff6d3 62%,#edf8c9);
+  box-shadow:0 4px #c6a44745,inset 0 3px #fffffa,inset 0 -3px #e5c66d25;
+  text-align:left; color:#674b1d;
+}
+.conquista-taca { display:block; width:53px; height:60px; position:relative; z-index:1; }
+.conquista-taca svg { display:block; width:100%; height:100%; filter:drop-shadow(0 3px 2px #a1843230); }
+.conquista-taca .daily-complete-mark { opacity:1; }
+.conquista-copy { display:flex; flex-direction:column; gap:4px; min-width:0; position:relative; z-index:1; }
+.conquista-copy>small { font:900 8px/1.2 Nunito; letter-spacing:1px; color:#967227; }
+.conquista-copy>b { font:400 21px/1.1 Lilita; color:#654b24; text-shadow:0 1px #fff; }
+.conquista-copy>span { font:800 10px/1.4 Nunito; color:#8b7750; }
+.conquista-selo { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; height:53px; border:1px solid #9bc17b; border-radius:14px; background:linear-gradient(#f9ffe5,#dff3bc); box-shadow:0 2px #8fab6755,inset 0 2px #fff; color:#437a3d; }
+.conquista-selo svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:3.5; stroke-linecap:round; stroke-linejoin:round; }
+.conquista-selo>b { font:900 10px/1 Nunito; }
+.nw-fx-meta-diaria { position:absolute; inset:-3px; border-radius:inherit; border:2px solid #fff6b4; box-shadow:0 0 15px #ffe294a6,inset 0 0 9px #fff5b980; opacity:0; }
+.nw-fx-meta-conquistada { position:absolute; inset:-2px; border:2px solid #ffe080; border-radius:inherit; box-shadow:0 0 19px #ffe39780,inset 0 0 9px #fff8d25c; opacity:0; z-index:0; }
+.resultado-desafio #resultado-frase { display:none; }
+.resultado-desafio .result-art { filter:drop-shadow(0 3px 4px #e7bc5438); }
+@media(max-width:370px) {
+  .desafio-conquista { grid-template-columns:40px minmax(0,1fr) 40px; gap:7px; padding:10px 8px; }
+  .conquista-taca { width:40px; height:48px; }
+  .conquista-copy>b { font-size:17px; }
+  .conquista-copy>span { font-size:9px; }
+  .conquista-copy>small { font-size:7px; letter-spacing:.6px; }
+  .conquista-selo { height:47px; }
+}
+@media(max-height:650px) {
+  .jg .resultado-desafio .jg-painel-caixa { padding:13px; }
+  .jg .resultado-desafio .result-header { margin-bottom:6px; }
+  .jg .resultado-desafio .result-art { width:44px; height:47px; }
+  .jg .resultado-desafio .result-score { padding:7px 8px 6px; }
+  .jg .resultado-desafio .result-score h2 { font-size:43px; }
+  .desafio-conquista { min-height:68px; margin:11px 0 3px; padding-block:8px; }
+  .jg .resultado-desafio .jg-resumo { margin:12px 0 15px; gap:5px; }
+  .jg .resultado-desafio .jg-resumo>span { padding:8px 2px; gap:4px; }
+  .jg .resultado-desafio .jg-resumo b { font-size:23px; }
+  .jg .resultado-desafio .jg-painel-cta { height:47px; }
+  .jg .resultado-desafio .jg-painel-linha { margin-top:10px; }
+  .jg .resultado-desafio .jg-botao-claro { min-height:43px; }
+}
