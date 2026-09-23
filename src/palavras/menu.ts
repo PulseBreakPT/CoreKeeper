@@ -10,8 +10,12 @@ export { DailyWordCard, DailyChallengeCard } from './diarios';
 
 /* Peças do launcher Nexus Word. Tudo é markup real: nada de texto dentro de imagens. */
 
-export type Icone='flame'|'crown'|'play'|'swap'|'calendar'|'trophy'|'chart'|'settings'|'arrow'|'chevron'|'seta'|'seta-dupla'|'relogio'|'saltar'|'pausa'|'som'|'sem-som'|'sair'|'alvo'|'balao'|'visto'|'cruz';
+export type Icone='flame'|'crown'|'play'|'swap'|'calendar'|'trophy'|'chart'|'settings'|'arrow'|'chevron'|'seta'|'seta-dupla'|'relogio'|'saltar'|'pausa'|'som'|'sem-som'|'sair'|'alvo'|'balao'|'visto'|'cruz'|'vibracao'|'brilhos'|'livro'|'fechar';
 const paths:Record<Icone,string>={
+  vibracao:'<rect x="7" y="3" width="10" height="18" rx="3"/><rect class="cut" x="9" y="5" width="6" height="12" rx="1.4"/><circle class="cut" cx="12" cy="19" r=".9"/><path d="m4 7-2 3 2 3-2 3m18-9-2 3 2 3-2 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  brilhos:'<path d="M10.5 2c.5 0 .8.3 1 .8L14 9l6.2 2.5a1.1 1.1 0 0 1 0 2L14 16l-2.5 6.2a1.1 1.1 0 0 1-2 0L7 16 .8 13.5a1.1 1.1 0 0 1 0-2L7 9 9.5 2.8c.2-.5.5-.8 1-.8ZM20 1l1.2 3.1L24 5.3l-2.8 1.1L20 9.5l-1.1-3.1L16 5.3l2.9-1.2Z"/>',
+  livro:'<path d="M11 5C8 2.8 4.3 2.8 1 4v15c3.3-1.2 7-1.2 10 1V5Zm2 0c3-2.2 6.7-2.2 10-1v15c-3.3-1.2-7-1.2-10 1V5Z"/><path d="M4 8h4m-4 4h4m8-4h4m-4 4h4" class="risco"/>',
+  fechar:'<path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/>',
   flame:'<path d="M12.6 1.8c.9 3.7-1.1 5 1.6 7.9.9-1.8 2.7-2.8 2.7-5.6 3.7 3.7 4.7 7.6 2.8 12.2A8.1 8.1 0 0 1 4.3 12c.9-2.8 2.8-4.7 4.6-6.6 0 2.8 0 4.7 1.9 5.6 1.8-2.8.9-5.6-.2-8.3l2-.9Z"/><path d="M12 12.4c1.9 1.9 2.8 3.8.9 6.6-3.7 0-4.6-3.8-.9-6.6Z" class="detail"/>',
   crown:'<path d="M3.4 8.1c1 0 1.8-.8 1.8-1.8s-.8-1.8-1.8-1.8-1.8.8-1.8 1.8c0 .8.6 1.5 1.3 1.7l1 8.9c.1.8.8 1.4 1.6 1.4h9c.8 0 1.5-.6 1.6-1.4l1-8.9c.7-.2 1.3-.9 1.3-1.7 0-1-.8-1.8-1.8-1.8s-1.8.8-1.8 1.8c0 .5.2 1 .6 1.3l-2.5 2.1-2.3-3.8c.5-.3.8-.8.8-1.4 0-1-.8-1.8-1.8-1.8S9 3.6 9 4.6c0 .6.3 1.1.8 1.4l-2.3 3.8-2.5-2.1c.3-.3.5-.8.5-1.3Z"/><rect x="5.4" y="18.7" width="13.2" height="2.4" rx="1.2"/>',
   play:'<path d="M8.6 5.4a1 1 0 0 1 1.5-.9l8.3 6.6a1 1 0 0 1 0 1.8l-8.3 6.6a1 1 0 0 1-1.5-.9V5.4Z"/>',
@@ -65,16 +69,16 @@ export function ModeCard(d:ModeDef,principal=false):string{
     ? `<span class="nw-cta"><strong>JOGAR</strong><i>${Icon({nome:'play'})}</i></span>`
     : `<span class="nw-cta redonda"><i>${Icon({nome:'play'})}</i></span>`;
   return `<button type="button" class="nw-card modo ${d.cor} ${principal?'principal':'secundario'}" data-modo="${d.modo}" data-testid="mode-select-${d.modo}" aria-label="Jogar ${d.nome}">
-    <span class="nw-card-topo"><span class="nw-chip numero">${d.numero}</span><span class="nw-chip nome">${d.nome}</span><span class="nw-chip nw-level">LV. 01</span></span>
+    <span class="nw-card-topo"><span class="nw-chip numero" data-testid="mode-number-${d.modo}">${d.numero}</span><span class="nw-chip nome" data-testid="mode-title-${d.modo}">${d.nome}</span><span class="nw-chip nw-level" data-testid="mode-level-${d.modo}">NV. 01</span></span>
     ${Arte(d)}
     <span class="nw-copy">${Exemplo(d)}<small>${d.descricao}</small></span>
-    <span class="nw-recorde" data-recorde="${d.modo}">MELHOR COMBO —</span>
+    <span class="nw-recorde" data-recorde="${d.modo}" data-testid="mode-best-${d.modo}">${Icon({nome:'flame'})}<small>COMBO MÁX.</small><b data-combo-value>—</b></span>
     ${cta}
   </button>`;
 }
 
 export function StatCard():string{
-  return `<section class="nw-best" style="--i:2"><span class="coroa">${Icon({nome:'crown'})}</span><strong>MELHOR SEQUÊNCIA</strong><b id="melhor-sequencia">0</b></section>`;
+  return `<section class="nw-best" style="--i:2" data-testid="best-streak-card"><span class="coroa">${Icon({nome:'crown'})}</span><strong data-testid="best-streak-label">MELHOR SEQUÊNCIA</strong><b id="melhor-sequencia">0</b></section>`;
 }
 export function BottomNavigation():string{
   return `<nav class="nw-bottom" style="--i:5" aria-label="Navegação"><button id="abrir-recordes" data-testid="menu-records-button" type="button"><span class="nw-nav-icone">${Icon({nome:'chart'})}</span><b>RECORDES</b>${Icon({nome:'chevron',classe:'chevron'})}</button><i class="nw-divisoria"></i><button id="abrir-definicoes" data-testid="menu-settings-button" type="button"><span class="nw-nav-icone">${Icon({nome:'settings'})}</span><b>DEFINIÇÕES</b>${Icon({nome:'chevron',classe:'chevron'})}</button></nav>`;
@@ -83,7 +87,7 @@ function Logo():string{
   return `<h1 id="titulo-menu" class="nw-logo logo-referencia" data-testid="launcher-title"><img src="${logoReferencia}" alt="Nexus Word" draggable="false" /></h1>`;
 }
 function Folha():string{
-  return `<section class="folha" id="folha" data-testid="menu-dialog" role="dialog" aria-modal="true" aria-labelledby="folha-titulo" hidden><button class="folha-fundo" id="fechar-folha" data-testid="dialog-backdrop" aria-label="Fechar" tabindex="-1"></button><div class="folha-painel"><i></i><header><span><small id="folha-etiqueta">NEXUS WORD</small><h2 id="folha-titulo">Recordes</h2></span><button id="fechar-folha-x" data-testid="dialog-close" type="button" aria-label="Fechar painel">×</button></header><div id="folha-conteudo"></div></div></section>`;
+  return `<section class="folha" id="folha" data-testid="menu-dialog" role="dialog" aria-modal="true" aria-labelledby="folha-titulo" hidden><button class="folha-fundo" id="fechar-folha" data-testid="dialog-backdrop" aria-label="Fechar" tabindex="-1"></button><div class="folha-painel"><i></i><header><span class="folha-emblema" id="folha-emblema" aria-hidden="true"></span><span class="folha-heading"><small id="folha-etiqueta">O TEU PERCURSO</small><h2 id="folha-titulo">Recordes</h2></span><button id="fechar-folha-x" data-testid="dialog-close" type="button" aria-label="Fechar painel">${Icon({nome:'fechar'})}</button></header><div id="folha-conteudo"></div></div></section>`;
 }
 
 export function montarMenu(raiz:HTMLElement):void{
@@ -105,6 +109,6 @@ export function montarMenu(raiz:HTMLElement):void{
   </section>
   <section class="nw-dailies" style="--i:4">${DailyWordCard()}${DailyChallengeCard()}</section>
   ${BottomNavigation()}
-  <p class="nw-motto" style="--i:6">PENSA <i></i> CLICA <i></i> APRENDE</p>
+  <p class="nw-motto" style="--i:6" data-testid="menu-motto">PENSA <i></i> JOGA <i></i> APRENDE</p>
   ${Folha()}`;
 }

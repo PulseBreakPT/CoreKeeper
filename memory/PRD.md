@@ -43,3 +43,36 @@ Depois: "Continua a melhorar, com QI e lógica máxima, quero um design SSS tier
 - P2: simplificar CSS legado após aprovação visual, sem mudar a composição pedida.
 
 Não voltar a seguir o blueprint escuro anterior. O contrato atual está em `/app/design_guidelines.json`.
+
+## Iteração atual — refinamento transversal, sem redesign
+
+### Pedido original desta iteração
+“Melhora significativamente o design do jogo para o SSS tier, não quero que refaças o design, quero que melhores, procura também elementos e componentes com design abaixo e melhora para ficar tudo ao mesmo nível, textos, títulos, ícones, botões etc. Sem testes e sem agente de testes, tira prints e melhora tudo”.
+
+Confirmação do utilizador: melhorar todas as páginas com autonomia, mantendo a estrutura, as cores e as funcionalidades; verificar apenas através de capturas de ecrã.
+
+### Decisões e implementação
+- Respeitado o contrato visual existente; não foi feito redesign, não foram trocados logótipo/cenário e não foram alterados os outros jogos.
+- Camada de apresentação final em `src/palavras/refinamento.css`, importada depois dos estilos anteriores. Novas variáveis de acabamento, contornos iluminados, sombras de contacto, gradientes por material e estados de interação discretos.
+- Menu: títulos dos modos secundários reforçados, exemplos/descrições mais legíveis, combo com hierarquia própria, melhor sequência com mais espaço, botões e navegação com relevo coerente. Níveis identificados por `NV.` e assinatura `PENSA · JOGA · APRENDE`.
+- Recordes: cabeçalho com taça, mesmas ilustrações dos modos, pontuação num visor próprio, domínio e coleção mais claros. Tamanhos compactos para ecrãs baixos.
+- Definições: ícones específicos de som, vibração e animações; tonalidades azul/rosa/lilás, switches maiores e mensagem de gravação automática. Corrigidos os centros dos ícones para não parecerem formas preenchidas indistintas.
+- Palavra diária: cabeçalho próprio, calendário e definição com melhor hierarquia e acabamento.
+- Partida: campo de resposta, botões, indicadores, avisos e pausa refinados. Ilustração corresponde ao modo da ronda (incluindo cadeias); a regra de jogo não foi alterada. `PULAR` passa a `SALTAR` mantendo comportamento.
+- Resultado: visor da pontuação, estatísticas e ações coerentes com o menu. Corrigida quebra de linha em `JOGAR OUTRA VEZ` a 320px.
+- Revisão: legendas legíveis, cartões compactos e tipografia ajustada ao comprimento de cada palavra e à largura disponível, evitando letras isoladas em palavras como `ESPÉCIMENS`.
+- Regras, dicionários, tempos, vidas, pontuação e chaves de armazenamento preservados. Alterações em main.ts limitadas à apresentação.
+- A pré-visualização deste ambiente precisou de reinstalar dependências com Yarn e de restaurar o serviço supervisor `nexus-word` com a configuração Vite existente. `.env.local` define host, porta, URL externa e hostname interno permitido; nada disto está hardcoded no código do jogo.
+
+### Revisão realizada nesta iteração
+- Apenas revisão visual através da ferramenta de capturas e navegação para mostrar os ecrãs. Não foram executadas suites de testes, scripts de testes, typecheck ou agente de testes.
+- Capturas antes/depois do menu, recordes, definições, palavra diária, partida nos três modos, pausa, resultados e revisão.
+- Composições mobile captadas em frames de 320×568, 390×780 e 430×790, dentro de viewport 1920×800. Confirmados visualmente menu completo, encaixe dos recordes no ecrã baixo, botão dos resultados numa linha e tipografia adaptável na revisão.
+- Navegação da partida mantida no fluxo, sem sobrepor os cartões. Em ecrãs baixos, a partida continua a permitir scroll vertical; não se ocultam funcionalidades para forçar o encaixe.
+- Pacote web isolado do Nexus Word atualizado com `yarn palavras:build`. Nenhuma compilação Android nativa ou verificação em dispositivo físico foi feita nesta iteração.
+
+### Backlog atual
+- P0: nenhuma pendência visual bloqueante identificada nas capturas; não foi feita regressão funcional abrangente por opção explícita do utilizador.
+- P1: resultado partilhável com a mesma identidade gráfica, apenas se pedido.
+- P2: consolidar as várias camadas CSS legadas após aprovação deste acabamento, evitando refatorações arriscadas nesta iteração exclusivamente visual.
+- Próxima tarefa: recolher feedback sobre este refinamento, mantendo sempre a composição e a identidade coloridas.

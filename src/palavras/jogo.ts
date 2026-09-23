@@ -12,10 +12,10 @@ function Hud(): string {
 
 function Cartao(): string {
   return `<div class="jg-tempo-linha"><i class="nw-faisca f1"></i><div class="jg-tempo" aria-label="Tempo restante"><i id="barra-tempo" data-testid="timer-progress"></i><span class="jg-tempo-corpo">${Icon({nome:'relogio'})}<b id="tempo-numero" data-testid="timer-value">10s</b></span></div><i class="nw-faisca f2"></i></div><p class="jg-evento"><span id="evento-ronda">RONDA NORMAL</span></p>
-  <section class="nw-card gold jg-card" data-testid="question-card"><span class="nw-card-topo"><span class="nw-chip numero" id="numero-pergunta">01</span><span class="nw-chip nome" id="modo-etiqueta">PLURAL</span><span class="nw-chip" id="nivel-jogo">LV. 01</span></span>
+  <section class="nw-card gold jg-card" data-testid="question-card"><span class="nw-card-topo"><span class="nw-chip numero" id="numero-pergunta">01</span><span class="nw-chip nome" id="modo-etiqueta">PLURAL</span><span class="nw-chip" id="nivel-jogo">NV. 01</span></span>
     <span class="nw-arte pilha" aria-hidden="true"><i class="nw-faisca f1"></i><i class="nw-faisca f2"></i><i class="nw-faisca f3"></i>${LetterTile('R','blue','t1')}${LetterTile('A','pink','t2')}${LetterTile('A','yellow','t3')}</span>
     <div class="jg-bloco"><div class="jg-pergunta"><h1 id="palavra" data-testid="question-word">ÁRVORE</h1><p id="instrucao">Escreve o plural</p></div><div class="jg-resposta" id="resposta-wrap"><input id="resposta" data-testid="gameplay-answer-input" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" maxlength="32" placeholder="escreve aqui…" aria-label="Resposta"/><label for="resposta" id="estado-input">A TUA RESPOSTA</label></div></div>
-    <div class="jg-accoes"><button class="nw-cta jg-confirmar" id="confirmar" data-testid="gameplay-confirm-button"><strong>CONFIRMAR</strong><i>${Icon({nome:'play'})}</i></button><button class="nw-cta cinza jg-pular" id="pular" data-testid="gameplay-skip-button" aria-label="Pular palavra e perder uma vida"><strong>PULAR</strong><i>${Icon({nome:'saltar'})}</i></button></div>
+    <div class="jg-accoes"><button class="nw-cta jg-confirmar" id="confirmar" data-testid="gameplay-confirm-button"><strong>CONFIRMAR</strong><i>${Icon({nome:'play'})}</i></button><button class="nw-cta cinza jg-pular" id="pular" data-testid="gameplay-skip-button" aria-label="Saltar palavra e perder uma vida"><strong>SALTAR</strong><i>${Icon({nome:'saltar'})}</i></button></div>
     <div class="jg-pausa-aviso" id="pausa-card" data-testid="game-pause-panel" hidden><span class="pausa-medalhao" aria-hidden="true">${Icon({nome:'pausa'})}</span><strong data-testid="game-pause-title">Uma pausa.</strong><p data-testid="game-pause-description">O relógio espera por ti.</p><button class="nw-cta" id="retomar-card" data-testid="gameplay-resume-button"><strong>CONTINUAR</strong><i>${Icon({nome:'play'})}</i></button></div>
   </section>`;
 }
@@ -33,5 +33,5 @@ function Paineis(): string {
 
 export function montarJogo(raiz: HTMLElement): void {
   raiz.dataset.testid='game-screen';
-  raiz.innerHTML=`${Cenario()}<header class="nw-top"><span class="nw-marca"><i>N</i><b>NEXUS WORD</b></span><span class="nw-streak">${Icon({nome:'flame'})}<b id="dias-jogo">1</b> DIA</span></header>${Hud()}${Cartao()}${Faixas()}<p class="nw-motto">PENSA <i></i> CLICA <i></i> APRENDE</p>${Paineis()}`;
+  raiz.innerHTML=`${Cenario()}<header class="nw-top"><span class="nw-marca"><i>N</i><b>NEXUS WORD</b></span><span class="nw-streak">${Icon({nome:'flame'})}<b id="dias-jogo">1</b> DIA</span></header>${Hud()}${Cartao()}${Faixas()}<p class="nw-motto" data-testid="game-motto">PENSA <i></i> JOGA <i></i> APRENDE</p>${Paineis()}`;
 }

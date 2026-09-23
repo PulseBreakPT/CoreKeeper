@@ -24,6 +24,8 @@ export function ReviewCard(item: { word: string; answer: string; modo: Modo }, i
   card.innerHTML = `<div class="review-card-heading"><i class="review-number" aria-hidden="true">${String(index+1).padStart(2,'0')}</i><small data-testid="review-mode-${index}">${names[item.modo]}</small><span class="review-learning" data-testid="review-learning-${index}">PARA A PRÓXIMA</span></div><div class="review-pair"><span class="review-source"><small data-testid="review-source-label-${index}">PALAVRA</small><b data-testid="review-source-${index}"></b></span>${Icon({nome:'arrow',classe:'review-arrow'})}<span class="review-answer"><small data-testid="review-answer-label-${index}">RESPOSTA</small><strong data-testid="review-answer-${index}"></strong></span></div>`;
   card.querySelector('b')!.textContent = item.word.toLocaleUpperCase('pt-PT');
   card.querySelector('strong')!.textContent = item.answer.toLocaleUpperCase('pt-PT');
+  card.querySelector<HTMLElement>('.review-source')!.style.setProperty('--letters', String(Math.max(6, [...item.word].length)));
+  card.querySelector<HTMLElement>('.review-answer')!.style.setProperty('--letters', String(Math.max(6, [...item.answer].length)));
   return card;
 }
 
