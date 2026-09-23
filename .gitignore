@@ -32,3 +32,10 @@ android/app/src/main/assets/capacitor.plugins.json
 *.apk
 *.aab
 *.keystore
+.env
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+.credentials

@@ -5,6 +5,8 @@ import singularReferencia from '../assets/nexus/singular.webp';
 import trocaReferencia from '../assets/nexus/troca.webp';
 import { Cenario } from './paisagem';
 export { Cenario } from './paisagem';
+import { DailyWordCard, DailyChallengeCard } from './diarios';
+export { DailyWordCard, DailyChallengeCard } from './diarios';
 
 /* Peças do launcher Nexus Word. Tudo é markup real: nada de texto dentro de imagens. */
 
@@ -73,12 +75,6 @@ export function ModeCard(d:ModeDef,principal=false):string{
 
 export function StatCard():string{
   return `<section class="nw-best" style="--i:2"><span class="coroa">${Icon({nome:'crown'})}</span><strong>MELHOR SEQUÊNCIA</strong><b id="melhor-sequencia">0</b></section>`;
-}
-export function DailyWordCard():string{
-  return `<button class="nw-daily word" id="ver-palavra-dia" type="button"><span class="nw-daily-icone">${Icon({nome:'calendar'})}</span><span class="nw-daily-copy"><small>PALAVRA DO DIA</small><b id="palavra-dia">LACÓNICO</b><em id="significado-dia">expressão em poucas palavras</em></span><i class="nw-daily-seta">${Icon({nome:'arrow'})}</i></button>`;
-}
-export function DailyChallengeCard():string{
-  return `<button class="nw-daily challenge" id="abrir-desafio-dia" type="button"><span class="nw-daily-icone">${Icon({nome:'trophy'})}</span><span class="nw-daily-copy"><small>DESAFIO DO DIA</small><b>15 respostas seguidas</b><span class="nw-progresso"><i><em id="desafio-barra"></em></i><strong id="desafio-valor">0 / 15</strong></span></span><i class="nw-daily-seta">${Icon({nome:'arrow'})}</i></button>`;
 }
 export function BottomNavigation():string{
   return `<nav class="nw-bottom" style="--i:5" aria-label="Navegação"><button id="abrir-recordes" data-testid="menu-records-button" type="button"><span class="nw-nav-icone">${Icon({nome:'chart'})}</span><b>RECORDES</b>${Icon({nome:'chevron',classe:'chevron'})}</button><i class="nw-divisoria"></i><button id="abrir-definicoes" data-testid="menu-settings-button" type="button"><span class="nw-nav-icone">${Icon({nome:'settings'})}</span><b>DEFINIÇÕES</b>${Icon({nome:'chevron',classe:'chevron'})}</button></nav>`;
