@@ -1,0 +1,21 @@
+{
+  "project": "Nexus Word",
+  "authority": "Exact user-provided screenshot supersedes the previous Steam-inspired dark redesign. Never restore the dark arcade direction.",
+  "reference": "https://customer-assets-39nsmqrw.emergentagent.net/job_mind-click-quest/artifacts/pldioy1p_file_000000000d7881f4b0edb48274df21e9.png",
+  "user_request": "Reverte para o design antigo e melhora significativamente o design para o SSS tier até atingir este nível, deve ser igual a este design agora.",
+  "subsequent_request": "Atua como as 5 melhores profissões e empresas do mercado para resolver isto",
+  "visual_contract": {
+    "composition": "Vertical portrait layout matching the 941x1672 screenshot; no desktop 3-column redesign.",
+    "background": "Cyan sky, soft clouds, layered bright foliage, cream sandy ground, lower-corner flowers and rocks.",
+    "logo": "Exact original rounded, extruded white NEXUS / yellow WORD artwork from user image; white blue-edged PALAVRAS. RAPIDEZ. ribbon.",
+    "primary": "Large yellow plural card; original glossy letter stack on left; live word example, combo and large green JOGAR control on right.",
+    "secondary": "Green singular and pink contrario cards side by side; original matching letter art; play buttons and live levels/combos.",
+    "daily": "Purple daily word and blue daily challenge cards side by side; cream bottom navigation.",
+    "panels": "Same soft beveled colorful style; live record statistics and accessible preference switches; no data rendered into images.",
+    "type": "Lilita One for rounded headings/labels; Nunito and Baloo for clear live data and descriptions.",
+    "motion": "Subtle floating decorations, tactile press, localized highlights; reduced-motion preference and OS setting respected. Menu example words remain stable.",
+    "preserve": "All three modes, dictionaries, scoring, lives, timings, progression and existing storage keys. Other repository games unchanged."
+  },
+  "five_disciplines": ["Art direction and faithful asset treatment", "Responsive interaction design", "Motion design", "Accessible interface engineering", "Functional and visual QA"],
+  "assets": "Only logo and decorative letter illustrations extracted from the user's image; all controls, examples, scores and progress remain live DOM. Scene created as original SVG."
+}

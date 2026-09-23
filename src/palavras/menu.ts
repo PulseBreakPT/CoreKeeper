@@ -1,4 +1,10 @@
 import type { Modo } from './dados';
+import logoReferencia from '../assets/nexus/logo.webp';
+import pilhaReferencia from '../assets/nexus/pilha.webp';
+import singularReferencia from '../assets/nexus/singular.webp';
+import trocaReferencia from '../assets/nexus/troca.webp';
+import { Cenario } from './paisagem';
+export { Cenario } from './paisagem';
 
 /* Peças do launcher Nexus Word. Tudo é markup real: nada de texto dentro de imagens. */
 
@@ -37,41 +43,6 @@ export function LetterTile(letra:string,cor:Cor,classe=''):string{
 function Faiscas(quantas:number):string{return Array.from({length:quantas},(_,i)=>`<i class="nw-faisca f${i+1}"></i>`).join('');}
 
 /* Cenário: céu, nuvens, sebes e flores construídos em SVG próprio. */
-function Nuvem(x:number,y:number,e:number,o:number):string{
-  return `<g transform="translate(${x} ${y}) scale(${e})" opacity="${o}"><ellipse cx="0" cy="4" rx="52" ry="14"/><circle cx="-22" cy="-2" r="17"/><circle cx="1" cy="-11" r="23"/><circle cx="26" cy="-1" r="15"/></g>`;
-}
-function Moita(x:number,y:number,e:number,cor:string):string{
-  const bolas:[number,number,number][]=[[-42,10,19],[-21,-7,26],[3,-16,31],[27,-6,25],[48,10,18]];
-  return `<g transform="translate(${x} ${y}) scale(${e})" fill="${cor}">${bolas.map(([cx,cy,r])=>`<circle cx="${cx}" cy="${cy}" r="${r}"/>`).join('')}<rect x="-60" y="4" width="120" height="40" rx="19"/></g>`;
-}
-function Flor(x:number,y:number,e:number,petala:string,miolo='#ffd23a'):string{
-  const petalas=[[0,-8],[7.6,-2.5],[4.7,6.5],[-4.7,6.5],[-7.6,-2.5]];
-  return `<g transform="translate(${x} ${y}) scale(${e})"><g fill="${petala}">${petalas.map(([cx,cy])=>`<circle cx="${cx}" cy="${cy}" r="5.2"/>`).join('')}</g><circle r="3.4" fill="${miolo}"/></g>`;
-}
-export function Cenario():string{
-  const sebeFundo=[Moita(26,272,1,'url(#nw-verde-longe)'),Moita(128,262,.92,'url(#nw-verde-longe)'),Moita(238,266,1.04,'url(#nw-verde-longe)'),Moita(348,260,.96,'url(#nw-verde-longe)')].join('');
-  const sebeFrente=[Moita(-12,302,1,'url(#nw-verde-perto)'),Moita(92,298,.86,'url(#nw-verde-perto)'),Moita(194,306,.94,'url(#nw-verde-perto)'),Moita(298,296,.9,'url(#nw-verde-perto)'),Moita(400,304,1.02,'url(#nw-verde-perto)')].join('');
-  const lados=[Moita(-34,452,.6,'url(#nw-verde-lado)'),Moita(-38,566,.52,'url(#nw-verde-lado)'),Moita(-30,688,.62,'url(#nw-verde-lado)'),Moita(434,440,.58,'url(#nw-verde-lado)'),Moita(438,574,.54,'url(#nw-verde-lado)'),Moita(430,700,.64,'url(#nw-verde-lado)')].join('');
-  const rodape=[Moita(26,844,.96,'url(#nw-verde-perto)'),Moita(154,856,.82,'url(#nw-verde-perto)'),Moita(286,846,.92,'url(#nw-verde-perto)'),Moita(396,852,1,'url(#nw-verde-perto)')].join('');
-  const flores=[Flor(22,812,.95,'#ffffff'),Flor(54,832,.78,'#ffd7e6','#ff9ec4'),Flor(376,806,.92,'#ffffff'),Flor(348,830,.76,'#fff0b0','#ffa927'),Flor(206,834,.68,'#ffffff'),Flor(12,624,.62,'#ffffff'),Flor(390,530,.6,'#ffd7e6','#ff9ec4')].join('');
-  return `<svg class="nw-cenario" viewBox="0 0 400 860" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
-    <defs>
-      <linearGradient id="nw-ceu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4ec9f5"/><stop offset=".5" stop-color="#8ee1fb"/><stop offset="1" stop-color="#c6f1f7"/></linearGradient>
-      <linearGradient id="nw-chao" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3f8d4"/><stop offset=".18" stop-color="#fdf6da"/><stop offset=".62" stop-color="#fff0c4"/><stop offset="1" stop-color="#ffdb95"/></linearGradient>
-      <radialGradient id="nw-sol"><stop offset="0" stop-color="#fffbe4" stop-opacity=".85"/><stop offset="1" stop-color="#fffbe4" stop-opacity="0"/></radialGradient>
-      <linearGradient id="nw-verde-longe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a6f0a4"/><stop offset="1" stop-color="#66d68c"/></linearGradient>
-      <linearGradient id="nw-verde-perto" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5fe07a"/><stop offset="1" stop-color="#1fab5c"/></linearGradient>
-      <linearGradient id="nw-verde-lado" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#77e68d"/><stop offset="1" stop-color="#33bd6a"/></linearGradient>
-    </defs>
-    <rect width="400" height="340" fill="url(#nw-ceu)"/>
-    <path d="M0 316h400v544H0Z" fill="url(#nw-chao)"/>
-    <circle cx="332" cy="34" r="168" fill="url(#nw-sol)"/>
-    <g class="nw-nuvens" fill="#ffffff">${Nuvem(58,96,1,.88)}${Nuvem(330,72,.78,.82)}${Nuvem(236,152,.54,.6)}${Nuvem(-4,178,.6,.55)}${Nuvem(152,42,.46,.5)}</g>
-    ${sebeFundo}${sebeFrente}
-    <path d="M0 344c58 12 104-10 168-2s148 22 232 4v14H0Z" fill="#ffffff" opacity=".42"/>
-    ${lados}${rodape}${flores}
-  </svg>`;
-}
 
 /* Modos. */
 interface ModeDef{modo:Modo;numero:string;nome:string;origem:string;destino:string;descricao:string;cor:string}
@@ -81,9 +52,8 @@ const modos:ModeDef[]=[
   {modo:'contrario',numero:'03',nome:'CONTRÁRIO',origem:'GANHAR',destino:'PERDER',descricao:'Encontra o oposto',cor:'pink'},
 ];
 function Arte(d:ModeDef):string{
-  if(d.modo==='plural')return `<span class="nw-arte pilha">${Faiscas(5)}${LetterTile('R','blue','t1')}${LetterTile('A','pink','t2')}${LetterTile('A','yellow','t3')}</span>`;
-  if(d.modo==='singular')return `<span class="nw-arte">${LetterTile('S','green')}<i class="nw-lima"></i></span>`;
-  return `<span class="nw-arte"><span class="nw-tile pink troca"><i class="brilho"></i>${Icon({nome:'swap'})}</span></span>`;
+  const src=d.modo==='plural'?pilhaReferencia:d.modo==='singular'?singularReferencia:trocaReferencia;
+  return `<span class="nw-arte arte-referencia ${d.modo==='plural'?'pilha':''}" aria-hidden="true">${d.modo==='plural'?Faiscas(5):''}<img src="${src}" alt="" draggable="false" /></span>`;
 }
 function Exemplo(d:ModeDef):string{
   return `<span class="nw-exemplo"><b data-exemplo-origem>${d.origem}</b>${Icon({nome:d.modo==='contrario'?'seta-dupla':'seta',classe:'nw-seta'})}<b data-exemplo-destino>${d.destino}</b></span>`;
@@ -92,7 +62,7 @@ export function ModeCard(d:ModeDef,principal=false):string{
   const cta=principal
     ? `<span class="nw-cta"><strong>JOGAR</strong><i>${Icon({nome:'play'})}</i></span>`
     : `<span class="nw-cta redonda"><i>${Icon({nome:'play'})}</i></span>`;
-  return `<button type="button" class="nw-card modo ${d.cor} ${principal?'principal':'secundario'}" data-modo="${d.modo}" role="listitem" aria-label="Jogar ${d.nome}">
+  return `<button type="button" class="nw-card modo ${d.cor} ${principal?'principal':'secundario'}" data-modo="${d.modo}" data-testid="mode-select-${d.modo}" aria-label="Jogar ${d.nome}">
     <span class="nw-card-topo"><span class="nw-chip numero">${d.numero}</span><span class="nw-chip nome">${d.nome}</span><span class="nw-chip nw-level">LV. 01</span></span>
     ${Arte(d)}
     <span class="nw-copy">${Exemplo(d)}<small>${d.descricao}</small></span>
@@ -111,17 +81,17 @@ export function DailyChallengeCard():string{
   return `<button class="nw-daily challenge" id="abrir-desafio-dia" type="button"><span class="nw-daily-icone">${Icon({nome:'trophy'})}</span><span class="nw-daily-copy"><small>DESAFIO DO DIA</small><b>15 respostas seguidas</b><span class="nw-progresso"><i><em id="desafio-barra"></em></i><strong id="desafio-valor">0 / 15</strong></span></span><i class="nw-daily-seta">${Icon({nome:'arrow'})}</i></button>`;
 }
 export function BottomNavigation():string{
-  return `<nav class="nw-bottom" style="--i:5" aria-label="Navegação"><button id="abrir-recordes" type="button"><span class="nw-nav-icone">${Icon({nome:'chart'})}</span><b>RECORDES</b>${Icon({nome:'chevron',classe:'chevron'})}</button><i class="nw-divisoria"></i><button id="abrir-definicoes" type="button"><span class="nw-nav-icone">${Icon({nome:'settings'})}</span><b>DEFINIÇÕES</b>${Icon({nome:'chevron',classe:'chevron'})}</button></nav>`;
+  return `<nav class="nw-bottom" style="--i:5" aria-label="Navegação"><button id="abrir-recordes" data-testid="menu-records-button" type="button"><span class="nw-nav-icone">${Icon({nome:'chart'})}</span><b>RECORDES</b>${Icon({nome:'chevron',classe:'chevron'})}</button><i class="nw-divisoria"></i><button id="abrir-definicoes" data-testid="menu-settings-button" type="button"><span class="nw-nav-icone">${Icon({nome:'settings'})}</span><b>DEFINIÇÕES</b>${Icon({nome:'chevron',classe:'chevron'})}</button></nav>`;
 }
 function Logo():string{
-  const linha=(texto:string,classe:string)=>`<span class="linha ${classe}" data-t="${texto}" aria-label="${texto}"><i aria-hidden="true">${[...texto].map((letra,indice)=>`<b style="--letra:${indice}">${letra}</b>`).join('')}</i></span>`;
-  return `<h1 id="titulo-menu" class="nw-logo">${linha('NEXUS','nexus')}${linha('WORD','word')}</h1>`;
+  return `<h1 id="titulo-menu" class="nw-logo logo-referencia" data-testid="launcher-title"><img src="${logoReferencia}" alt="Nexus Word" draggable="false" /></h1>`;
 }
 function Folha():string{
-  return `<section class="folha" id="folha" hidden><button class="folha-fundo" id="fechar-folha" aria-label="Fechar"></button><div class="folha-painel"><i></i><header><span><small id="folha-etiqueta">NEXUS WORD</small><h2 id="folha-titulo">Recordes</h2></span><button id="fechar-folha-x" type="button">×</button></header><div id="folha-conteudo"></div></div></section>`;
+  return `<section class="folha" id="folha" data-testid="menu-dialog" role="dialog" aria-modal="true" aria-labelledby="folha-titulo" hidden><button class="folha-fundo" id="fechar-folha" data-testid="dialog-backdrop" aria-label="Fechar" tabindex="-1"></button><div class="folha-painel"><i></i><header><span><small id="folha-etiqueta">NEXUS WORD</small><h2 id="folha-titulo">Recordes</h2></span><button id="fechar-folha-x" data-testid="dialog-close" type="button" aria-label="Fechar painel">×</button></header><div id="folha-conteudo"></div></div></section>`;
 }
 
 export function montarMenu(raiz:HTMLElement):void{
+  raiz.dataset.testid='menu-screen';
   raiz.innerHTML=`${Cenario()}
   <header class="nw-top" style="--i:0">
     <span class="nw-marca"><i>N</i><b>NEXUS WORD</b></span>
@@ -133,7 +103,7 @@ export function montarMenu(raiz:HTMLElement):void{
     <p class="nw-tagline">PALAVRAS. RAPIDEZ.</p>
   </section>
   ${StatCard()}
-  <section class="nw-modos" style="--i:3" role="list" aria-label="Modos de jogo">
+  <section class="nw-modos" style="--i:3" aria-label="Modos de jogo">
     ${ModeCard(modos[0],true)}
     <div class="nw-modos-linha">${ModeCard(modos[1])}${ModeCard(modos[2])}</div>
   </section>
