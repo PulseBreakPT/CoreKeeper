@@ -6,6 +6,7 @@ import trocaReferencia from '../assets/nexus/troca.webp';
 import { Cenario } from './paisagem';
 export { Cenario } from './paisagem';
 import { DailyWordCard, DailyChallengeCard } from './diarios';
+import { IlustracaoInterface, temIlustracao } from './ilustracoes-interface';
 export { DailyWordCard, DailyChallengeCard } from './diarios';
 
 /* Peças do launcher Nexus Word. Tudo é markup real: nada de texto dentro de imagens. */
@@ -39,7 +40,7 @@ const paths:Record<Icone,string>={
   seta:'<path d="M2.4 9.2h10.9l-3-3a1.7 1.7 0 0 1 2.4-2.4l5.9 5.9a1.7 1.7 0 0 1 0 2.4l-5.9 5.9a1.7 1.7 0 0 1-2.4-2.4l3-3H2.4a1.8 1.8 0 0 1 0-3.4Z"/>',
   'seta-dupla':'<path d="M8.6 3.4a1.7 1.7 0 0 1 0 2.4l-.8.8h8.4l-.8-.8a1.7 1.7 0 1 1 2.4-2.4l3.7 3.7a1.7 1.7 0 0 1 0 2.4l-3.7 3.7a1.7 1.7 0 0 1-2.4-2.4l.8-.8H7.8l.8.8a1.7 1.7 0 0 1-2.4 2.4L2.5 9.5a1.7 1.7 0 0 1 0-2.4l3.7-3.7a1.7 1.7 0 0 1 2.4 0Z" transform="translate(0 2.5)"/>',
 };
-export function Icon({nome,classe=''}:{nome:Icone;classe?:string}):string{return `<svg class="nw-icon ${classe}" viewBox="0 0 24 24" aria-hidden="true">${paths[nome]}</svg>`;}
+export function Icon({nome,classe=''}:{nome:Icone;classe?:string}):string{return temIlustracao(nome)?IlustracaoInterface(nome,classe):`<svg class="nw-icon ${classe}" viewBox="0 0 24 24" aria-hidden="true">${paths[nome]}</svg>`;}
 
 /* Peça de letra 2.5D: bisel, brilho e sombra assente. */
 type Cor='green'|'pink'|'blue'|'yellow';
@@ -67,7 +68,7 @@ function Exemplo(d:ModeDef):string{
 export function ModeCard(d:ModeDef,principal=false):string{
   const cta=principal
     ? `<span class="nw-cta"><strong>JOGAR</strong><i>${Icon({nome:'play'})}</i></span>`
-    : `<span class="nw-cta redonda"><i>${Icon({nome:'play'})}</i></span>`;
+    : `<span class="nw-cta redonda"><strong data-testid="mode-play-label-${d.modo}">JOGAR</strong><i>${Icon({nome:'play'})}</i></span>`;
   return `<button type="button" class="nw-card modo ${d.cor} ${principal?'principal':'secundario'}" data-modo="${d.modo}" data-testid="mode-select-${d.modo}" aria-label="Jogar ${d.nome}">
     <span class="nw-card-topo"><span class="nw-chip numero" data-testid="mode-number-${d.modo}">${d.numero}</span><span class="nw-chip nome" data-testid="mode-title-${d.modo}">${d.nome}</span><span class="nw-chip nw-level" data-testid="mode-level-${d.modo}">NV. 01</span></span>
     ${Arte(d)}

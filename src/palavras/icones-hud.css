@@ -1,0 +1,42 @@
+/* Os mesmos quatro indicadores: ícones maiores, sem sacrificar os valores. */
+.jg .jg-hud { grid-template-columns:1.12fr .96fr 1.08fr 1.04fr; gap:7px; }
+.jg .jg-marcador { display:flex; flex-direction:column; justify-content:center; gap:1px; padding:6px 7px 8px; min-height:77px; }
+.jg .jg-marcador-topo { display:flex; align-items:center; justify-content:center; gap:4px; min-width:0; width:100%; height:30px; }
+.jg .jg-marcador-topo>small { font:900 8.5px/1.15 Nunito; letter-spacing:.25px; white-space:nowrap; color:#fffde6; }
+.jg .jg-marcador-icone { display:block; flex:0 0 29px; width:29px; height:30px; align-self:center; position:relative; }
+.jg .hud-ilustracao { display:block; width:100%; height:100%; overflow:visible; filter:drop-shadow(0 1px 1px #15454c45); }
+.jg .jg-marcador-corpo { display:flex; flex-direction:column; align-items:center; justify-content:center; flex:none; min-width:0; width:100%; min-height:28px; }
+.jg .jg-marcador strong { margin:0; }
+.jg .jg-marcador.rosa .jg-marcador-topo { height:24px; }
+.jg #vidas { display:flex; align-items:center; justify-content:center; width:100%; min-height:32px; gap:3px; }
+.jg .life-icon.hud-coracao { flex:0 1 24px; width:24px; height:26px; min-width:0; fill:none; stroke:none; filter:drop-shadow(0 2px 1px #8f264540); overflow:visible; opacity:1; }
+.jg .hud-coracao.lost { opacity:1; filter:none; }
+.jg .hud-coracao.lost .heart-depth { fill:#a74f6e; stroke:#86425f; }
+.jg .hud-coracao.lost .heart-body { fill:#bd6685; stroke:#d18da5; stroke-width:1.7; }
+.jg .hud-coracao.lost .heart-facet,.jg .hud-coracao.lost .heart-shine { display:none; }
+.jg .jg-marcador.ciano .jg-marcador-corpo { gap:4px; }
+.jg .jg-marcador.ciano strong { font-size:15px; line-height:1; white-space:nowrap; }
+.jg .jg-heat { width:100%; max-width:58px; height:5px; margin:0; border-width:1px; padding:0; }
+.jg .hud-flame-halo { opacity:calc(.15 + var(--hud-calor,0)*.65); transition:opacity .35s ease; }
+.jg .hud-flame-core { opacity:calc(.6 + var(--hud-calor,0)*.4); transition:opacity .35s ease; }
+.on-fire .jg .jg-marcador.ciano strong { font-size:10px; letter-spacing:-.25px; white-space:nowrap; }
+.on-fire .jg .hud-calor { filter:drop-shadow(0 0 3px #ffe392a1) drop-shadow(0 1px 1px #99611c4d); }
+.jg .jg-marcador.verde .jg-marcador-corpo { container-type:inline-size; }
+.jg #combo { font-size:clamp(11px,calc(145cqw / var(--combo-digitos,2)),28px); white-space:nowrap; overflow-wrap:normal; }
+.final-rush .jg .hud-coracao:not(.lost) .heart-body { stroke:#fff9df; }
+@media(max-width:370px) {
+  .jg .jg-hud { gap:5px; }
+  .jg .jg-marcador { padding:5px 4px 7px; min-height:69px; }
+  .jg .jg-marcador-topo { height:25px; gap:2px; }
+  .jg .jg-marcador-topo>small { font-size:7.5px; letter-spacing:0; }
+  .jg .jg-marcador-icone { flex-basis:23px; width:23px; height:25px; }
+  .jg .jg-marcador.rosa .jg-marcador-topo { height:23px; }
+  .jg #vidas { gap:2px; min-height:28px; }
+  .jg .life-icon.hud-coracao { flex-basis:20px; width:20px; height:23px; }
+  .jg .jg-marcador.ciano strong { font-size:13px; }
+  .on-fire .jg .jg-marcador.ciano strong { font-size:9px; }
+  .jg .jg-marcador-corpo { min-height:26px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .jg .hud-flame-halo,.jg .hud-flame-core { transition:none; }
+}

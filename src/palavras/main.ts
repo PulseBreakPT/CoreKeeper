@@ -6,6 +6,7 @@ import './paineis-refinados.css';
 import './diarios.css';
 import './consistencia.css';
 import './refinamento.css';
+import './icones-hud.css';
 import { PERGUNTAS, PERGUNTAS_RARAS, type Modo, type Pergunta } from './dados';
 import { montarMenu } from './menu';
 import { montarJogo } from './jogo';
@@ -17,6 +18,7 @@ import { atualizarDesafioDiario, adaptarPalavraDiaria } from './diarios';
 import { WordDiscovery, ReviewCard } from './acabamentos';
 import { iniciarEfeitosVisuais } from './efeitos';
 import { META_DIARIA, registarConquistaDiaria, prepararResultadoDiario } from './conquista-diaria';
+import { VidasHud } from './icones-hud';
 
 type Estado='READY'|'ANSWERING'|'CHECKING'|'CORRECT'|'WRONG'|'GAME_OVER';
 type TipoRonda='normal'|'boss'|'relampago'|'armadilha'|'rara'|'jackpot'|'cadeia';
@@ -68,7 +70,7 @@ function definirEstado(n:Estado):void{estado=n;document.documentElement.dataset.
 function focar():void{requestAnimationFrame(()=>{input.focus({preventScroll:true});input.select();});}
 function nomeEvento(r:Ronda):string{return{normal:'RONDA NORMAL',boss:'BOSS WORD',relampago:'RONDA RELÂMPAGO',armadilha:'PALAVRA ARMADILHA',rara:'PALAVRA RARA',jackpot:'JACKPOT WORD',cadeia:'RESPOSTA EM CADEIA'}[r.tipo];}
 function multiplicadorPrecisao():number{return combo>=12?2:combo>=7?1.5:combo>=3?1.2:1;}
-function hud():void{el('pontos').textContent=pontos.toLocaleString('pt-PT');el('vidas').innerHTML=Array.from({length:3},(_,i)=>`<svg class="life-icon ${i<vidas?'':'lost'}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21 3.2 12.4C-2.2 7 5.4-1.1 12 5.5 18.6-1.1 26.2 7 20.8 12.4Z"/></svg>`).join('');el('vidas').setAttribute('aria-label',`${vidas} ${vidas===1?'vida':'vidas'}`);el('combo').textContent=`×${combo}`;el('numero-pergunta').textContent=String(numero).padStart(2,'0');el('nivel-jogo').textContent=`NV. ${String(nivel(modo)).padStart(2,'0')}`;const heatTexto=el('heat-texto');el('heat-barra').style.width=`${onFire?100:heat}%`;heatTexto.textContent=onFire?`A ARDER ×${onFire}`:`${heat}%`;document.documentElement.classList.toggle('on-fire',onFire>0);document.documentElement.classList.toggle('final-rush',vidas===1&&estado!=='GAME_OVER');actualizarFantasma();}
+function hud():void{el('pontos').textContent=pontos.toLocaleString('pt-PT');el('vidas').innerHTML=VidasHud(vidas);el('vidas').setAttribute('aria-label',`${vidas} ${vidas===1?'vida':'vidas'}`);el('combo').textContent=`×${combo}`;el('numero-pergunta').textContent=String(numero).padStart(2,'0');el('nivel-jogo').textContent=`NV. ${String(nivel(modo)).padStart(2,'0')}`;const heatTexto=el('heat-texto');el('heat-barra').style.width=`${onFire?100:heat}%`;heatTexto.textContent=onFire?`A ARDER ×${onFire}`:`${heat}%`;heatTexto.closest<HTMLElement>('.jg-marcador')!.style.setProperty('--hud-calor',String(onFire?1:heat/100));document.documentElement.classList.toggle('on-fire',onFire>0);document.documentElement.classList.toggle('final-rush',vidas===1&&estado!=='GAME_OVER');actualizarFantasma();}
 function actualizarFantasma():void{
   const anterior=estatisticas.melhorPercurso[modo]||[],alvo=anterior[Math.max(0,numero-1)];
   const temReferencia=typeof alvo==='number',delta=pontos-(alvo||0),n=el('fantasma-recorde');

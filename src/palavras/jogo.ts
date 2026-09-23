@@ -1,13 +1,14 @@
 import { Cenario, Icon, LetterTile } from './menu';
 import { ResultHeading, PanelMedallion } from './acabamentos';
+import { HudIcon, VidasHud } from './icones-hud';
 
 function Hud(): string {
   return `<div class="jg-hud" role="status" aria-label="Estatísticas da partida">${[
-    ['azul','PONTOS','<strong id="pontos" data-testid="hud-score-value">0</strong>',Icon({nome:'crown'})],
-    ['verde','COMBO','<strong id="combo" data-testid="hud-combo-multiplier">×0</strong>',''],
-    ['rosa','VIDAS','<strong id="vidas" data-testid="hud-lives-display"></strong>',''],
-    ['ciano','CALOR','<strong id="heat-texto">0%</strong><span class="jg-heat"><i id="heat-barra"></i></span>',Icon({nome:'flame'})],
-  ].map(([cor,label,body,icon])=>`<span class="jg-marcador ${cor}">${icon?`<i class="jg-marcador-icone">${icon}</i>`:''}<span class="jg-marcador-corpo"><small>${label}</small>${body}</span></span>`).join('')}</div>`;
+    ['azul','PONTOS','<strong id="pontos" data-testid="hud-score-value">0</strong>',HudIcon('pontos')],
+    ['verde','COMBO','<strong id="combo" data-testid="hud-combo-multiplier">×0</strong>',HudIcon('combo')],
+    ['rosa','VIDAS',`<strong id="vidas" data-testid="hud-lives-display" aria-label="3 vidas">${VidasHud(3)}</strong>`,''],
+    ['ciano','CALOR','<strong id="heat-texto" data-testid="hud-heat-value">0%</strong><span class="jg-heat" aria-hidden="true"><i id="heat-barra"></i></span>',HudIcon('calor')],
+  ].map(([cor,label,body,icon])=>`<span class="jg-marcador ${cor}" data-testid="hud-card-${cor}"><span class="jg-marcador-topo">${icon?`<i class="jg-marcador-icone" aria-hidden="true">${icon}</i>`:''}<small data-testid="hud-label-${cor}">${label}</small></span><span class="jg-marcador-corpo">${body}</span></span>`).join('')}</div>`;
 }
 
 function Cartao(): string {
