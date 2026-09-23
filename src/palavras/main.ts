@@ -15,6 +15,7 @@ import { prepararInterface } from './interface';
 import { renderizarRecordes, renderizarDefinicoes, prepararFolha } from './folhas';
 import { atualizarDesafioDiario, adaptarPalavraDiaria } from './diarios';
 import { WordDiscovery, ReviewCard } from './acabamentos';
+import { iniciarEfeitosVisuais } from './efeitos';
 
 type Estado='READY'|'ANSWERING'|'CHECKING'|'CORRECT'|'WRONG'|'GAME_OVER';
 type TipoRonda='normal'|'boss'|'relampago'|'armadilha'|'rara'|'jackpot'|'cadeia';
@@ -51,7 +52,7 @@ function guardarRecorde():boolean{const anterior=recorde(modo);if(pontos<=anteri
 function hoje():string{return new Date().toISOString().slice(0,10);}
 function prepararDia():void{if(estatisticas.dia===hoje())return;const ontem=new Date(Date.now()-86400000).toISOString().slice(0,10);estatisticas.sequenciaDias=estatisticas.dia===ontem?estatisticas.sequenciaDias+1:1;estatisticas.dia=hoje();estatisticas.desafioDia=0;guardarEstatisticas();}
 function nivel(m:Modo):number{return 1+Math.floor(estatisticas.correctas[m]/20);}
-function actualizarMenu():void{prepararDia();document.querySelectorAll<HTMLElement>('[data-recorde]').forEach(n=>{const m=n.dataset.recorde as Modo,c=estatisticas.melhorCombo[m];n.querySelector<HTMLElement>('[data-combo-value]')!.textContent=c?`×${c}`:'—';});el('melhor-sequencia').textContent=String(estatisticas.melhorGlobal);el('dias').textContent=String(estatisticas.sequenciaDias);el('dias-jogo').textContent=String(estatisticas.sequenciaDias);atualizarDesafioDiario(estatisticas.desafioDia);document.querySelectorAll<HTMLElement>('[data-modo]').forEach(n=>{const m=n.dataset.modo as Modo;n.querySelector<HTMLElement>('.nw-level')!.textContent=`NV. ${String(nivel(m)).padStart(2,'0')}`;});}
+function actualizarMenu():void{prepararDia();document.querySelectorAll<HTMLElement>('[data-recorde]').forEach(n=>{const m=n.dataset.recorde as Modo,c=estatisticas.melhorCombo[m];n.querySelector<HTMLElement>('[data-combo-value]')!.textContent=c?`×${c}`:'—';});el('melhor-sequencia').textContent=String(estatisticas.melhorGlobal);el('dias').textContent=String(estatisticas.sequenciaDias);el('dias-jogo').textContent=String(estatisticas.sequenciaDias);atualizarDesafioDiario(estatisticas.desafioDia);document.querySelectorAll<HTMLElement>('button[data-modo]').forEach(n=>{const m=n.dataset.modo as Modo;n.querySelector<HTMLElement>('.nw-level')!.textContent=`NV. ${String(nivel(m)).padStart(2,'0')}`;});}
 function definirEstado(n:Estado):void{estado=n;document.documentElement.dataset.estado=n.toLowerCase();if(n==='READY'||n==='ANSWERING'&&!pausado){document.documentElement.dataset.paused='false';el('pausa-texto').textContent='PAUSAR';el('pausa-card').hidden=true;}el<HTMLButtonElement>('pausa').disabled=n!=='ANSWERING';el<HTMLButtonElement>('pular').disabled=n!=='ANSWERING'||pausado;}
 function focar():void{requestAnimationFrame(()=>{input.focus({preventScroll:true});input.select();});}
 function nomeEvento(r:Ronda):string{return{normal:'RONDA NORMAL',boss:'BOSS WORD',relampago:'RONDA RELÂMPAGO',armadilha:'PALAVRA ARMADILHA',rara:'PALAVRA RARA',jackpot:'JACKPOT WORD',cadeia:'RESPOSTA EM CADEIA'}[r.tipo];}
@@ -134,3 +135,6 @@ el('rever-erros').addEventListener('click',()=>{el('lista-erros').replaceChildre
 // não à mudança inesperada de palavras enquanto se escolhe um modo.
 window.visualViewport?.addEventListener('resize',()=>document.documentElement.style.setProperty('--altura-app',`${window.visualViewport!.height}px`));document.addEventListener('visibilitychange',()=>{if(document.hidden&&estado==='ANSWERING'&&!pausado)alternarPausa();});
 const PALAVRAS_DIA=[['PERSPICAZ','que compreende depressa'],['SERENDIPIDADE','descoberta feliz por acaso'],['EFÉMERO','que dura pouco tempo'],['INTRÉPIDO','que não receia o perigo'],['SINGELO','simples e sem artifício'],['LACÓNICO','expressão em poucas palavras'],['UBÍQUO','presente em toda a parte']];const pd=PALAVRAS_DIA[Math.floor(Date.now()/86400000)%PALAVRAS_DIA.length];el('palavra-dia').textContent=pd[0];el('significado-dia').textContent=pd[1];adaptarPalavraDiaria();prepararDia();actualizarMenu();document.documentElement.classList.toggle('reduzir-movimento',!estatisticas.movimento);definirEstado('READY');
+
+const pararEfeitos = iniciarEfeitosVisuais();
+if (import.meta.hot) import.meta.hot.dispose(pararEfeitos);

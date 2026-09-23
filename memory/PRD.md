@@ -76,3 +76,38 @@ Confirmação do utilizador: melhorar todas as páginas com autonomia, mantendo 
 - P1: resultado partilhável com a mesma identidade gráfica, apenas se pedido.
 - P2: consolidar as várias camadas CSS legadas após aprovação deste acabamento, evitando refatorações arriscadas nesta iteração exclusivamente visual.
 - Próxima tarefa: recolher feedback sobre este refinamento, mantendo sempre a composição e a identidade coloridas.
+
+## Iteração — 10 efeitos visuais automáticos
+
+### Pedido e decisões do utilizador
+- Pedido original: “Com as prints que tens quero 10 efeitos visuais novos que combinem com o jogo”.
+- Escolheu efeitos mais festivos, sem tapar palavras ou botões, e acrescentou: “As 3 opções, escolhi uma mas quero as 3 com QI e lógica máxima”.
+- Correção explícita posterior: “Sem configuração nas definições”. Não foi acrescentado qualquer seletor de intensidade, opção, configuração ou chave de armazenamento. As três intensidades são combinadas pelo contexto: ambiente discreto, interações equilibradas e conquistas festivas.
+- Mantida a indicação anterior de verificar apenas através de capturas, sem suites ou agente de testes.
+
+### Os dez efeitos implementados
+1. **Brisa de pétalas** — seis folhas/pétalas nas margens, atrás dos cartões do menu.
+2. **Constelação do logótipo** — pequenas estrelas com movimento lento à volta da marca, sem atravessar as letras.
+3. **Perspetiva das peças** — inclinação das ilustrações com o ponteiro e resposta elástica ao toque; textos e alvos de toque imóveis.
+4. **Rebordo de luz** — fio luminoso acompanha a borda dos cartões ao focar/apontar/tocar, com centro mascarado transparente e intervalo mínimo entre ativações.
+5. **Ondas de arranque** — três anéis sincronizados com cada número da contagem decrescente, atrás do conteúdo. Coordenadas locais corrigidas para desktop e mobile.
+6. **Poeira de escrita** — pequenas faíscas fora do campo, limitadas a uma emissão por 110 ms, sem depender da correção da resposta.
+7. **Estrelas de recompensa** — estrelas sobem pela margem esquerda até à pontuação após um acerto, não cruzando a pergunta.
+8. **Órbita de combo** — quatro estrelas no perímetro do indicador, apenas nos marcos 3/5/7/10/12/15/20/25/50/100; o valor permanece legível.
+9. **Labaredas de calor** — cinco pequenas chamas no topo do medidor apenas enquanto o estado real `on-fire` está ativo; sem flashes.
+10. **Festa de recorde** — confettis nas laterais do resultado, exclusivamente quando o jogo confirma um novo recorde. Centro, estatísticas e botões livres.
+
+### Arquitetura e proteção da experiência
+- Novos módulos de apresentação: `efeitos-motor.ts`, `efeitos-menu.ts`, `efeitos-partida.ts`, `efeitos.ts` e `efeitos.css`. Inicialização/disposição em `main.ts`; sem dependências adicionais.
+- CSS e Web Animations, sem canvas permanente nem ciclos JavaScript de desenho. Limite de 56 animações transitórias simultâneas, limpeza após conclusão/cancelamento e cancelamento ao mudar de ecrã, fazer scroll/resize, pausar ou ocultar a página.
+- Decorações `aria-hidden` e `pointer-events:none`; não alteram hitboxes, respostas, vidas, relógios, pontos ou armazenamento. Efeitos de recompensa/combo não são emitidos durante rondas silenciosas.
+- Respeitam `prefers-reduced-motion` e o interruptor de animações já existente. Ambiente suspenso por trás de painéis e efeitos removidos durante pausa/background; sem novo controlo nas definições.
+- Corrigido seletor de atualização dos níveis para `button[data-modo]`: o atributo de apresentação no `#jogo` também correspondia ao seletor anterior, mas não contém `.nw-level`.
+
+### Capturas e pacote
+- Capturas comparativas em 320×568, 390×780 e 430×790: menu, interações, contagem, cinco acertos reais, combo, calor e resultados com e sem novo recorde.
+- Capturas finais desktop: perspetiva/rebordo, contagem centrada, escrita, definições inalteradas, movimento desligado e restaurado. Não surgiram erros de página na última sessão de capturas.
+- Pacote web atualizado por `yarn palavras:build`. Não foram executados testes automatizados, typecheck, agente de testes ou compilação Android nativa.
+- P0: nenhum impedimento visual observado nas capturas realizadas; sem validação em Android físico nesta iteração.
+- P1 opcional: celebração específica do desafio diário, se o utilizador quiser expandir os dez efeitos.
+- P2: medição de consumo em dispositivos reais e consolidação dos estilos legados, fora do âmbito desta passagem visual.

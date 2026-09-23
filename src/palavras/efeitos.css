@@ -1,0 +1,60 @@
+/* Dez efeitos, sem alterar a disposição nem acrescentar controlos. */
+.nw-fx,.nw-fx *,.nw-fx-camada,.nw-fx-particula { pointer-events:none!important; user-select:none; }
+.nw-fx-camada { position:fixed; inset:0; z-index:60; overflow:hidden; contain:strict; }
+.nw-fx-particula { position:absolute; display:block; transform-origin:center; opacity:0; filter:drop-shadow(0 1px 1px #8b65142e); }
+.nw-fx-particula svg { display:block; width:100%; height:100%; overflow:visible; }
+.nw-fx-particula.confetti { border-radius:3px; background:currentColor; box-shadow:inset 0 2px #ffffff99,0 1px #7b582a35; }
+
+/* 01 — Laços de brisa nas margens do jardim. */
+.nw>.nw-fx-brisa { position:absolute; inset:0; z-index:0; overflow:hidden; animation:none; }
+.nw-fx-brisa>i { position:absolute; left:var(--x); top:var(--y); width:12px; height:19px; border-radius:90% 12% 90% 12%; background:linear-gradient(135deg,#f1ffb4,#8ad276 75%); border:1px solid #6ba85155; box-shadow:inset 2px 1px #fff9; opacity:.7; animation:nw-fx-brisa calc(10s + var(--n)*1.2s) ease-in-out infinite; animation-delay:calc(var(--n)*-1.9s); }
+.nw-fx-brisa>i:nth-child(3n) { background:linear-gradient(135deg,#fffce8,#ffb8cb); border-color:#da8d9466; width:10px; height:15px; }
+@keyframes nw-fx-brisa { 0%,100%{transform:translate(0,0) rotate(-30deg);opacity:.2} 30%{opacity:.8} 50%{transform:translate(13px,-50px) rotate(75deg);opacity:.65} 75%{transform:translate(-6px,-20px) rotate(125deg);opacity:.5} }
+
+/* 02 — Apenas à volta do logótipo, nunca à frente das letras. */
+.nw-fx-constelacao { position:absolute; inset:0; z-index:1; }
+.nw-fx-constelacao>i { position:absolute; width:clamp(9px,3.4cqw,16px); height:clamp(9px,3.4cqw,16px); color:#fff3a3; opacity:.8; filter:drop-shadow(0 0 4px #fff0a277); animation:nw-fx-constelacao 5.8s ease-in-out infinite; animation-delay:calc(var(--n)*-.9s); }
+.nw-fx-constelacao svg { display:block; width:100%; height:100%; }
+@keyframes nw-fx-constelacao { 0%,100%{transform:translate(-3px,0) rotate(-15deg) scale(.55);opacity:.2} 40%{transform:translate(2px,-6px) rotate(20deg) scale(1.08);opacity:1} 70%{transform:translate(5px,1px) rotate(60deg) scale(.7);opacity:.5} }
+
+/* 03 — A peça inclina-se; o texto permanece imóvel. */
+.nw .nw-fx-perspetiva { transform:perspective(500px) rotateX(var(--fx-rx,0deg)) rotateY(var(--fx-ry,0deg)); transition:transform .25s cubic-bezier(.2,.8,.3,1); transform-origin:50% 65%; }
+
+/* 04 — Máscara de 2px: não há uma película a atravessar as palavras. */
+.nw-fx-contorno { position:absolute; inset:2px; z-index:3; border-radius:inherit; padding:2px; opacity:0; overflow:hidden; background:transparent; mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0); mask-composite:exclude; -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0); -webkit-mask-composite:xor; }
+.nw-fx-contorno>i { position:absolute; inset:-180%; background:conic-gradient(from 45deg,transparent 0 68%,#fff8bd 77%,#fffef6 83%,#ffffca 86%,transparent 96%); }
+
+/* 05 — A contagem mantém o número em primeiro plano. */
+.jg .jg-contagem>.nw-fx-arranque { position:absolute; width:0; height:0; z-index:-1; margin:0; }
+.nw-fx-arranque>i { position:absolute; left:0; top:0; width:160px; height:160px; border:3px solid #ffe08da6; border-radius:35%; box-shadow:0 0 0 1px #fff7e866,inset 0 0 16px #fffdd82e; opacity:0; }
+.nw-fx-arranque>i:nth-child(2) { border-color:#fffceaab; border-radius:50%; }
+.nw-fx-arranque>i:nth-child(3) { border-color:#8cddf0a1; border-width:2px; border-radius:42%; }
+
+/* 06 e 07 — Partículas transitórias desenhadas pelo motor; sem novos textos. */
+
+/* 08 — Quatro estrelas orbitam o rebordo do combo, sem tapar o valor. */
+.nw-fx-orbita { position:absolute; inset:-4px; border:1px solid #fff4b98c; border-radius:20px; opacity:0; box-shadow:0 0 12px #fff0836b,inset 0 0 9px #fff4a95c; }
+.nw-fx-orbita>i { position:absolute; inset:0; transform-origin:center; }
+.nw-fx-orbita svg { position:absolute; top:-7px; left:calc(50% - 7px); width:14px; height:14px; color:#fff3a3; filter:drop-shadow(0 1px #98772966); }
+
+/* 09 — Energia viva, mas lenta: sem luzes estroboscópicas. */
+.nw-fx-fogo { position:absolute; left:13%; right:13%; top:-3px; height:0; opacity:0; transition:opacity .35s ease; }
+.nw-fx-fogo>i { position:absolute; left:calc(var(--n)*20%); top:-12px; width:8px; height:17px; border-radius:75% 25% 65% 35%; background:linear-gradient(#fff5b5,#ffdb57 55%,#ff9d54); border:1px solid #e19b4c66; transform:rotate(25deg); transform-origin:50% 100%; box-shadow:0 0 7px #ffd06166; animation:nw-fx-chama 1.6s ease-in-out infinite; animation-delay:calc(var(--n)*-.3s); animation-play-state:paused; }
+.nw-fx-em-fogo .nw-fx-fogo { opacity:1; }
+.nw-fx-em-fogo .nw-fx-fogo>i { animation-play-state:running; }
+@keyframes nw-fx-chama { 0%,100%{transform:translateY(0) rotate(22deg) scale(.65);opacity:.6} 50%{transform:translateY(-4px) rotate(-8deg) scale(1.05);opacity:1} }
+
+/* 10 — Confettis laterais. A zona central continua reservada ao conteúdo. */
+.nw-fx-camada [data-efeito=festa-de-recorde].confetti:nth-child(2n) { border-radius:50%; }
+
+/* Respeitam as preferências já existentes, sem acrescentar configurações. */
+.nw-fx-ambiente-pausado .nw-fx-brisa>i,.nw-fx-ambiente-pausado .nw-fx-constelacao>i,
+section[hidden] .nw-fx *,
+html[data-fx-suspenso=true] .nw-fx *,html[data-paused=true] .nw-fx-fogo>i { animation-play-state:paused!important; }
+html[data-fx-suspenso=true] .nw-fx,html[data-fx-suspenso=true] .nw-fx-camada,
+.reduzir-movimento .nw-fx,.reduzir-movimento .nw-fx-camada { visibility:hidden!important; }
+html[data-fx-suspenso=true] .nw .nw-fx-perspetiva { transform:none; }
+@media(prefers-reduced-motion:reduce) {
+  .nw-fx,.nw-fx-camada { display:none!important; }
+  .nw .nw-fx-perspetiva { transform:none; transition:none; }
+}
