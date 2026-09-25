@@ -1,47 +1,41 @@
-name: CI
+name: GOLOBOT APK
 
 on:
   push:
-    branches: ['**']
-  pull_request:
+    branches:
+      - golobot-apk-build-20260925
 
 jobs:
-  verificar:
-    name: Tipos, testes e build
+  build:
+    name: Build verified Android APK
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-      - run: npm ci
-      - run: npm run typecheck
-      - run: npm test
-      - run: npm run build
 
-  apk:
-    name: APK de debug
-    runs-on: ubuntu-latest
-    needs: verificar
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+
       - uses: android-actions/setup-android@v3
-      - run: npm ci
-      - run: npm run build
-      - run: npx cap sync android
-      - name: Compilar APK
-        working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Install Android SDK 34
+        run: sdkmanager "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Compile GOLOBOT
+        run: |
+          chmod +x android/gradlew
+          ./android/gradlew -p golobot :app:assembleDebug --no-daemon --stacktrace
+
+      - name: Verify APK signature
+        run: "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --verbose --print-certs golobot/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Prepare APK
+        run: cp golobot/app/build/outputs/apk/debug/app-debug.apk GOLOBOT-v2.1-fixed.apk
+
       - uses: actions/upload-artifact@v4
         with:
-          name: the-hollow-star-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: GOLOBOT-v2.1-fixed
+          path: GOLOBOT-v2.1-fixed.apk
+          if-no-files-found: error
