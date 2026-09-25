@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace 'pt.golobot.predictor'
-    compileSdk 35
+    compileSdk 34
 
     defaultConfig {
         applicationId 'pt.golobot.predictor'
